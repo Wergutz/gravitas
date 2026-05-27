@@ -1,0 +1,6 @@
+Options -Indexes
+
+<Files "deploy.php">
+    Order allow,deny
+    Allow from all
+</Files>
