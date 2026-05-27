@@ -1,0 +1,22 @@
+name: Deploy → gravitas.net.br
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy para o servidor
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASS }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            cd /home/u278289683/domains/gravitas.net.br/public_html/principal
+            git pull origin main
