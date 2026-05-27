@@ -20,3 +20,4 @@ jobs:
           script: |
             cd /home/u278289683/domains/gravitas.net.br/public_html/principal
             git pull origin main
+            echo '<?php header("Location: /principal/", true, 301); exit;' > /home/u278289683/domains/gravitas.net.br/public_html/index.php
