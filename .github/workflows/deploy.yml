@@ -19,5 +19,6 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           script: |
             cd /home/u278289683/domains/gravitas.net.br/public_html/principal
+            git remote set-url origin https://${{ secrets.GH_TOKEN }}@github.com/Wergutz/gravitas.git
             git pull origin main
             echo '<?php header("Location: /principal/", true, 301); exit;' > /home/u278289683/domains/gravitas.net.br/public_html/index.php
