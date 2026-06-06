@@ -106,6 +106,44 @@ class PlanejadorController
         $stmt->execute([$hoje, $hoje]);
         $pendencias_docs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        /* ===============================
+           KPI: Metros executados hoje (GPS dos diários enviados)
+           =============================== */
+        $stmt = $pdo->prepare("
+            SELECT COALESCE(SUM(extensao_gps_m), 0)
+            FROM diarios_execucao
+            WHERE data = ? AND status IN ('enviado','aprovado') AND extensao_gps_m IS NOT NULL
+        ");
+        $stmt->execute([$hoje]);
+        $metros_executados = (float)$stmt->fetchColumn();
+
+        /* ===============================
+           Alertas de falta de material não resolvidos
+           =============================== */
+        $stmt = $pdo->query("SELECT COUNT(*) FROM alertas_falta_material WHERE resolvido = 0");
+        $alertas_material = (int)$stmt->fetchColumn();
+
+        /* ===============================
+           Equipamentos aguardando manutenção
+           =============================== */
+        $stmt = $pdo->query("
+            SELECT COUNT(*) FROM equipamentos_pesados WHERE status_manutencao = 'manutencao' AND ativo = 1
+        ");
+        $equips_manut = (int)$stmt->fetchColumn();
+        $stmt = $pdo->query("
+            SELECT COUNT(*) FROM equipamentos_leves WHERE status_manutencao = 'manutencao' AND ativo = 1
+        ");
+        $equips_manut += (int)$stmt->fetchColumn();
+
+        /* ===============================
+           Diários enviados hoje
+           =============================== */
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) FROM diarios_execucao WHERE data = ? AND status IN ('enviado','aprovado')
+        ");
+        $stmt->execute([$hoje]);
+        $diarios_hoje = (int)$stmt->fetchColumn();
+
         require __DIR__ . '/../views/planejador/dashboard.php';
     }
 }

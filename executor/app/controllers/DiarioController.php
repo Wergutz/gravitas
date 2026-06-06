@@ -42,13 +42,13 @@ class DiarioController {
             if ($caminhamento) {
                 // Fila completa de trechos do caminhamento
                 $stmtFila = $this->db->prepare("
-                    SELECT ct.ordem, ct.ct_status,
+                    SELECT ct.sequencia AS ordem, ct.status AS ct_status,
                            t.id, t.pv_montante, t.pv_jusante, t.extensao,
                            t.rua, t.bacia, t.dn, t.contrato
                     FROM caminhamento_trechos ct
                     JOIN trechos t ON t.id = ct.trecho_id
                     WHERE ct.caminhamento_id = ?
-                    ORDER BY ct.ordem ASC
+                    ORDER BY ct.sequencia ASC
                 ");
                 $stmtFila->execute([$caminhamento['id']]);
                 $filaTrechos = $stmtFila->fetchAll(PDO::FETCH_ASSOC);
@@ -242,7 +242,7 @@ class DiarioController {
     }
 
     // --------------------------------------------------------
-    // Encerrar & enviar diário
+    // Encerrar & enviar diário — dispara todas as integrações
     // --------------------------------------------------------
     public function encerrar(int $id): void {
         auth_required_executor();
@@ -252,8 +252,67 @@ class DiarioController {
         if (!$diario) { http_response_code(404); return; }
         $this->verificarPermissao($diario);
 
-        $this->db->prepare("UPDATE diarios_execucao SET status = 'enviado', step_atual = 21 WHERE id = ?")
-                 ->execute([$id]);
+        $this->db->beginTransaction();
+        try {
+            // 1. Marca como enviado
+            $this->db->prepare("UPDATE diarios_execucao SET status = 'enviado', step_atual = 21 WHERE id = ?")
+                     ->execute([$id]);
+
+            // 2. GPS → extensão executada no caminhamento_trechos
+            $gps = $this->db->prepare("SELECT extensao_calculada_m FROM diario_gps WHERE diario_id = ?");
+            $gps->execute([$id]);
+            $gpsRow = $gps->fetch(PDO::FETCH_ASSOC);
+            if ($gpsRow && $gpsRow['extensao_calculada_m']) {
+                $ext = (float)$gpsRow['extensao_calculada_m'];
+                // Copia no cabeçalho do diário
+                $this->db->prepare("UPDATE diarios_execucao SET extensao_gps_m = ? WHERE id = ?")
+                         ->execute([$ext, $id]);
+                // Atualiza caminhamento_trechos com extensão real
+                $this->db->prepare("
+                    UPDATE caminhamento_trechos ct
+                    JOIN caminhamentos c ON c.id = ct.caminhamento_id
+                    SET ct.extensao_executada_m = ?
+                    WHERE ct.trecho_id = ? AND c.equipe_id = ?
+                      AND c.data_execucao = ?
+                ")->execute([$ext, $diario['trecho_id'], $diario['equipe_id'], $diario['data']]);
+            }
+
+            // 3. Equipamentos com problema → status_manutencao
+            $equips = $this->listar(
+                "SELECT equipamento_id, tipo, obs FROM diario_equipamentos WHERE diario_id = ? AND funcionando = 0",
+                [$id]
+            );
+            foreach ($equips as $eq) {
+                $tabela = $eq['tipo'] === 'pesado' ? 'equipamentos_pesados' : 'equipamentos_leves';
+                $this->db->prepare("UPDATE {$tabela} SET status_manutencao = 'manutencao', obs_manutencao = ? WHERE id = ?")
+                         ->execute([substr($eq['obs'] ?? 'Reportado pelo Executor em ' . $diario['data'], 0, 255), (int)$eq['equipamento_id']]);
+            }
+
+            // 4. Falta de material → alertas_falta_material
+            $diarioFull = $this->carregarDiario($id);
+            if (isset($diarioFull['step3_estoque_ok']) && $diarioFull['step3_estoque_ok'] === '0') {
+                $faltando = trim($diarioFull['step3_materiais_faltando'] ?? '');
+                if ($faltando) {
+                    // Evita duplicata se reaberto
+                    $check = $this->db->prepare("SELECT COUNT(*) FROM alertas_falta_material WHERE diario_id = ?");
+                    $check->execute([$id]);
+                    if ((int)$check->fetchColumn() === 0) {
+                        $this->db->prepare("
+                            INSERT INTO alertas_falta_material
+                                (diario_id, equipe_id, trecho_id, data, materiais_faltando)
+                            VALUES (?, ?, ?, ?, ?)
+                        ")->execute([$id, $diario['equipe_id'], $diario['trecho_id'], $diario['data'], $faltando]);
+                    }
+                }
+            }
+
+            $this->db->commit();
+        } catch (Throwable $e) {
+            $this->db->rollBack();
+            http_response_code(500);
+            echo "Erro ao encerrar diário: " . htmlspecialchars($e->getMessage());
+            return;
+        }
 
         header('Location: ' . EXECUTOR_BASE . '/');
         exit;
@@ -497,8 +556,18 @@ class DiarioController {
                 }
                 return true;
 
+            case 3: // Estoque na frente — persiste para alertas
+                $ok      = isset($_POST['estoque_ok']) ? (int)$_POST['estoque_ok'] : null;
+                $faltando = substr(trim($_POST['materiais_faltando'] ?? ''), 0, 2000);
+                if ($ok !== null) {
+                    $this->db->prepare("
+                        UPDATE diarios_execucao SET step3_estoque_ok = ?, step3_materiais_faltando = ? WHERE id = ?
+                    ")->execute([$ok, $faltando ?: null, $diarioId]);
+                }
+                return true;
+
             default:
-                return true; // Passos só-foto (3-5, 7-10, 19-21) — foto já foi salva pelo uploadFoto
+                return true; // Passos só-foto (4-5, 7-10, 19-21) — foto já foi salva pelo uploadFoto
         }
     }
 
