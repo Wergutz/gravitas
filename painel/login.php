@@ -13,6 +13,7 @@ if (isset($_SESSION['usuario_id'])) {
     $nivel = (int)($_SESSION['nivel'] ?? 0);
     if ($nivel === 5)      $dest = EXECUTOR_BASE . '/';
     elseif ($nivel === 6)  $dest = MASTER_BASE . '/';
+    elseif ($nivel === 7)  $dest = REPAV_BASE . '/';
     else                   $dest = APP_BASE . '/';
     header('Location: ' . $dest);
     exit;
@@ -70,6 +71,7 @@ if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 $tipo = (int)$usuario['tipo_usuario'];
                 if ($tipo === 5)      $dest = EXECUTOR_BASE . '/';
                 elseif ($tipo === 6)  $dest = MASTER_BASE . '/';
+                elseif ($tipo === 7)  $dest = REPAV_BASE . '/';
                 else                  $dest = APP_BASE . '/';
                 header('Location: ' . $dest);
                 exit;
