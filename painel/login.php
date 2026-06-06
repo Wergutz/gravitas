@@ -174,7 +174,7 @@ if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
       padding:14px;border-radius:11px;display:flex;align-items:center;justify-content:center;gap:8px;
       background:var(--gold);color:#3A2A06;transition:background .15s,transform .05s}
   .btn svg{width:17px;height:17px}
-  .btn:hover{background:var(--gold-600)}
+  .btn:hover{background:var(--gold-600);color:#fff}
   .btn:active{transform:translateY(1px)}
   .btn[disabled]{opacity:.65;cursor:wait}
 
