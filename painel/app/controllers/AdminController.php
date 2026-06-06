@@ -82,19 +82,28 @@ class AdminController
 
         $adminId = (int)$_SESSION['usuario_id'];
 
+        $senhaTexto = trim($_POST['senha'] ?? '');
+        $adminId    = (int)$_SESSION['usuario_id'];
+
         if ($id === 0) {
-            // CRIAR
-            $provisional = $this->gerarSenhaProvisoria();
-            $hash = password_hash($provisional, PASSWORD_DEFAULT);
+            // CRIAR — senha definida pelo admin ou auto-gerada
+            $provisional = null;
+            if ($senhaTexto !== '') {
+                $hash = password_hash($senhaTexto, PASSWORD_DEFAULT);
+                $forceChange = 0;
+            } else {
+                $provisional = $this->gerarSenhaProvisoria();
+                $hash = password_hash($provisional, PASSWORD_DEFAULT);
+                $forceChange = 1;
+            }
 
             $stmt = $pdo->prepare("
                 INSERT INTO usuarios (nome, email, senha, tipo_usuario, ativo, force_password_change)
-                VALUES (?, ?, ?, ?, 1, 1)
+                VALUES (?, ?, ?, ?, 1, ?)
             ");
-            $stmt->execute([$nome, $email, $hash, $tipo]);
+            $stmt->execute([$nome, $email, $hash, $tipo, $forceChange]);
             $novoId = (int)$pdo->lastInsertId();
 
-            // Vincular à equipe se informado (atualiza equipes.responsavel_id)
             if ($equipeId) {
                 $pdo->prepare("UPDATE equipes SET responsavel_id = ? WHERE id = ?")->execute([$novoId, $equipeId]);
             }
@@ -105,22 +114,25 @@ class AdminController
 
         } else {
             // EDITAR
-            $stmt = $pdo->prepare("
-                UPDATE usuarios SET nome = ?, email = ?, tipo_usuario = ? WHERE id = ?
-            ");
-            $stmt->execute([$nome, $email, $tipo, $id]);
+            $senhaAlterada = false;
+            if ($senhaTexto !== '') {
+                $hash = password_hash($senhaTexto, PASSWORD_DEFAULT);
+                $pdo->prepare("UPDATE usuarios SET nome=?, email=?, tipo_usuario=?, senha=?, force_password_change=0 WHERE id=?")
+                    ->execute([$nome, $email, $tipo, $hash, $id]);
+                $senhaAlterada = true;
+            } else {
+                $pdo->prepare("UPDATE usuarios SET nome=?, email=?, tipo_usuario=? WHERE id=?")
+                    ->execute([$nome, $email, $tipo, $id]);
+            }
 
-            // Atualizar vínculo de equipe se informado
             if ($equipeId) {
-                // Desvincula este user de qualquer equipe atual
                 $pdo->prepare("UPDATE equipes SET responsavel_id = NULL WHERE responsavel_id = ?")->execute([$id]);
-                // Vincula à equipe nova
                 $pdo->prepare("UPDATE equipes SET responsavel_id = ? WHERE id = ?")->execute([$id, $equipeId]);
             }
 
-            $this->auditoria($adminId, 'editar', $id, "Editou nome/email/perfil para {$email} (perfil {$tipo})");
+            $this->auditoria($adminId, 'editar', $id, "Editou usuário {$email} (perfil {$tipo})" . ($senhaAlterada ? ' + senha' : ''));
 
-            echo json_encode(['ok' => true, 'acao' => 'editado']);
+            echo json_encode(['ok' => true, 'acao' => 'editado', 'senha_alterada' => $senhaAlterada]);
         }
     }
 
@@ -140,14 +152,23 @@ class AdminController
             return;
         }
 
-        $provisional = $this->gerarSenhaProvisoria();
-        $hash = password_hash($provisional, PASSWORD_DEFAULT);
+        $senhaTexto = trim($_POST['senha'] ?? '');
+        $provisional = null;
 
-        $stmt = $pdo->prepare("UPDATE usuarios SET senha = ?, force_password_change = 1 WHERE id = ?");
-        $stmt->execute([$hash, $id]);
+        if ($senhaTexto !== '') {
+            $hash = password_hash($senhaTexto, PASSWORD_DEFAULT);
+            $forceChange = 0;
+        } else {
+            $provisional = $this->gerarSenhaProvisoria();
+            $hash = password_hash($provisional, PASSWORD_DEFAULT);
+            $forceChange = 1;
+        }
+
+        $pdo->prepare("UPDATE usuarios SET senha = ?, force_password_change = ? WHERE id = ?")
+            ->execute([$hash, $forceChange, $id]);
 
         $adminId = (int)$_SESSION['usuario_id'];
-        $this->auditoria($adminId, 'resetar_senha', $id, 'Senha provisória gerada pelo administrador');
+        $this->auditoria($adminId, 'resetar_senha', $id, $senhaTexto ? 'Senha definida pelo admin' : 'Senha provisória gerada pelo admin');
 
         echo json_encode(['ok' => true, 'senha' => $provisional]);
     }
