@@ -8,8 +8,9 @@ ob_start();
 
 <div class="card">
 <form method="post" action="<?= APP_BASE ?>/planejamentos/salvar-dia">
+<?= csrf_input() ?>
 
-    <input type="hidden" name="planejamento_id" value="<?= $_GET['id'] ?>">
+    <input type="hidden" name="planejamento_id" value="<?= (int)($_GET['id'] ?? 0) ?>">
 
     <div class="campo">
         <label>Data</label>

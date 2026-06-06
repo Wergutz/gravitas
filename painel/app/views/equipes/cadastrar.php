@@ -9,6 +9,7 @@ ob_start();
 <div class="card">
 
 <form method="post" action="<?= APP_BASE ?>/equipes/salvar">
+<?= csrf_input() ?>
 
     <!-- DADOS DA EQUIPE -->
     <div class="campo">

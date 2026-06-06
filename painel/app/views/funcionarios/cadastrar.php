@@ -19,6 +19,7 @@ ob_start();
 <?php endif; ?>
 
 <form method="post" action="<?= APP_BASE ?>/funcionarios/salvar" class="card">
+<?= csrf_input() ?>
 
 <?php
 $inputs = [

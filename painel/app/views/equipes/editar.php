@@ -10,7 +10,8 @@ ob_start();
 
 <form method="post" action="<?= APP_BASE ?>/equipes/atualizar">
 
-    <input type="hidden" name="id" value="<?= $equipe['id'] ?>">
+    <input type="hidden" name="id" value="<?= (int)$equipe['id'] ?>">
+    <?= csrf_input() ?>
 
     <!-- DADOS DA EQUIPE -->
     <div class="campo">

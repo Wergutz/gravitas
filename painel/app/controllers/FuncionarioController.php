@@ -2,6 +2,7 @@
 
 require_once dirname(__DIR__) . '/config/database.php';
 require_once dirname(__DIR__) . '/helpers/auth.php';
+require_once dirname(__DIR__) . '/helpers/csrf.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -40,6 +41,7 @@ class FuncionarioController
     public function store()
     {
         auth_required([4]);
+        csrf_verify();
         global $pdo;
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -123,6 +125,7 @@ class FuncionarioController
     public function update()
     {
         auth_required([4]);
+        csrf_verify();
         global $pdo;
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

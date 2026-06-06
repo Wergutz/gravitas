@@ -18,7 +18,8 @@ ob_start();
 
 <form method="post" action="<?= APP_BASE ?>/equipamentos-pesados/atualizar" class="card">
 
-    <input type="hidden" name="id" value="<?= $equipamento['id'] ?>">
+    <input type="hidden" name="id" value="<?= (int)$equipamento['id'] ?>">
+    <?= csrf_input() ?>
 
     <div class="campo">
         <label>Tipo</label>
@@ -51,7 +52,7 @@ ob_start();
 
     <div class="campo">
         <label>Ano</label>
-        <input type="number" name="ano" value="<?= $equipamento['ano'] ?>" required>
+        <input type="number" name="ano" value="<?= (int)($equipamento['ano'] ?? 0) ?>" required>
     </div>
 
     <div class="campo">

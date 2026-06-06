@@ -2,6 +2,7 @@
 
 require_once dirname(__DIR__) . '/config/database.php';
 require_once dirname(__DIR__) . '/helpers/auth.php';
+require_once dirname(__DIR__) . '/helpers/csrf.php';
 
 class EquipeController
 {
@@ -68,6 +69,7 @@ class EquipeController
     public function store()
     {
         auth_required([4]);
+        csrf_verify();
         global $pdo;
 
         $nome = trim($_POST['nome'] ?? '');
@@ -243,6 +245,7 @@ public function edit()
     public function update()
     {
         auth_required([4]);
+        csrf_verify();
         global $pdo;
 
         $id = (int)($_POST['id'] ?? 0);

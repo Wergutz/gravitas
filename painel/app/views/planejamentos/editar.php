@@ -13,6 +13,7 @@ ob_start();
     <form action="<?= APP_BASE ?>/planejamentos/atualizar" method="post">
 
         <input type="hidden" name="id" value="<?= (int)($planejamento['id'] ?? 0) ?>">
+        <?= csrf_input() ?>
 
         <div class="form-grid">
 

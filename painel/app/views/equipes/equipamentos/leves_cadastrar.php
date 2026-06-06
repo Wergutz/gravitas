@@ -7,8 +7,8 @@ ob_start();
 
 <div class="form-card">
 <form method="post" action="<?= APP_BASE ?>/equipes/equipamentos/leves/salvar">
-
-<input type="hidden" name="equipe_id" value="<?= $equipe_id ?>">
+<?= csrf_input() ?>
+<input type="hidden" name="equipe_id" value="<?= (int)$equipe_id ?>">
 
 <div class="form-group">
     <label>Equipamento</label>

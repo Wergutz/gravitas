@@ -2,6 +2,7 @@
 
 require_once dirname(__DIR__) . '/config/database.php';
 require_once dirname(__DIR__) . '/helpers/auth.php';
+require_once dirname(__DIR__) . '/helpers/csrf.php';
 
 class PlanejamentoController
 {
@@ -47,9 +48,10 @@ class PlanejamentoController
     public function store()
     {
         auth_required([4]);
+        csrf_verify();
         global $pdo;
 
-        $planejador_id = $_SESSION['auth']['id']; // ✅ CORRETO
+        $planejador_id = $_SESSION['auth']['id'] ?? $_SESSION['usuario_id'] ?? 0;
         $equipe_id     = (int)$_POST['equipe_id'];
         $data_execucao = $_POST['data_execucao'] ?? null;
 
@@ -114,6 +116,7 @@ class PlanejamentoController
     public function update()
     {
         auth_required([4]);
+        csrf_verify();
         global $pdo;
 
         $stmt = $pdo->prepare("

@@ -10,26 +10,27 @@ ob_start();
 
 <form method="post" action="<?= APP_BASE ?>/funcionarios/atualizar">
 
-<input type="hidden" name="id" value="<?= $funcionario['id'] ?>">
+<input type="hidden" name="id" value="<?= (int)$funcionario['id'] ?>">
+<?= csrf_input() ?>
 
 <div class="campo">
     <label>Nome</label>
-    <input type="text" name="nome" required value="<?= $funcionario['nome'] ?>">
+    <input type="text" name="nome" required value="<?= htmlspecialchars($funcionario['nome'] ?? '') ?>">
 </div>
 
 <div class="campo">
     <label>Empresa</label>
-    <input type="text" name="empresa" required value="<?= $funcionario['empresa'] ?>">
+    <input type="text" name="empresa" required value="<?= htmlspecialchars($funcionario['empresa'] ?? '') ?>">
 </div>
 
 <div class="campo">
     <label>Função</label>
-    <input type="text" name="funcao" required value="<?= $funcionario['funcao'] ?>">
+    <input type="text" name="funcao" required value="<?= htmlspecialchars($funcionario['funcao'] ?? '') ?>">
 </div>
 
 <div class="campo">
     <label>Salário</label>
-    <input type="number" step="0.01" name="salario" required value="<?= $funcionario['salario'] ?>">
+    <input type="number" step="0.01" name="salario" required value="<?= htmlspecialchars($funcionario['salario'] ?? '') ?>">
 </div>
 
 <?php

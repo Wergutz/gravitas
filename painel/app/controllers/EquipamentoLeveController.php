@@ -1,10 +1,13 @@
 <?php
 
 require_once dirname(__DIR__) . '/config/database.php';
+require_once dirname(__DIR__) . '/helpers/auth.php';
+require_once dirname(__DIR__) . '/helpers/csrf.php';
 
 class EquipamentoLeveController {
 
     public function index() {
+        auth_required([4]);
         global $pdo;
 
         $stmt = $pdo->query("
@@ -18,11 +21,13 @@ class EquipamentoLeveController {
     }
 
     public function create() {
+        auth_required([4]);
         require __DIR__ . '/../views/equipamentos_leves/cadastrar.php';
     }
 
     public function edit()
     {
+        auth_required([4]);
         global $pdo;
 
         if (!isset($_GET['id'])) {
@@ -49,6 +54,8 @@ class EquipamentoLeveController {
 
     public function update()
     {
+        auth_required([4]);
+        csrf_verify();
         global $pdo;
 
         $stmt = $pdo->prepare("
@@ -73,6 +80,7 @@ class EquipamentoLeveController {
 
     public function toggle()
     {
+        auth_required([4]);
         global $pdo;
 
         $stmt = $pdo->prepare("
@@ -80,7 +88,7 @@ class EquipamentoLeveController {
             SET ativo = IF(ativo = 1, 0, 1)
             WHERE id = ?
         ");
-        $stmt->execute([$_GET['id']]);
+        $stmt->execute([(int)($_GET['id'] ?? 0)]);
 
         header('Location: ' . APP_BASE . '/equipamentos-leves');
         exit;
@@ -89,13 +97,14 @@ class EquipamentoLeveController {
     public function store()
     {
         auth_required([4]);
+        csrf_verify();
         global $pdo;
-    
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ' . APP_BASE . '/equipamentos-leves');
             exit;
         }
-    
+
         $tipo = trim($_POST['tipo']);
     
         if ($tipo === '') {

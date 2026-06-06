@@ -1,11 +1,14 @@
 <?php
 
 require_once dirname(__DIR__) . '/config/database.php';
+require_once dirname(__DIR__) . '/helpers/auth.php';
+require_once dirname(__DIR__) . '/helpers/csrf.php';
 
 class EquipamentoPesadoController
 {
     public function index()
     {
+        auth_required([4]);
         global $pdo;
 
         $stmt = $pdo->query("
@@ -30,10 +33,12 @@ class EquipamentoPesadoController
 
     public function create()
     {
+        auth_required([4]);
         require __DIR__ . '/../views/equipamentos_pesados/cadastrar.php';
     }
     public function edit()
     {
+        auth_required([4]);
         global $pdo;
     
         if (!isset($_GET['id'])) {
@@ -59,19 +64,21 @@ class EquipamentoPesadoController
     }
     public function toggle()
     {
+        auth_required([4]);
         global $pdo;
-    
-        if (!isset($_GET['id'])) {
+
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id <= 0) {
             header('Location: ' . APP_BASE . '/equipamentos-pesados');
             exit;
         }
-    
+
         $stmt = $pdo->prepare("
             UPDATE equipamentos_pesados
             SET ativo = IF(ativo = 1, 0, 1)
             WHERE id = ?
         ");
-        $stmt->execute([$_GET['id']]);
+        $stmt->execute([$id]);
     
         header('Location: ' . APP_BASE . '/equipamentos-pesados');
         exit;
@@ -79,8 +86,10 @@ class EquipamentoPesadoController
 
     public function update()
     {
+        auth_required([4]);
+        csrf_verify();
         global $pdo;
-    
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             header('Location: ' . APP_BASE . '/equipamentos-pesados');
             exit;
@@ -130,8 +139,9 @@ class EquipamentoPesadoController
         public function store()
         {
             auth_required([4]);
+            csrf_verify();
             global $pdo;
-        
+
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
                 header('Location: ' . APP_BASE . '/equipamentos-pesados');
                 exit;

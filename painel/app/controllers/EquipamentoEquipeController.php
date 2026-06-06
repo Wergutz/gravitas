@@ -1,5 +1,9 @@
 <?php
 
+require_once dirname(__DIR__) . '/config/database.php';
+require_once dirname(__DIR__) . '/helpers/auth.php';
+require_once dirname(__DIR__) . '/helpers/csrf.php';
+
 class EquipamentoEquipeController
 {
     /* =====================================================
@@ -47,6 +51,7 @@ class EquipamentoEquipeController
     public function salvarLeve()
     {
         auth_required([4]);
+        csrf_verify();
         global $pdo;
 
         $stmt = $pdo->prepare("
@@ -109,6 +114,7 @@ class EquipamentoEquipeController
     public function salvarPesado()
     {
         auth_required([4]);
+        csrf_verify();
         global $pdo;
 
         $stmt = $pdo->prepare("

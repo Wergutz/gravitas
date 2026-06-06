@@ -9,6 +9,7 @@ ob_start();
 <div class="card">
 
 <form method="post" action="<?= APP_BASE ?>/equipamentos-pesados/salvar">
+<?= csrf_input() ?>
 
     <!-- 1. Tipo -->
     <div class="campo">
