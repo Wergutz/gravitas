@@ -184,33 +184,33 @@ CREATE TABLE IF NOT EXISTS `diario_gps` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ------------------------------------------------------------
--- Foreign keys (adicionadas separadamente para facilitar re-run)
+-- Foreign keys
 -- ------------------------------------------------------------
 ALTER TABLE `diario_presencas`
-  ADD CONSTRAINT IF NOT EXISTS `fk_dp_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_dp_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
 
 ALTER TABLE `diario_fotos`
-  ADD CONSTRAINT IF NOT EXISTS `fk_df_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_df_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
 
 ALTER TABLE `diario_interferencias`
-  ADD CONSTRAINT IF NOT EXISTS `fk_di_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_di_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
 
 ALTER TABLE `diario_reaterros`
-  ADD CONSTRAINT IF NOT EXISTS `fk_dr_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_dr_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
 
 ALTER TABLE `diario_ramais`
-  ADD CONSTRAINT IF NOT EXISTS `fk_dra_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_dra_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
 
 ALTER TABLE `diario_cargas`
-  ADD CONSTRAINT IF NOT EXISTS `fk_dc_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_dc_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
 
 ALTER TABLE `diario_pontoes`
-  ADD CONSTRAINT IF NOT EXISTS `fk_dpt_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_dpt_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
 
 ALTER TABLE `diario_equipamentos`
-  ADD CONSTRAINT IF NOT EXISTS `fk_deq_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_deq_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
 
 ALTER TABLE `diario_gps`
-  ADD CONSTRAINT IF NOT EXISTS `fk_dgps_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_dgps_diario` FOREIGN KEY (`diario_id`) REFERENCES `diarios_execucao`(`id`) ON DELETE CASCADE;
 
 SET foreign_key_checks = 1;
