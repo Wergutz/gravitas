@@ -150,6 +150,13 @@ function navAtivoExato(string $route, string $exact): string {
 
             <?php endif; ?>
 
+            <a href="<?= APP_BASE ?>/alterar-senha.php">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="8" cy="14" r="4.5"/><path d="M11.5 10.5 20 2m-3.5 1.5 3 3M14 8l2.5 2.5"/>
+                </svg>
+                Alterar Senha
+            </a>
+
             <a href="<?= APP_BASE ?>/logout.php" class="sair">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
