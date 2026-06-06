@@ -1,0 +1,127 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* FUNDO */
+body {
+    min-height: 100vh;
+    background: url("/visionhub/assets/img/fundo.png") no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
+}
+
+/* TOPO */
+.top-bar {
+    height: 50px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 18px;
+}
+
+.menu {
+    font-size: 26px;
+    cursor: pointer;
+    color: #fff;
+}
+
+/* CONTAINER */
+.login-screen {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.login-form {
+    margin-top: 160px;
+}
+
+/* LINHA PADRÃO (ÍCONE + CONTEÚDO) */
+.row {
+    display: grid;
+    grid-template-columns: 28px 1fr; /* COLUNA DO ÍCONE + COLUNA DO INPUT */
+    align-items: center;
+    column-gap: 12px;
+    width: 100%;
+    margin-bottom: 28px;
+}
+
+/* LOGO */
+.logo img {
+    width: 100%;        /* MESMA LARGURA DO INPUT */
+    height: auto;
+    object-fit: contain;
+}
+
+/* ÍCONE */
+.icon {
+    display: flex;
+    justify-content: center;
+    font-size: 16px;
+    color: #ffffff;
+}
+
+/* INPUT */
+.row input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255,255,255,0.7);
+    padding: 8px 0;
+    color: #fff;
+    font-size: 15px;
+    letter-spacing: 1px;
+    outline: none;
+}
+
+.row input::placeholder {
+    color: rgba(255,255,255,0.85);
+}
+
+/* BOTÃO */
+.btn-login {
+    width: 100%;
+    margin-top: 30px;
+    padding: 14px;
+    background: #0d6efd;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-login:hover {
+    background: #0b5ed7;
+}
+
+/* RODAPÉ */
+.footer-link {
+    text-align: center;
+    margin-top: 60px;
+}
+
+.footer-link a {
+    color: #fff;
+    text-decoration: none;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+/* MOBILE */
+@media (max-width: 480px) {
+    .login-form {
+        margin-top: 120px;
+    }
+}
+
+/* DESKTOP */
+@media (min-width: 768px) {
+    .login-form {
+        margin-top: 140px;
+    }
+}
