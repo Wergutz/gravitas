@@ -33,6 +33,18 @@ ob_start();
         </form>
     <?php endif; ?>
 
+    <a href="<?= APP_BASE ?>/caminhamentos/relatorio-materiais?id=<?= (int)$caminhamento['id'] ?>"
+       target="_blank" class="btn btn-sec btn-sm">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Solicitação de Materiais
+    </a>
+
+    <a href="<?= APP_BASE ?>/caminhamentos/relatorio-medicao?id=<?= (int)$caminhamento['id'] ?>"
+       target="_blank" class="btn btn-sec btn-sm">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Relatório de Medição
+    </a>
+
     <a href="<?= APP_BASE ?>/caminhamentos" class="btn btn-sec btn-sm">← Voltar</a>
 </div>
 

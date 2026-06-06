@@ -200,6 +200,53 @@ class RepavimentacaoController
     }
 
     /* =====================================================
+       RELATÓRIO DE REPAVIMENTAÇÃO
+    ===================================================== */
+    public function relatorio()
+    {
+        auth_required([4]);
+        global $pdo;
+
+        $medicao_id = (int)($_GET['medicao_id'] ?? 0);
+        if ($medicao_id <= 0) {
+            header('Location: ' . APP_BASE . '/repavimentacao');
+            exit;
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT mr.*, t.pv_montante, t.pv_jusante, t.bacia, t.rua, t.extensao
+            FROM medicoes_repavimentacao mr
+            JOIN trechos t ON t.id = mr.trecho_id
+            WHERE mr.id = ?
+        ");
+        $stmt->execute([$medicao_id]);
+        $dados = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$dados) {
+            header('Location: ' . APP_BASE . '/repavimentacao');
+            exit;
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT mp.*,
+                   GROUP_CONCAT(mpl.comprimento, 'x', mpl.largura ORDER BY mpl.sequencia SEPARATOR '|') AS linhas_raw
+            FROM medicao_pavimentos mp
+            LEFT JOIN medicao_pavimento_linhas mpl ON mpl.pavimento_id = mp.id
+            WHERE mp.medicao_id = ?
+            GROUP BY mp.id
+            ORDER BY mp.ordem
+        ");
+        $stmt->execute([$medicao_id]);
+        $pavimentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmt = $pdo->prepare("SELECT * FROM medicao_fotos WHERE medicao_id = ? ORDER BY tipo, criado_em");
+        $stmt->execute([$medicao_id]);
+        $fotos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        require __DIR__ . '/../views/repavimentacao/relatorio.php';
+    }
+
+    /* =====================================================
        CONCLUIR MEDIÇÃO — Regra 21 (valida linhas + asfalto)
     ===================================================== */
     public function concluirMedicao()

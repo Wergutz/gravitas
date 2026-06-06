@@ -61,10 +61,16 @@ ob_start();
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <a href="<?= APP_BASE ?>/repavimentacao/medicao?trecho_id=<?= $t['id'] ?>"
-                                   class="btn btn-sec btn-sm">
-                                    <?= $t['medicao_id'] ? 'Ver medição' : 'Iniciar medição' ?>
-                                </a>
+                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                    <a href="<?= APP_BASE ?>/repavimentacao/medicao?trecho_id=<?= $t['id'] ?>"
+                                       class="btn btn-sec btn-sm">
+                                        <?= $t['medicao_id'] ? 'Ver medição' : 'Iniciar medição' ?>
+                                    </a>
+                                    <?php if ($t['medicao_status'] === 'concluida'): ?>
+                                        <a href="<?= APP_BASE ?>/repavimentacao/relatorio?medicao_id=<?= (int)$t['medicao_id'] ?>"
+                                           target="_blank" class="btn btn-sec btn-sm">PDF</a>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>

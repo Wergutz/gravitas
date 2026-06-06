@@ -398,4 +398,117 @@ class CaminhamentoController
         header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $caminhamento_id);
         exit;
     }
+
+    /* =====================================================
+       RELATÓRIO — SOLICITAÇÃO DE MATERIAIS
+    ===================================================== */
+    public function relatorioMateriais()
+    {
+        auth_required([4]);
+        global $pdo;
+
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            header('Location: ' . APP_BASE . '/caminhamentos');
+            exit;
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT c.*, e.nome AS equipe_nome
+            FROM caminhamentos c
+            JOIN equipes e ON e.id = c.equipe_id
+            WHERE c.id = ?
+        ");
+        $stmt->execute([$id]);
+        $caminhamento = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$caminhamento) {
+            header('Location: ' . APP_BASE . '/caminhamentos');
+            exit;
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT mc.nome AS material_nome, mc.unidade, SUM(tm.quantidade) AS total_qtd
+            FROM caminhamento_trechos ct
+            JOIN trecho_materiais tm ON tm.trecho_id = ct.trecho_id
+            JOIN materiais_catalogo mc ON mc.id = tm.material_id
+            WHERE ct.caminhamento_id = ?
+            GROUP BY mc.id, mc.nome, mc.unidade
+            ORDER BY mc.nome
+        ");
+        $stmt->execute([$id]);
+        $materiais = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $stmt = $pdo->prepare("
+            SELECT t.pv_montante, t.pv_jusante, t.extensao, t.rua, ct.sequencia
+            FROM caminhamento_trechos ct
+            JOIN trechos t ON t.id = ct.trecho_id
+            WHERE ct.caminhamento_id = ?
+            ORDER BY ct.sequencia
+        ");
+        $stmt->execute([$id]);
+        $trechos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        require __DIR__ . '/../views/caminhamentos/relatorio_materiais.php';
+    }
+
+    /* =====================================================
+       RELATÓRIO — MEDIÇÃO DA REDE
+    ===================================================== */
+    public function relatorioMedicao()
+    {
+        auth_required([4]);
+        global $pdo;
+
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            header('Location: ' . APP_BASE . '/caminhamentos');
+            exit;
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT c.*, e.nome AS equipe_nome
+            FROM caminhamentos c
+            JOIN equipes e ON e.id = c.equipe_id
+            WHERE c.id = ?
+        ");
+        $stmt->execute([$id]);
+        $caminhamento = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$caminhamento) {
+            header('Location: ' . APP_BASE . '/caminhamentos');
+            exit;
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT ct.sequencia, ct.status AS ct_status,
+                   t.id AS trecho_id, t.pv_montante, t.pv_jusante, t.bacia, t.rua, t.extensao, t.status_rede
+            FROM caminhamento_trechos ct
+            JOIN trechos t ON t.id = ct.trecho_id
+            WHERE ct.caminhamento_id = ?
+            ORDER BY ct.sequencia
+        ");
+        $stmt->execute([$id]);
+        $trechos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Materiais baixados via movimentos
+        $trecho_ids = array_column($trechos, 'trecho_id');
+        $materiais_baixados = [];
+        if (!empty($trecho_ids)) {
+            $in = implode(',', array_fill(0, count($trecho_ids), '?'));
+            $stmt = $pdo->prepare("
+                SELECT mc.nome AS material_nome, mc.unidade, SUM(mm.quantidade) AS total_baixado
+                FROM materiais_movimentos mm
+                JOIN materiais_catalogo mc ON mc.id = mm.material_id
+                WHERE mm.tipo = 'baixa' AND mm.referencia_tipo = 'trecho'
+                  AND mm.referencia_id IN ($in)
+                GROUP BY mc.id, mc.nome, mc.unidade
+                ORDER BY mc.nome
+            ");
+            $stmt->execute($trecho_ids);
+            $materiais_baixados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        require __DIR__ . '/../views/caminhamentos/relatorio_medicao.php';
+    }
 }

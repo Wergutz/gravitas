@@ -316,6 +316,18 @@ if ($uri === '/caminhamentos/concluir-trecho') {
     exit;
 }
 
+if ($uri === '/caminhamentos/relatorio-materiais') {
+    require_once __DIR__ . '/app/controllers/CaminhamentoController.php';
+    (new CaminhamentoController())->relatorioMateriais();
+    exit;
+}
+
+if ($uri === '/caminhamentos/relatorio-medicao') {
+    require_once __DIR__ . '/app/controllers/CaminhamentoController.php';
+    (new CaminhamentoController())->relatorioMedicao();
+    exit;
+}
+
 /* ==========================
    MATERIAIS
 ========================== */
@@ -373,6 +385,12 @@ if ($uri === '/repavimentacao/concluir-medicao') {
 if ($uri === '/repavimentacao/upload-foto') {
     require_once __DIR__ . '/app/controllers/RepavimentacaoController.php';
     (new RepavimentacaoController())->uploadFoto();
+    exit;
+}
+
+if ($uri === '/repavimentacao/relatorio') {
+    require_once __DIR__ . '/app/controllers/RepavimentacaoController.php';
+    (new RepavimentacaoController())->relatorio();
     exit;
 }
 
