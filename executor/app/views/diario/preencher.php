@@ -379,7 +379,7 @@ foreach ($obraSteps as $sn => [$titulo, $desc]):
                  onchange="handleFotoUpload(this, <?= $diarioId ?>, 12, 'inicio', 12)">
         </label>
       </div>
-      <button type="button" class="btn-step-ok" onclick="salvarStep(document.getElementById('form-step-12'), <?= $diarioId ?>, 12)">✔ Confirmar início</button>
+      <button type="button" class="btn-step-ok" id="btn-gps-step-12" onclick="salvarStep(document.getElementById('form-step-12'), <?= $diarioId ?>, 12)">✔ Confirmar início</button>
     </form>
     <?php else: ?>
     <div class="gps-chip"><?= $gps ? '📍 ' . $gps['lat_inicio'] . ', ' . $gps['lng_inicio'] : 'Não capturado' ?></div>
@@ -417,7 +417,7 @@ foreach ($obraSteps as $sn => [$titulo, $desc]):
                  onchange="handleFotoUpload(this, <?= $diarioId ?>, 13, 'fim', 13)">
         </label>
       </div>
-      <button type="button" class="btn-step-ok" onclick="salvarStep(document.getElementById('form-step-13'), <?= $diarioId ?>, 13)">✔ Confirmar posição final</button>
+      <button type="button" class="btn-step-ok" id="btn-gps-step-13" onclick="salvarStep(document.getElementById('form-step-13'), <?= $diarioId ?>, 13)">✔ Confirmar posição final</button>
     </form>
     <?php else: ?>
     <?php if ($gps && $gps['extensao_calculada_m']): ?>
@@ -636,6 +636,7 @@ foreach ($finSteps as $sn => [$titulo, $desc]):
 
 </div><!-- /phone -->
 
+<script src="<?= EXECUTOR_BASE ?>/assets/js/executor.js"></script>
 <script>
 const DIARIO_ID = <?= $diarioId ?>;
 
@@ -775,7 +776,9 @@ function adicionarRamal() {
   `;
   li.appendChild(div); ramalIdx++;
 }
+
+iniciarAcordeao(DIARIO_ID);
+iniciarAutoSave(DIARIO_ID);
 </script>
-<script src="<?= EXECUTOR_BASE ?>/assets/js/executor.js"></script>
 </body>
 </html>

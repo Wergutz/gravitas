@@ -331,22 +331,45 @@ class DiarioController {
         $lng      = $_POST['lng'] ?? null;
         $tipo     = substr($_POST['tipo'] ?? '', 0, 50);
 
+        header('Content-Type: application/json');
+
         if (!isset($_FILES['foto']) || $_FILES['foto']['error'] !== UPLOAD_ERR_OK) {
             echo json_encode(['ok' => false, 'msg' => 'Erro no upload.']);
             return;
         }
 
-        $uploadDir   = __DIR__ . '/../../../uploads/diario/' . $diarioId . '/';
-        $thumbDir    = $uploadDir . 'thumbs/';
-        if (!is_dir($uploadDir))  mkdir($uploadDir, 0755, true);
-        if (!is_dir($thumbDir))   mkdir($thumbDir,  0755, true);
+        // Limite de 15 MB
+        if ($_FILES['foto']['size'] > 15 * 1024 * 1024) {
+            echo json_encode(['ok' => false, 'msg' => 'Arquivo muito grande (máx. 15 MB).']);
+            return;
+        }
 
-        $ext      = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
-        $base     = uniqid('f', true);
+        // Validar MIME real (não confiar na extensão)
+        $mimeReal = mime_content_type($_FILES['foto']['tmp_name']);
+        $mimesPermitidos = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+        if (!in_array($mimeReal, $mimesPermitidos, true)) {
+            echo json_encode(['ok' => false, 'msg' => 'Tipo de arquivo não permitido. Use JPG, PNG ou WebP.']);
+            return;
+        }
+
+        // Extensão segura baseada no MIME (ignora extensão enviada)
+        $extMap = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp',
+                   'image/heic' => 'heic', 'image/heif' => 'heif'];
+        $ext  = $extMap[$mimeReal];
+        $base = bin2hex(random_bytes(12));
+
+        $uploadDir = __DIR__ . '/../../../uploads/diario/' . $diarioId . '/';
+        $thumbDir  = $uploadDir . 'thumbs/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+        if (!is_dir($thumbDir))  mkdir($thumbDir,  0755, true);
+
         $filename = $base . '.' . $ext;
-        $thumb    = $base . '_t.' . $ext;
+        $thumb    = $base . '_t.jpg'; // thumbs sempre em JPEG
 
-        move_uploaded_file($_FILES['foto']['tmp_name'], $uploadDir . $filename);
+        if (!move_uploaded_file($_FILES['foto']['tmp_name'], $uploadDir . $filename)) {
+            echo json_encode(['ok' => false, 'msg' => 'Falha ao salvar arquivo.']);
+            return;
+        }
         $this->comprimirImagem($uploadDir . $filename, $uploadDir . $filename, 1600);
         $this->comprimirImagem($uploadDir . $filename, $thumbDir . $thumb, 320);
 

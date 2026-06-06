@@ -2,6 +2,7 @@
 
 require_once dirname(__DIR__) . '/config/database.php';
 require_once dirname(__DIR__) . '/helpers/auth.php';
+require_once dirname(__DIR__) . '/helpers/csrf.php';
 
 class DiarioExecucaoController {
 
@@ -194,6 +195,7 @@ class DiarioExecucaoController {
     // --------------------------------------------------------
     public function resolverAlerta(): void {
         auth_required([4]);
+        csrf_verify();
         global $pdo;
 
         $alertaId = (int)($_POST['alerta_id'] ?? 0);
@@ -212,6 +214,7 @@ class DiarioExecucaoController {
     // --------------------------------------------------------
     public function resolverManutencao(): void {
         auth_required([4]);
+        csrf_verify();
         global $pdo;
 
         $equipId   = (int)($_POST['equip_id']   ?? 0);
