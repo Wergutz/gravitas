@@ -7,7 +7,7 @@ ob_start();
 ?>
 
 <?php if (!empty($_SESSION['import_result'])): ?>
-    <div class="form-card">
+    <div class="card">
         <strong>Importação concluída</strong><br>
         Importados: <?= $_SESSION['import_result']['importados'] ?><br>
 
@@ -22,21 +22,21 @@ ob_start();
     <?php unset($_SESSION['import_result']); ?>
 <?php endif; ?>
 
-<div class="form-card">
+<div class="card">
 
     <div class="form-actions" style="margin-bottom:20px;">
-        <a href="<?= APP_BASE ?>/funcionarios/cadastrar" class="btn-primary">
+        <a href="<?= APP_BASE ?>/funcionarios/cadastrar" class="btn btn-pri">
             + Novo Funcionário
         </a>
     
-        <a href="<?= APP_BASE ?>/funcionarios/importar" class="btn-info">
+        <a href="<?= APP_BASE ?>/funcionarios/importar" class="btn btn-sec">
             Importar Excel
         </a>
     </div>
 
     <!-- 🔥 Wrapper para scroll horizontal -->
-    <div class="table-wrapper">
-        <table class="table">
+    <div class="table-wrap">
+        <table class="">
             <thead>
                 <tr>
                     <th>Nome</th>
@@ -83,10 +83,10 @@ ob_start();
 
                         <td>
                             <a href="<?= APP_BASE ?>/funcionarios/editar?id=<?= $f['id'] ?>"
-                               class="btn-info btn-sm">Editar</a>
+                               class="btn btn-sec btn-sm">Editar</a>
                     
                             <a href="<?= APP_BASE ?>/funcionarios/inativar?id=<?= $f['id'] ?>"
-                               class="btn-secondary btn-sm"
+                               class="btn btn-sec btn-sm"
                                onclick="return confirm('Deseja alterar o status deste funcionário?')">
                                <?= !empty($f['ativo']) ? 'Inativar' : 'Ativar' ?>
                             </a>

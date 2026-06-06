@@ -6,7 +6,7 @@ $pageSubtitle = 'Detalhamento do planejamento';
 ob_start();
 ?>
 
-<div class="form-card">
+<div class="card">
 <form method="post" action="<?= APP_BASE ?>/planejamentos/salvar-trechos">
 
 <?php foreach ($dias as $d): ?>
@@ -14,29 +14,29 @@ ob_start();
 
     <input type="hidden" name="trechos[][dia_id]" value="<?= $d['id'] ?>">
 
-    <div class="form-group">
+    <div class="campo">
         <label>PV Montante</label>
         <input name="trechos[][pv_montante]">
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <label>PV Juzante</label>
         <input name="trechos[][pv_juzante]">
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <label>Comprimento (m)</label>
         <input type="number" step="0.01" name="trechos[][comprimento]">
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <label>Ramais</label>
         <input type="number" name="trechos[][ramais]">
     </div>
 <?php endforeach; ?>
 
 <div class="form-actions">
-    <button class="btn-primary btn-sm">Finalizar Planejamento</button>
+    <button class="btn btn-pri btn-sm">Finalizar Planejamento</button>
 </div>
 
 </form>

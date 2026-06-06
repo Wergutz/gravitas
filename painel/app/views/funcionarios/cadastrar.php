@@ -13,12 +13,12 @@ ob_start();
 ?>
 
 <?php if ($erro === 'campos'): ?>
-    <div class="form-card">
+    <div class="card">
         <span class="badge badge-danger">Preencha todos os campos.</span>
     </div>
 <?php endif; ?>
 
-<form method="post" action="<?= APP_BASE ?>/funcionarios/salvar" class="form-card">
+<form method="post" action="<?= APP_BASE ?>/funcionarios/salvar" class="card">
 
 <?php
 $inputs = [
@@ -31,7 +31,7 @@ $inputs = [
 
 foreach ($inputs as $n=>$l):
 ?>
-<div class="form-group">
+<div class="campo">
     <label><?= $l ?></label>
     <input name="<?= $n ?>" required>
 </div>
@@ -46,7 +46,7 @@ $checks = [
 
 foreach ($checks as $n=>$l):
 ?>
-<div class="form-group">
+<div class="campo">
     <label><?= $l ?></label>
     <select name="<?= $n ?>" required>
         <option value="">Selecione</option>
@@ -58,8 +58,8 @@ foreach ($checks as $n=>$l):
 <?php endforeach; ?>
 
 <div class="form-actions">
-    <button class="btn-primary">Salvar</button>
-    <a href="<?= APP_BASE ?>/funcionarios" class="btn-secondary">Cancelar</a>
+    <button class="btn btn-pri">Salvar</button>
+    <a href="<?= APP_BASE ?>/funcionarios" class="btn btn-sec">Cancelar</a>
 </div>
 
 </form>

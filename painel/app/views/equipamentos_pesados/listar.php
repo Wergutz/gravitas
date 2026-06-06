@@ -6,21 +6,21 @@ $pageSubtitle = 'Cadastro e controle';
 ob_start();
 ?>
 
-<div class="form-card">
+<div class="card">
 
     <div class="form-actions" style="margin-bottom:20px;">
-        <a href="<?= APP_BASE ?>/equipamentos-pesados/cadastrar" class="btn-primary">
+        <a href="<?= APP_BASE ?>/equipamentos-pesados/cadastrar" class="btn btn-pri">
             + Novo Equipamento
         </a>
 
-        <a href="<?= APP_BASE ?>/equipamentos-pesados/importar" class="btn-info">
+        <a href="<?= APP_BASE ?>/equipamentos-pesados/importar" class="btn btn-sec">
             Importar Excel
         </a>
     </div>
 
     <!-- 🔥 Wrapper para scroll horizontal -->
-    <div class="table-wrapper">
-        <table class="table">
+    <div class="table-wrap">
+        <table class="">
             <thead>
                 <tr>
                     <th>Tipo</th>
@@ -59,10 +59,10 @@ ob_start();
                         </td>
                         <td>
                             <a href="<?= APP_BASE ?>/equipamentos-pesados/editar?id=<?= $e['id'] ?>"
-                               class="btn-info btn-sm">Editar</a>
+                               class="btn btn-sec btn-sm">Editar</a>
 
                             <a href="<?= APP_BASE ?>/equipamentos-pesados/inativar?id=<?= $e['id'] ?>"
-                               class="btn-secondary btn-sm"
+                               class="btn btn-sec btn-sm"
                                onclick="return confirm('Deseja alterar o status deste equipamento?')">
                                 <?= !empty($e['ativo']) ? 'Inativar' : 'Ativar' ?>
                             </a>

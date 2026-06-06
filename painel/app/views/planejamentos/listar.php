@@ -6,16 +6,16 @@ $pageSubtitle = 'Gestão de planejamentos';
 ob_start();
 ?>
 
-<div class="form-card">
+<div class="card">
 
     <div class="form-actions">
-        <a href="<?= APP_BASE ?>/planejamentos/cadastrar" class="btn-primary btn-sm">
+        <a href="<?= APP_BASE ?>/planejamentos/cadastrar" class="btn btn-pri btn-sm">
             + Novo Planejamento
         </a>
     </div>
 
-    <div class="table-wrapper">
-        <table class="table">
+    <div class="table-wrap">
+        <table class="">
             <thead>
                 <tr>
                     <th>Data</th>
@@ -39,7 +39,7 @@ ob_start();
                     <td><?= htmlspecialchars($p['cidade'] ?? '-') ?></td>
             
                     <td>
-                        <a href="<?= APP_BASE ?>/planejamentos/editar?id=<?= $p['id'] ?>" class="btn-info btn-sm">
+                        <a href="<?= APP_BASE ?>/planejamentos/editar?id=<?= $p['id'] ?>" class="btn btn-sec btn-sm">
                             Editar
                         </a>
                     </td>

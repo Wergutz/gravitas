@@ -6,17 +6,17 @@ $pageSubtitle = '';
 ob_start();
 ?>
 
-<div class="form-card">
+<div class="card">
 <form method="post" action="<?= APP_BASE ?>/planejamentos/salvar-dia">
 
     <input type="hidden" name="planejamento_id" value="<?= $_GET['id'] ?>">
 
-    <div class="form-group">
+    <div class="campo">
         <label>Data</label>
         <input type="date" name="data" required>
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <label>Produção</label>
         <select name="producao">
             <option value="1">Sim</option>
@@ -24,17 +24,17 @@ ob_start();
         </select>
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <label>Motivo (se não produziu)</label>
         <textarea name="motivo"></textarea>
     </div>
 
-    <button class="btn-info btn-sm">Adicionar Dia</button>
+    <button class="btn btn-sec btn-sm">Adicionar Dia</button>
 </form>
 </div>
 
-<div class="form-card">
-<table class="table">
+<div class="card">
+<table class="">
 <thead>
 <tr><th>Data</th><th>Produção</th></tr>
 </thead>

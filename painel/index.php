@@ -239,6 +239,126 @@ if ($uri === '/planejamentos/atualizar') {
 }
 
 /* ==========================
+   TRECHOS & OS
+========================== */
+if ($uri === '/trechos') {
+    require_once __DIR__ . '/app/controllers/TrechoController.php';
+    (new TrechoController())->index();
+    exit;
+}
+
+if ($uri === '/trechos/cadastrar') {
+    require_once __DIR__ . '/app/controllers/TrechoController.php';
+    (new TrechoController())->create();
+    exit;
+}
+
+if ($uri === '/trechos/salvar') {
+    require_once __DIR__ . '/app/controllers/TrechoController.php';
+    (new TrechoController())->store();
+    exit;
+}
+
+if ($uri === '/trechos/editar') {
+    require_once __DIR__ . '/app/controllers/TrechoController.php';
+    (new TrechoController())->edit();
+    exit;
+}
+
+if ($uri === '/trechos/atualizar') {
+    require_once __DIR__ . '/app/controllers/TrechoController.php';
+    (new TrechoController())->update();
+    exit;
+}
+
+if ($uri === '/trechos/upload-os') {
+    require_once __DIR__ . '/app/controllers/TrechoController.php';
+    (new TrechoController())->uploadOS();
+    exit;
+}
+
+/* ==========================
+   CAMINHAMENTOS
+========================== */
+if ($uri === '/caminhamentos') {
+    require_once __DIR__ . '/app/controllers/CaminhamentoController.php';
+    (new CaminhamentoController())->index();
+    exit;
+}
+
+if ($uri === '/caminhamentos/cadastrar') {
+    require_once __DIR__ . '/app/controllers/CaminhamentoController.php';
+    (new CaminhamentoController())->create();
+    exit;
+}
+
+if ($uri === '/caminhamentos/salvar') {
+    require_once __DIR__ . '/app/controllers/CaminhamentoController.php';
+    (new CaminhamentoController())->store();
+    exit;
+}
+
+if ($uri === '/caminhamentos/publicar') {
+    require_once __DIR__ . '/app/controllers/CaminhamentoController.php';
+    (new CaminhamentoController())->publicar();
+    exit;
+}
+
+/* ==========================
+   MATERIAIS
+========================== */
+if ($uri === '/materiais') {
+    require_once __DIR__ . '/app/controllers/MaterialController.php';
+    (new MaterialController())->index();
+    exit;
+}
+
+if ($uri === '/materiais/cadastrar') {
+    require_once __DIR__ . '/app/controllers/MaterialController.php';
+    (new MaterialController())->create();
+    exit;
+}
+
+if ($uri === '/materiais/salvar') {
+    require_once __DIR__ . '/app/controllers/MaterialController.php';
+    (new MaterialController())->store();
+    exit;
+}
+
+if ($uri === '/materiais/movimento') {
+    require_once __DIR__ . '/app/controllers/MaterialController.php';
+    (new MaterialController())->movimento();
+    exit;
+}
+
+/* ==========================
+   REPAVIMENTAÇÃO
+========================== */
+if ($uri === '/repavimentacao') {
+    require_once __DIR__ . '/app/controllers/RepavimentacaoController.php';
+    (new RepavimentacaoController())->index();
+    exit;
+}
+
+if ($uri === '/repavimentacao/medicao') {
+    require_once __DIR__ . '/app/controllers/RepavimentacaoController.php';
+    (new RepavimentacaoController())->create();
+    exit;
+}
+
+if ($uri === '/repavimentacao/salvar-pavimento') {
+    require_once __DIR__ . '/app/controllers/RepavimentacaoController.php';
+    (new RepavimentacaoController())->salvarPavimento();
+    exit;
+}
+
+if ($uri === '/repavimentacao/upload-foto') {
+    require_once __DIR__ . '/app/controllers/RepavimentacaoController.php';
+    (new RepavimentacaoController())->uploadFoto();
+    exit;
+}
+
+/* ==========================
    LOGOUT
 ========================== */
 if ($uri === '/logout.php') {

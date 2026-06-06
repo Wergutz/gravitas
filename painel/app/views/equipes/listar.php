@@ -6,16 +6,17 @@ $pageSubtitle = 'Gestão de equipes';
 ob_start();
 ?>
 
-<div class="form-card">
-
-    <div class="form-actions">
-        <a href="<?= APP_BASE ?>/equipes/cadastrar" class="btn-primary">
+<div class="topo" style="margin-bottom:14px;">
+    <div class="acoes">
+        <a href="<?= APP_BASE ?>/equipes/cadastrar" class="btn btn-pri">
             + Nova Equipe
         </a>
     </div>
+</div>
 
-    <div class="table-wrapper">
-        <table class="table table-equipes">
+<div class="card">
+    <div class="table-wrap">
+        <table>
             <thead>
                 <tr>
                     <th>Nome</th>
@@ -36,12 +37,12 @@ ob_start();
                         <td><?= htmlspecialchars($e['responsavel_nome'] ?? '') ?></td>
                         <td>
                             <a href="<?= APP_BASE ?>/equipes/editar?id=<?= $e['id'] ?>"
-                               class="btn-info btn-sm">
+                               class="btn btn-sec btn-sm">
                                 Editar
                             </a>
 
                             <a href="<?= APP_BASE ?>/equipes/apagar?id=<?= $e['id'] ?>"
-                               class="btn-secondary btn-sm"
+                               class="btn btn-danger btn-sm"
                                onclick="return confirm('Deseja apagar esta equipe?')">
                                 Apagar
                             </a>
@@ -53,7 +54,6 @@ ob_start();
             </tbody>
         </table>
     </div>
-
 </div>
 
 <?php

@@ -10,7 +10,7 @@ ob_start();
       enctype="multipart/form-data"
       class="form-padrao">
 
-    <div class="form-group">
+    <div class="campo">
         <label>Arquivo Excel (.xlsx)</label>
         <input type="file" name="excel" required>
     </div>

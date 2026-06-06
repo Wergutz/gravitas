@@ -6,12 +6,12 @@ $pageSubtitle = 'Cadastro manual';
 ob_start();
 ?>
 
-<div class="form-card">
+<div class="card">
 
 <form method="post" action="<?= APP_BASE ?>/equipamentos-pesados/salvar">
 
     <!-- 1. Tipo -->
-    <div class="form-group">
+    <div class="campo">
         <label>Tipo de Equipamento</label>
         <input type="text" name="tipo" list="tipos-pesados" required placeholder="Digite ou selecione">
         <datalist id="tipos-pesados">
@@ -23,37 +23,37 @@ ob_start();
     </div>
 
     <!-- 2. Placa -->
-    <div class="form-group">
+    <div class="campo">
         <label>Placa</label>
         <input type="text" name="placa">
     </div>
 
     <!-- 3. Modelo -->
-    <div class="form-group">
+    <div class="campo">
         <label>Modelo</label>
         <input type="text" name="modelo" required>
     </div>
 
     <!-- 4. Fabricante -->
-    <div class="form-group">
+    <div class="campo">
         <label>Fabricante</label>
         <input type="text" name="fabricante">
     </div>
 
     <!-- 5. Ano -->
-    <div class="form-group">
+    <div class="campo">
         <label>Ano</label>
         <input type="number" name="ano">
     </div>
 
     <!-- 6. Proprietário -->
-    <div class="form-group">
+    <div class="campo">
         <label>Proprietário</label>
         <input type="text" name="proprietario">
     </div>
 
     <!-- 7. Combustível -->
-    <div class="form-group">
+    <div class="campo">
         <label>Combustível</label>
         <select name="combustivel">
             <option value="DIESEL">Diesel</option>
@@ -63,8 +63,8 @@ ob_start();
     </div>
 
     <div class="form-actions">
-        <button class="btn-primary">Salvar</button>
-        <a href="<?= APP_BASE ?>/equipamentos-pesados" class="btn-secondary">Cancelar</a>
+        <button class="btn btn-pri">Salvar</button>
+        <a href="<?= APP_BASE ?>/equipamentos-pesados" class="btn btn-sec">Cancelar</a>
     </div>
 
 </form>

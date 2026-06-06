@@ -9,41 +9,41 @@ ob_start();
 ?>
 
 <?php if ($erro === 'campos'): ?>
-    <div class="form-card">
+    <div class="card">
         <span class="badge badge-danger">Preencha todos os campos.</span>
     </div>
 <?php endif; ?>
 
-<form method="post" action="<?= APP_BASE ?>/equipamentos-leves/atualizar" class="form-card">
+<form method="post" action="<?= APP_BASE ?>/equipamentos-leves/atualizar" class="card">
 
     <input type="hidden" name="id" value="<?= $equipamento['id'] ?>">
 
-    <div class="form-group">
+    <div class="campo">
         <label>Referência</label>
         <input type="text" name="referencia" value="<?= htmlspecialchars($equipamento['referencia']) ?>" required>
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <label>Fabricante</label>
         <input type="text" name="fabricante" value="<?= htmlspecialchars($equipamento['fabricante']) ?>" required>
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <label>Modelo</label>
         <input type="text" name="modelo" value="<?= htmlspecialchars($equipamento['modelo']) ?>" required>
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <label>Ano</label>
         <input type="number" name="ano" value="<?= $equipamento['ano'] ?>" required>
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <label>Proprietário</label>
         <input type="text" name="proprietario" value="<?= htmlspecialchars($equipamento['proprietario']) ?>" required>
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <label>Combustível</label>
         <select name="combustivel" required>
             <?php foreach (['GASOLINA','DIESEL','ELETRICO','OUTRO'] as $c): ?>
@@ -55,8 +55,8 @@ ob_start();
     </div>
 
     <div class="form-actions">
-        <button class="btn-primary">Salvar</button>
-        <a href="<?= APP_BASE ?>/equipamentos-leves" class="btn-secondary">Cancelar</a>
+        <button class="btn btn-pri">Salvar</button>
+        <a href="<?= APP_BASE ?>/equipamentos-leves" class="btn btn-sec">Cancelar</a>
     </div>
 
 </form>

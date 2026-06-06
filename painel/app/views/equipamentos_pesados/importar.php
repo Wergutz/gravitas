@@ -6,23 +6,23 @@ $pageSubtitle = 'Importação via Excel';
 ob_start();
 ?>
 
-<div class="form-card">
+<div class="card">
 
     <form method="post"
           action="<?= APP_BASE ?>/equipamentos-pesados/importar-excel"
           enctype="multipart/form-data">
 
-        <div class="form-group">
+        <div class="campo">
             <label>Arquivo Excel (.xlsx)</label>
             <input type="file" name="excel" required>
         </div>
 
         <div class="form-actions" style="margin-top:20px;">
-            <button type="submit" class="btn-primary">
+            <button type="submit" class="btn btn-pri">
                 Importar
             </button>
 
-            <a href="<?= APP_BASE ?>/equipamentos-pesados" class="btn-secondary">
+            <a href="<?= APP_BASE ?>/equipamentos-pesados" class="btn btn-sec">
                 Cancelar
             </a>
         </div>

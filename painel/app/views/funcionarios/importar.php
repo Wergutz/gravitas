@@ -6,13 +6,13 @@ $pageSubtitle = 'Cadastro em lote via Excel (.xlsx)';
 ob_start();
 ?>
 
-<div class="form-card">
+<div class="card">
 
     <form method="post"
           action="<?= APP_BASE ?>/funcionarios/importar"
           enctype="multipart/form-data">
 
-        <div class="form-group">
+        <div class="campo">
             <label>Arquivo Excel (.xlsx)</label>
             <input type="file" name="arquivo" accept=".xlsx" required>
         </div>
@@ -23,8 +23,8 @@ ob_start();
         </p>
 
         <div class="form-actions">
-            <button class="btn-primary">Importar</button>
-            <a href="<?= APP_BASE ?>/funcionarios" class="btn-secondary">Cancelar</a>
+            <button class="btn btn-pri">Importar</button>
+            <a href="<?= APP_BASE ?>/funcionarios" class="btn btn-sec">Cancelar</a>
         </div>
 
     </form>

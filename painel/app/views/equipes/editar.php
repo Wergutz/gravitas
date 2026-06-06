@@ -6,21 +6,21 @@ $pageSubtitle = 'Atualização completa da equipe';
 ob_start();
 ?>
 
-<div class="form-card">
+<div class="card">
 
 <form method="post" action="<?= APP_BASE ?>/equipes/atualizar">
 
     <input type="hidden" name="id" value="<?= $equipe['id'] ?>">
 
     <!-- DADOS DA EQUIPE -->
-    <div class="form-group">
+    <div class="campo">
         <label>Nome da Equipe</label>
         <input type="text" name="nome"
                value="<?= htmlspecialchars($equipe['nome']) ?>"
                required>
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <label>Responsável (Executor)</label>
         <select name="responsavel_id" required>
             <option value="">Selecione</option>
@@ -34,7 +34,7 @@ ob_start();
     </div>
 
     <!-- FUNCIONÁRIOS -->
-    <div class="form-group">
+    <div class="campo">
         <label>Funcionários da Equipe (máx. 10)</label>
 
         <div id="funcionarios-container">
@@ -42,7 +42,7 @@ ob_start();
             $funcsEquipe = $idsFuncionariosEquipe ?: [null];
             foreach ($funcsEquipe as $fid):
             ?>
-                <div class="form-group">
+                <div class="campo">
                     <select name="funcionarios[]" class="funcionario-select" onchange="validarDuplicados()">
                         <option value="">Selecione</option>
                         <?php foreach ($funcionarios as $f): ?>
@@ -57,9 +57,9 @@ ob_start();
         </div>
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <button type="button"
-                class="btn-info btn-sm"
+                class="btn btn-sec btn-sm"
                 style="width:auto; align-self:flex-start; padding:6px 12px; font-size:12px;"
                 onclick="addFuncionario()">
             + Incluir funcionário
@@ -67,7 +67,7 @@ ob_start();
     </div>
 
     <!-- MÁQUINAS LEVES -->
-    <div class="form-group">
+    <div class="campo">
         <label>Máquinas Leves</label>
 
         <div id="leves-container">
@@ -75,7 +75,7 @@ ob_start();
             $levesEquipe = $idsMaquinasLevesEquipe ?: [null];
             foreach ($levesEquipe as $mid):
             ?>
-                <div class="form-group">
+                <div class="campo">
                     <select name="maquinas_leves[]">
                         <option value="">Selecione</option>
                         <?php foreach ($maquinasLeves as $m): ?>
@@ -90,9 +90,9 @@ ob_start();
         </div>
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <button type="button"
-                class="btn-info btn-sm"
+                class="btn btn-sec btn-sm"
                 style="width:auto; align-self:flex-start; padding:6px 12px; font-size:12px;"
                 onclick="addLeve()">
             + Incluir máquina leve
@@ -100,7 +100,7 @@ ob_start();
     </div>
 
     <!-- MÁQUINAS PESADAS -->
-    <div class="form-group">
+    <div class="campo">
         <label>Máquinas Pesadas</label>
 
         <div id="pesadas-container">
@@ -108,7 +108,7 @@ ob_start();
             $pesadasEquipe = $idsMaquinasPesadasEquipe ?: [null];
             foreach ($pesadasEquipe as $mid):
             ?>
-                <div class="form-group">
+                <div class="campo">
                     <select name="maquinas_pesadas[]">
                         <option value="">Selecione</option>
                         <?php foreach ($maquinasPesadas as $m): ?>
@@ -123,9 +123,9 @@ ob_start();
         </div>
     </div>
 
-    <div class="form-group">
+    <div class="campo">
         <button type="button"
-                class="btn-info btn-sm"
+                class="btn btn-sec btn-sm"
                 style="width:auto; align-self:flex-start; padding:6px 12px; font-size:12px;"
                 onclick="addPesada()">
             + Incluir máquina pesada
@@ -134,8 +134,8 @@ ob_start();
 
     <!-- AÇÕES -->
     <div class="form-actions">
-        <button class="btn-primary btn-sm">Salvar</button>
-        <a href="<?= APP_BASE ?>/equipes" class="btn-secondary btn-sm">Cancelar</a>
+        <button class="btn btn-pri btn-sm">Salvar</button>
+        <a href="<?= APP_BASE ?>/equipes" class="btn btn-sec btn-sm">Cancelar</a>
     </div>
 
 </form>

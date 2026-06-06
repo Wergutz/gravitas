@@ -1,0 +1,303 @@
+<?php
+
+require_once dirname(__DIR__) . '/config/database.php';
+require_once dirname(__DIR__) . '/helpers/auth.php';
+require_once dirname(__DIR__) . '/helpers/csrf.php';
+
+class TrechoController
+{
+    /* =====================================================
+       LISTAR
+    ===================================================== */
+    public function index()
+    {
+        auth_required([4]);
+        global $pdo;
+
+        $bacia      = trim($_GET['bacia'] ?? '');
+        $status_rede = trim($_GET['status_rede'] ?? '');
+        $sel_id     = (int)($_GET['sel'] ?? 0);
+
+        $where = '1=1';
+        $params = [];
+
+        if ($bacia !== '') {
+            $where .= ' AND t.bacia = ?';
+            $params[] = $bacia;
+        }
+        if ($status_rede !== '') {
+            $where .= ' AND t.status_rede = ?';
+            $params[] = $status_rede;
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT t.*,
+                   os.id AS os_id, os.arquivo_pdf AS os_arquivo, os.versao AS os_versao, os.data_os
+            FROM trechos t
+            LEFT JOIN ordens_servico os ON os.trecho_id = t.id AND os.ativa = 1
+            WHERE $where
+            ORDER BY t.bacia, t.pv_montante
+        ");
+        $stmt->execute($params);
+        $trechos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Bacias disponíveis para filtro
+        $bacias = $pdo->query("SELECT DISTINCT bacia FROM trechos WHERE bacia IS NOT NULL ORDER BY bacia")
+                      ->fetchAll(PDO::FETCH_COLUMN);
+
+        // Trecho selecionado para painel lateral
+        $trecho_sel = null;
+        $os_historico = [];
+        if ($sel_id > 0) {
+            $stmt2 = $pdo->prepare("SELECT * FROM trechos WHERE id = ?");
+            $stmt2->execute([$sel_id]);
+            $trecho_sel = $stmt2->fetch(PDO::FETCH_ASSOC);
+
+            if ($trecho_sel) {
+                $stmt3 = $pdo->prepare("
+                    SELECT os.*, u.nome AS criador
+                    FROM ordens_servico os
+                    LEFT JOIN usuarios u ON u.id = os.criado_por
+                    WHERE os.trecho_id = ?
+                    ORDER BY os.versao DESC
+                ");
+                $stmt3->execute([$sel_id]);
+                $os_historico = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+            }
+        }
+
+        require __DIR__ . '/../views/trechos/listar.php';
+    }
+
+    /* =====================================================
+       CADASTRAR
+    ===================================================== */
+    public function create()
+    {
+        auth_required([4]);
+        require __DIR__ . '/../views/trechos/cadastrar.php';
+    }
+
+    /* =====================================================
+       SALVAR
+    ===================================================== */
+    public function store()
+    {
+        auth_required([4]);
+        global $pdo;
+        csrf_verify();
+
+        $bacia            = trim($_POST['bacia'] ?? '');
+        $pv_montante      = trim($_POST['pv_montante'] ?? '');
+        $pv_jusante       = trim($_POST['pv_jusante'] ?? '');
+        $tipo_pi_montante = trim($_POST['tipo_pi_montante'] ?? '');
+        $extensao         = str_replace(',', '.', trim($_POST['extensao'] ?? ''));
+        $profundidade     = str_replace(',', '.', trim($_POST['profundidade_media'] ?? ''));
+        $dn               = trim($_POST['dn'] ?? '');
+        $rua              = trim($_POST['rua'] ?? '');
+        $cidade           = trim($_POST['cidade'] ?? '');
+        $contrato         = trim($_POST['contrato'] ?? '');
+        $ramais           = (int)($_POST['ramais'] ?? 0);
+
+        if ($pv_montante === '') {
+            $_SESSION['flash_erro'] = 'PV Montante é obrigatório.';
+            header('Location: ' . APP_BASE . '/trechos/cadastrar');
+            exit;
+        }
+
+        $pdo->prepare("
+            INSERT INTO trechos
+                (bacia, pv_montante, pv_jusante, tipo_pi_montante, extensao, profundidade_media,
+                 dn, rua, cidade, contrato, ramais, criado_por)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ")->execute([
+            $bacia ?: null,
+            $pv_montante,
+            $pv_jusante ?: null,
+            $tipo_pi_montante ?: null,
+            is_numeric($extensao) ? $extensao : null,
+            is_numeric($profundidade) ? $profundidade : null,
+            $dn ?: null,
+            $rua ?: null,
+            $cidade ?: null,
+            $contrato ?: null,
+            $ramais,
+            $_SESSION['usuario_id'] ?? null,
+        ]);
+
+        $_SESSION['flash_ok'] = 'Trecho cadastrado com sucesso.';
+        header('Location: ' . APP_BASE . '/trechos');
+        exit;
+    }
+
+    /* =====================================================
+       EDITAR
+    ===================================================== */
+    public function edit()
+    {
+        auth_required([4]);
+        global $pdo;
+
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            header('Location: ' . APP_BASE . '/trechos');
+            exit;
+        }
+
+        $stmt = $pdo->prepare("SELECT * FROM trechos WHERE id = ?");
+        $stmt->execute([$id]);
+        $trecho = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$trecho) {
+            header('Location: ' . APP_BASE . '/trechos');
+            exit;
+        }
+
+        require __DIR__ . '/../views/trechos/editar.php';
+    }
+
+    /* =====================================================
+       ATUALIZAR
+    ===================================================== */
+    public function update()
+    {
+        auth_required([4]);
+        global $pdo;
+        csrf_verify();
+
+        $id               = (int)($_POST['id'] ?? 0);
+        $bacia            = trim($_POST['bacia'] ?? '');
+        $pv_montante      = trim($_POST['pv_montante'] ?? '');
+        $pv_jusante       = trim($_POST['pv_jusante'] ?? '');
+        $tipo_pi_montante = trim($_POST['tipo_pi_montante'] ?? '');
+        $extensao         = str_replace(',', '.', trim($_POST['extensao'] ?? ''));
+        $profundidade     = str_replace(',', '.', trim($_POST['profundidade_media'] ?? ''));
+        $dn               = trim($_POST['dn'] ?? '');
+        $rua              = trim($_POST['rua'] ?? '');
+        $cidade           = trim($_POST['cidade'] ?? '');
+        $contrato         = trim($_POST['contrato'] ?? '');
+        $ramais           = (int)($_POST['ramais'] ?? 0);
+
+        if ($id <= 0 || $pv_montante === '') {
+            $_SESSION['flash_erro'] = 'Dados inválidos.';
+            header('Location: ' . APP_BASE . '/trechos');
+            exit;
+        }
+
+        $pdo->prepare("
+            UPDATE trechos SET
+                bacia = ?, pv_montante = ?, pv_jusante = ?, tipo_pi_montante = ?,
+                extensao = ?, profundidade_media = ?, dn = ?, rua = ?, cidade = ?,
+                contrato = ?, ramais = ?
+            WHERE id = ?
+        ")->execute([
+            $bacia ?: null,
+            $pv_montante,
+            $pv_jusante ?: null,
+            $tipo_pi_montante ?: null,
+            is_numeric($extensao) ? $extensao : null,
+            is_numeric($profundidade) ? $profundidade : null,
+            $dn ?: null,
+            $rua ?: null,
+            $cidade ?: null,
+            $contrato ?: null,
+            $ramais,
+            $id,
+        ]);
+
+        $_SESSION['flash_ok'] = 'Trecho atualizado com sucesso.';
+        header('Location: ' . APP_BASE . '/trechos?sel=' . $id);
+        exit;
+    }
+
+    /* =====================================================
+       UPLOAD DE OS (PDF)
+    ===================================================== */
+    public function uploadOS()
+    {
+        auth_required([4]);
+        global $pdo;
+        csrf_verify();
+
+        $trecho_id = (int)($_POST['trecho_id'] ?? 0);
+        if ($trecho_id <= 0) {
+            $_SESSION['flash_erro'] = 'Trecho inválido.';
+            header('Location: ' . APP_BASE . '/trechos');
+            exit;
+        }
+
+        // Verificar que o trecho existe
+        $stmt = $pdo->prepare("SELECT id FROM trechos WHERE id = ?");
+        $stmt->execute([$trecho_id]);
+        if (!$stmt->fetch()) {
+            $_SESSION['flash_erro'] = 'Trecho não encontrado.';
+            header('Location: ' . APP_BASE . '/trechos');
+            exit;
+        }
+
+        // Validação do arquivo
+        if (empty($_FILES['arquivo_os']) || $_FILES['arquivo_os']['error'] !== UPLOAD_ERR_OK) {
+            $_SESSION['flash_erro'] = 'Arquivo não recebido ou erro no upload.';
+            header('Location: ' . APP_BASE . '/trechos/editar?id=' . $trecho_id);
+            exit;
+        }
+
+        $arquivo = $_FILES['arquivo_os'];
+
+        // Validar tamanho (max 10MB)
+        if ($arquivo['size'] > 10 * 1024 * 1024) {
+            $_SESSION['flash_erro'] = 'Arquivo muito grande (máx. 10MB).';
+            header('Location: ' . APP_BASE . '/trechos/editar?id=' . $trecho_id);
+            exit;
+        }
+
+        // Validar mime type real
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mimeReal = $finfo->file($arquivo['tmp_name']);
+        if ($mimeReal !== 'application/pdf') {
+            $_SESSION['flash_erro'] = 'Apenas arquivos PDF são aceitos.';
+            header('Location: ' . APP_BASE . '/trechos/editar?id=' . $trecho_id);
+            exit;
+        }
+
+        // Buscar versão atual
+        $stmt = $pdo->prepare("SELECT MAX(versao) FROM ordens_servico WHERE trecho_id = ?");
+        $stmt->execute([$trecho_id]);
+        $versaoAtual = (int)$stmt->fetchColumn();
+        $novaVersao  = $versaoAtual + 1;
+
+        // Salvar arquivo
+        $nomeArquivo = 'os_trecho' . $trecho_id . '_v' . $novaVersao . '_' . time() . '.pdf';
+        $destino     = __DIR__ . '/../../uploads/os/' . $nomeArquivo;
+
+        if (!move_uploaded_file($arquivo['tmp_name'], $destino)) {
+            $_SESSION['flash_erro'] = 'Falha ao salvar arquivo.';
+            header('Location: ' . APP_BASE . '/trechos/editar?id=' . $trecho_id);
+            exit;
+        }
+
+        // Desativar OS anteriores
+        $pdo->prepare("UPDATE ordens_servico SET ativa = 0 WHERE trecho_id = ?")
+            ->execute([$trecho_id]);
+
+        // Inserir nova OS
+        $data_os    = trim($_POST['data_os'] ?? '') ?: null;
+        $topografo  = trim($_POST['topografo'] ?? '') ?: null;
+
+        $pdo->prepare("
+            INSERT INTO ordens_servico (trecho_id, topografo, data_os, arquivo_pdf, versao, ativa, criado_por)
+            VALUES (?, ?, ?, ?, ?, 1, ?)
+        ")->execute([
+            $trecho_id,
+            $topografo,
+            $data_os,
+            $nomeArquivo,
+            $novaVersao,
+            $_SESSION['usuario_id'] ?? null,
+        ]);
+
+        $_SESSION['flash_ok'] = 'OS v' . $novaVersao . ' enviada com sucesso.';
+        header('Location: ' . APP_BASE . '/trechos?sel=' . $trecho_id);
+        exit;
+    }
+}

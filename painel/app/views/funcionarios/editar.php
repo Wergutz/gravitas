@@ -6,28 +6,28 @@ $pageSubtitle = $funcionario['nome'];
 ob_start();
 ?>
 
-<div class="form-card">
+<div class="card">
 
 <form method="post" action="<?= APP_BASE ?>/funcionarios/atualizar">
 
 <input type="hidden" name="id" value="<?= $funcionario['id'] ?>">
 
-<div class="form-group">
+<div class="campo">
     <label>Nome</label>
     <input type="text" name="nome" required value="<?= $funcionario['nome'] ?>">
 </div>
 
-<div class="form-group">
+<div class="campo">
     <label>Empresa</label>
     <input type="text" name="empresa" required value="<?= $funcionario['empresa'] ?>">
 </div>
 
-<div class="form-group">
+<div class="campo">
     <label>Função</label>
     <input type="text" name="funcao" required value="<?= $funcionario['funcao'] ?>">
 </div>
 
-<div class="form-group">
+<div class="campo">
     <label>Salário</label>
     <input type="number" step="0.01" name="salario" required value="<?= $funcionario['salario'] ?>">
 </div>
@@ -50,7 +50,7 @@ $campos = [
 ?>
 
 <?php foreach ($campos as $campo => $label): ?>
-<div class="form-group">
+<div class="campo">
     <label><?= $label ?></label>
     <select name="<?= $campo ?>">
         <option value="1" <?= $funcionario[$campo]==1?'selected':'' ?>>Apto</option>
@@ -61,8 +61,8 @@ $campos = [
 <?php endforeach; ?>
 
 <div class="form-actions">
-    <button class="btn-primary">Salvar</button>
-    <a href="<?= APP_BASE ?>/funcionarios" class="btn-secondary">Cancelar</a>
+    <button class="btn btn-pri">Salvar</button>
+    <a href="<?= APP_BASE ?>/funcionarios" class="btn btn-sec">Cancelar</a>
 </div>
 
 </form>
