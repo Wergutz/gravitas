@@ -51,10 +51,10 @@ if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("
                 SELECT id, nome, email, senha, tipo_usuario
                 FROM usuarios
-                WHERE email = ? AND ativo = 1 AND tipo_usuario = 7
+                WHERE (email = ? OR nome = ?) AND ativo = 1 AND tipo_usuario = 7
                 LIMIT 1
             ");
-            $stmt->execute([$email]);
+            $stmt->execute([$email, $email]);
             $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($usuario && password_verify($senha, $usuario['senha'])) {
@@ -154,10 +154,10 @@ if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
       <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
 
       <div class="field">
-        <label for="u">E-mail da equipe</label>
+        <label for="u">E-mail ou nome de usuário</label>
         <div class="inp">
           <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7"/></svg></span>
-          <input id="u" name="email" type="email" placeholder="repav@gravitas.net.br" autocomplete="username" required>
+          <input id="u" name="email" type="text" placeholder="repav@gravitas.net.br ou seu nome" autocomplete="username" required>
         </div>
       </div>
 

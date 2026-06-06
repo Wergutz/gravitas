@@ -60,10 +60,10 @@ if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt = $pdo->prepare("
                 SELECT id, nome, email, senha, tipo_usuario
                 FROM usuarios
-                WHERE email = ? AND ativo = 1
+                WHERE (email = ? OR nome = ?) AND ativo = 1
                 LIMIT 1
             ");
-            $stmt->execute([$email]);
+            $stmt->execute([$email, $email]);
             $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($usuario && password_verify($senha, $usuario['senha'])) {
@@ -286,12 +286,12 @@ if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
 
         <div class="field">
-          <label for="email">E-mail ou usuário</label>
+          <label for="email">E-mail ou nome de usuário</label>
           <div class="input">
             <span class="ic" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3.5 7l8.5 6 8.5-6"/></svg>
             </span>
-            <input type="email" id="email" name="email" placeholder="nome@empresa.com.br"
+            <input type="text" id="email" name="email" placeholder="nome@empresa.com.br ou seu nome"
                    autocomplete="username" required autofocus
                    value="<?php echo htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
           </div>
