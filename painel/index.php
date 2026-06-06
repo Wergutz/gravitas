@@ -7,7 +7,7 @@ require_once __DIR__ . '/app/config/app.php';
    AUTENTICAÇÃO
 ========================== */
 require_once __DIR__ . '/app/helpers/auth.php';
-auth_required([4]); // Planejador
+auth_required([3, 4]); // 3=Master Gravitas (admin), 4=Planejador
 
 /* ==========================
    ROTEAMENTO BÁSICO
@@ -27,8 +27,40 @@ $currentRoute = $uri;
    DASHBOARD
 ========================== */
 if ($uri === '' || $uri === '/') {
+    // Master Gravitas vai direto para gestão de usuários
+    if ((int)($_SESSION['nivel'] ?? 0) === 3) {
+        header('Location: ' . APP_BASE . '/admin/usuarios');
+        exit;
+    }
     require_once __DIR__ . '/app/controllers/PlanejadorController.php';
     (new PlanejadorController())->dashboard();
+    exit;
+}
+
+/* ==========================
+   ADMIN — Usuários & Acessos
+========================== */
+if ($uri === '/admin/usuarios') {
+    require_once __DIR__ . '/app/controllers/AdminController.php';
+    (new AdminController())->usuarios();
+    exit;
+}
+
+if ($uri === '/admin/salvar-usuario') {
+    require_once __DIR__ . '/app/controllers/AdminController.php';
+    (new AdminController())->salvarUsuario();
+    exit;
+}
+
+if ($uri === '/admin/resetar-senha') {
+    require_once __DIR__ . '/app/controllers/AdminController.php';
+    (new AdminController())->resetarSenha();
+    exit;
+}
+
+if ($uri === '/admin/toggle-ativo') {
+    require_once __DIR__ . '/app/controllers/AdminController.php';
+    (new AdminController())->toggleAtivo();
     exit;
 }
 

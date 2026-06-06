@@ -43,7 +43,22 @@ function navAtivoExato(string $route, string $exact): string {
             </div>
         </div>
 
+        <?php $nivelLayout = (int)($_SESSION['nivel'] ?? 0); ?>
         <nav class="nav">
+            <?php if ($nivelLayout === 3): ?>
+
+            <a href="<?= APP_BASE ?>/admin/usuarios" class="<?= navAtivo($currentRoute, '/admin') ?>">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Usuários &amp; Acessos
+            </a>
+
+            <?php else: ?>
+
             <a href="<?= APP_BASE ?>/" class="<?= ($currentRoute === '/' || $currentRoute === '') ? 'ativo' : '' ?>">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
@@ -132,6 +147,8 @@ function navAtivoExato(string $route, string $exact): string {
                 </svg>
                 Diários
             </a>
+
+            <?php endif; ?>
 
             <a href="<?= APP_BASE ?>/logout.php" class="sair">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
