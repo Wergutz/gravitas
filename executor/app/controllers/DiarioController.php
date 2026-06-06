@@ -22,6 +22,10 @@ class DiarioController {
         // Caminhamento publicado mais próximo da equipe (data >= hoje)
         $caminhamento = null;
         $trechoAtual  = null;
+        $osPdf        = null;
+        $materiais    = [];
+        $filaTrechos  = [];
+
         if ($equipeId) {
             $stmt = $this->db->prepare("
                 SELECT c.id, c.data_execucao, c.status
@@ -36,20 +40,52 @@ class DiarioController {
             $caminhamento = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($caminhamento) {
-                // Primeiro trecho ainda não concluído
-                $stmt2 = $this->db->prepare("
-                    SELECT ct.id AS ct_id, ct.ct_status,
+                // Fila completa de trechos do caminhamento
+                $stmtFila = $this->db->prepare("
+                    SELECT ct.ordem, ct.ct_status,
                            t.id, t.pv_montante, t.pv_jusante, t.extensao,
-                           t.rua, t.cidade, t.contrato, t.dn
+                           t.rua, t.bacia, t.dn, t.contrato
                     FROM caminhamento_trechos ct
                     JOIN trechos t ON t.id = ct.trecho_id
                     WHERE ct.caminhamento_id = ?
-                      AND ct.ct_status != 'concluido'
                     ORDER BY ct.ordem ASC
-                    LIMIT 1
                 ");
-                $stmt2->execute([$caminhamento['id']]);
-                $trechoAtual = $stmt2->fetch(PDO::FETCH_ASSOC);
+                $stmtFila->execute([$caminhamento['id']]);
+                $filaTrechos = $stmtFila->fetchAll(PDO::FETCH_ASSOC);
+
+                // Primeiro trecho ainda não concluído = trecho atual
+                foreach ($filaTrechos as $tc) {
+                    if ($tc['ct_status'] !== 'concluido') {
+                        $trechoAtual = $tc;
+                        break;
+                    }
+                }
+
+                // OS PDF do trecho atual
+                if ($trechoAtual) {
+                    $stmtOs = $this->db->prepare("
+                        SELECT arquivo_pdf, versao, topografo, data_os
+                        FROM ordens_servico
+                        WHERE trecho_id = ? AND ativa = 1
+                        LIMIT 1
+                    ");
+                    $stmtOs->execute([$trechoAtual['id']]);
+                    $osPdf = $stmtOs->fetch(PDO::FETCH_ASSOC);
+
+                    // Materiais alocados ao trecho
+                    $stmtMat = $this->db->prepare("
+                        SELECT mc.nome, mc.unidade, tm.quantidade,
+                               COALESCE(me.quantidade_fisica, 0)    AS estoque_fisico,
+                               COALESCE(me.quantidade_reservada, 0) AS estoque_reservado
+                        FROM trecho_materiais tm
+                        JOIN materiais_catalogo mc ON mc.id = tm.material_id
+                        LEFT JOIN materiais_estoque me ON me.material_id = tm.material_id
+                        WHERE tm.trecho_id = ?
+                        ORDER BY mc.nome
+                    ");
+                    $stmtMat->execute([$trechoAtual['id']]);
+                    $materiais = $stmtMat->fetchAll(PDO::FETCH_ASSOC);
+                }
             }
         }
 
@@ -66,6 +102,9 @@ class DiarioController {
             $stmt3->execute([$equipeId, $trechoAtual['id']]);
             $diarioHoje = $stmt3->fetch(PDO::FETCH_ASSOC);
         }
+
+        // Base URL do painel para acessar OS PDFs (mesmo banco, painel gerencia os uploads)
+        $painelBase = '/principal/painel';
 
         require __DIR__ . '/../views/home.php';
     }

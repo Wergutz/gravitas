@@ -63,6 +63,24 @@ button,a{font-family:inherit;cursor:pointer}
 .b-erro{background:var(--erro-bg);color:var(--erro)} .b-info{background:var(--info-bg);color:var(--info)}
 .b-neutro{background:#6b768618;color:var(--muted)}
 
+/* OS pdf link */
+.pdf-link{display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--line);
+     border-radius:10px;padding:10px 12px;margin-top:10px;font-size:13px;font-weight:700;
+     color:var(--navy);text-decoration:none;-webkit-tap-highlight-color:transparent}
+.pdf-link:hover{border-color:var(--gold);background:#e0a53d0d}
+.pdf-link .pp{margin-left:auto;font-size:11px;color:var(--navy-500)}
+
+/* lista de materiais */
+.mat-li{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:7px 0;border-top:1px solid var(--line)}
+.mat-li:first-child{border-top:0}
+.mat-li .q{margin-left:auto;font-weight:800;color:var(--navy);white-space:nowrap}
+
+/* fila de trechos */
+.next{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:7px 0;border-top:1px dashed var(--line)}
+.next:first-child{border-top:0}
+.next .o{width:22px;height:22px;border-radius:99px;background:var(--bg);color:var(--muted);
+     display:grid;place-items:center;font-size:11px;font-weight:800;flex:0 0 auto}
+
 /* passos do diário */
 .step{background:#fff;border:1px solid var(--line);border-radius:13px;margin-bottom:9px;overflow:hidden}
 .step.feito{border-color:#2e9e8f4d}
