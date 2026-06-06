@@ -10,7 +10,10 @@ require_once __DIR__ . '/app/config/app.php';
 
 // Se já estiver logado, redireciona para o app correto pelo papel
 if (isset($_SESSION['usuario_id'])) {
-    $dest = ((int)($_SESSION['nivel'] ?? 0) === 5) ? EXECUTOR_BASE . '/' : APP_BASE . '/';
+    $nivel = (int)($_SESSION['nivel'] ?? 0);
+    if ($nivel === 5)      $dest = EXECUTOR_BASE . '/';
+    elseif ($nivel === 6)  $dest = MASTER_BASE . '/';
+    else                   $dest = APP_BASE . '/';
     header('Location: ' . $dest);
     exit;
 }
@@ -64,7 +67,10 @@ if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['nome']       = $usuario['nome'];
                 $_SESSION['nivel']      = (int) $usuario['tipo_usuario'];
                 session_regenerate_id(true);
-                $dest = ((int)$usuario['tipo_usuario'] === 5) ? EXECUTOR_BASE . '/' : APP_BASE . '/';
+                $tipo = (int)$usuario['tipo_usuario'];
+                if ($tipo === 5)      $dest = EXECUTOR_BASE . '/';
+                elseif ($tipo === 6)  $dest = MASTER_BASE . '/';
+                else                  $dest = APP_BASE . '/';
                 header('Location: ' . $dest);
                 exit;
             } else {
