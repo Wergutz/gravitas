@@ -10,8 +10,9 @@ function auth_required_repav(): void {
     }
 
     if ((int)($_SESSION['nivel'] ?? 0) !== 7) {
-        http_response_code(403);
-        echo '<p style="font-family:sans-serif;padding:40px">Acesso restrito ao perfil Executor de Repavimentação.</p>';
+        session_unset();
+        session_destroy();
+        header('Location: ' . REPAV_BASE . '/login.php?msg=acesso');
         exit;
     }
 }
