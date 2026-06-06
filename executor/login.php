@@ -182,6 +182,11 @@ if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 
   <p class="nota">Ambiente seguro · acesso restrito ao perfil Executor.</p>
+  <p class="nota" style="margin-bottom:28px">
+    <a href="/principal/painel/login.php" style="color:#9FB4D6;font-weight:700;text-decoration:none">
+      ← Voltar ao menu principal
+    </a>
+  </p>
 </div>
 </body>
 </html>
