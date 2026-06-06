@@ -431,7 +431,7 @@ class DiarioController {
     private function equipeDoAutor(int $autorId): ?int {
         // Executor é o responsavel_id da equipe
         $stmt = $this->db->prepare("
-            SELECT id FROM equipes WHERE responsavel_id = ? AND ativo = 1 LIMIT 1
+            SELECT id FROM equipes WHERE responsavel_id = ? AND ativo = 1 ORDER BY id ASC LIMIT 1
         ");
         $stmt->execute([$autorId]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
