@@ -60,6 +60,10 @@ function svgIcon(string $path): string {
       <?= svgIcon('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>') ?>
       Relatórios
     </a>
+    <a href="/principal/painel/alterar-senha.php">
+      <?= svgIcon('<circle cx="8" cy="14" r="4.5"/><path d="M11.5 10.5 20 2m-3.5 1.5 3 3M14 8l2.5 2.5"/>') ?>
+      Alterar Senha
+    </a>
     <a href="/principal/painel/logout.php" class="sair">
       <?= svgIcon('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>') ?>
       Sair

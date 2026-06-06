@@ -199,6 +199,7 @@ $temAsfalto = !empty(array_filter($pavimentos, fn($p) => str_contains(strtolower
       <?= htmlspecialchars($_SESSION['nome']) ?><br>
       <span id="conn-badge">🟢 Online</span>
     </div>
+    <a href="/principal/painel/alterar-senha.php" class="btn-sair" style="margin-right:6px">🔑 Senha</a>
     <a href="<?= REPAV_BASE ?>/login.php?sair=1" class="btn-sair">Sair</a>
   </div>
 
