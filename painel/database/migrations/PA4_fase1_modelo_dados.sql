@@ -287,69 +287,69 @@ CREATE TABLE IF NOT EXISTS `medicao_fotos` (
 -- ------------------------------------------------------------
 
 ALTER TABLE `trechos`
-  ADD CONSTRAINT IF NOT EXISTS `fk_trechos_criado_por`
+  ADD CONSTRAINT `fk_trechos_criado_por`
     FOREIGN KEY (`criado_por`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL;
 
 ALTER TABLE `ordens_servico`
-  ADD CONSTRAINT IF NOT EXISTS `fk_os_trecho`
+  ADD CONSTRAINT `fk_os_trecho`
     FOREIGN KEY (`trecho_id`) REFERENCES `trechos` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT IF NOT EXISTS `fk_os_criado_por`
+  ADD CONSTRAINT `fk_os_criado_por`
     FOREIGN KEY (`criado_por`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL;
 
 ALTER TABLE `caminhamentos`
-  ADD CONSTRAINT IF NOT EXISTS `fk_caminhamento_equipe`
+  ADD CONSTRAINT `fk_caminhamento_equipe`
     FOREIGN KEY (`equipe_id`) REFERENCES `equipes` (`id`),
-  ADD CONSTRAINT IF NOT EXISTS `fk_caminhamento_planejador`
+  ADD CONSTRAINT `fk_caminhamento_planejador`
     FOREIGN KEY (`planejador_id`) REFERENCES `usuarios` (`id`);
 
 ALTER TABLE `caminhamento_trechos`
-  ADD CONSTRAINT IF NOT EXISTS `fk_camt_caminhamento`
+  ADD CONSTRAINT `fk_camt_caminhamento`
     FOREIGN KEY (`caminhamento_id`) REFERENCES `caminhamentos` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT IF NOT EXISTS `fk_camt_trecho`
+  ADD CONSTRAINT `fk_camt_trecho`
     FOREIGN KEY (`trecho_id`) REFERENCES `trechos` (`id`);
 
 ALTER TABLE `funcionario_documentos`
-  ADD CONSTRAINT IF NOT EXISTS `fk_fundoc_funcionario`
+  ADD CONSTRAINT `fk_fundoc_funcionario`
     FOREIGN KEY (`funcionario_id`) REFERENCES `funcionarios` (`id`) ON DELETE CASCADE;
 
 ALTER TABLE `equipamento_manutencoes`
-  ADD CONSTRAINT IF NOT EXISTS `fk_manut_criado_por`
+  ADD CONSTRAINT `fk_manut_criado_por`
     FOREIGN KEY (`criado_por`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL;
 
 ALTER TABLE `materiais_estoque`
-  ADD CONSTRAINT IF NOT EXISTS `fk_estoque_material`
+  ADD CONSTRAINT `fk_estoque_material`
     FOREIGN KEY (`material_id`) REFERENCES `materiais_catalogo` (`id`) ON DELETE CASCADE;
 
 ALTER TABLE `materiais_movimentos`
-  ADD CONSTRAINT IF NOT EXISTS `fk_mov_material`
+  ADD CONSTRAINT `fk_mov_material`
     FOREIGN KEY (`material_id`) REFERENCES `materiais_catalogo` (`id`),
-  ADD CONSTRAINT IF NOT EXISTS `fk_mov_usuario`
+  ADD CONSTRAINT `fk_mov_usuario`
     FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`);
 
 ALTER TABLE `trecho_materiais`
-  ADD CONSTRAINT IF NOT EXISTS `fk_tmat_trecho`
+  ADD CONSTRAINT `fk_tmat_trecho`
     FOREIGN KEY (`trecho_id`) REFERENCES `trechos` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT IF NOT EXISTS `fk_tmat_material`
+  ADD CONSTRAINT `fk_tmat_material`
     FOREIGN KEY (`material_id`) REFERENCES `materiais_catalogo` (`id`),
-  ADD CONSTRAINT IF NOT EXISTS `fk_tmat_criado_por`
+  ADD CONSTRAINT `fk_tmat_criado_por`
     FOREIGN KEY (`criado_por`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL;
 
 ALTER TABLE `medicoes_repavimentacao`
-  ADD CONSTRAINT IF NOT EXISTS `fk_medicao_trecho`
+  ADD CONSTRAINT `fk_medicao_trecho`
     FOREIGN KEY (`trecho_id`) REFERENCES `trechos` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT IF NOT EXISTS `fk_medicao_criado_por`
+  ADD CONSTRAINT `fk_medicao_criado_por`
     FOREIGN KEY (`criado_por`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL;
 
 ALTER TABLE `medicao_pavimentos`
-  ADD CONSTRAINT IF NOT EXISTS `fk_pavimento_medicao`
+  ADD CONSTRAINT `fk_pavimento_medicao`
     FOREIGN KEY (`medicao_id`) REFERENCES `medicoes_repavimentacao` (`id`) ON DELETE CASCADE;
 
 ALTER TABLE `medicao_pavimento_linhas`
-  ADD CONSTRAINT IF NOT EXISTS `fk_linha_pavimento`
+  ADD CONSTRAINT `fk_linha_pavimento`
     FOREIGN KEY (`pavimento_id`) REFERENCES `medicao_pavimentos` (`id`) ON DELETE CASCADE;
 
 ALTER TABLE `medicao_fotos`
-  ADD CONSTRAINT IF NOT EXISTS `fk_foto_medicao`
+  ADD CONSTRAINT `fk_foto_medicao`
     FOREIGN KEY (`medicao_id`) REFERENCES `medicoes_repavimentacao` (`id`) ON DELETE CASCADE;
 
 SET foreign_key_checks = 1;
