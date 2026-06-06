@@ -77,6 +77,52 @@ ob_start();
 
 </div>
 
+<!-- KPIs do Executor (linha 2) -->
+<div class="kpis" style="margin-top:0">
+
+    <div class="kpi">
+        <div class="ic ic-ok">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <b><?= number_format($metros_executados, 0, ',', '.') ?> m</b>
+        <span>Metros executados (GPS)</span>
+        <?php if ($metros_executados > 0): ?>
+        <span class="delta d-ok">Hoje</span>
+        <?php endif; ?>
+    </div>
+
+    <div class="kpi">
+        <div class="ic ic-info">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <b><a href="<?= APP_BASE ?>/diarios" style="color:inherit;text-decoration:none"><?= $diarios_hoje ?></a></b>
+        <span>Diários enviados hoje</span>
+    </div>
+
+    <div class="kpi">
+        <div class="ic <?= $alertas_material > 0 ? 'ic-aviso' : 'ic-ok' ?>">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8.5 12 3.5 3 8.5v7l9 5 9-5z"/><path d="M3.5 8.7 12 13.5l8.5-4.8"/><path d="M12 13.5V21"/></svg>
+        </div>
+        <b><a href="<?= APP_BASE ?>/diarios" style="color:inherit;text-decoration:none"><?= $alertas_material ?></a></b>
+        <span>Alertas falta de material</span>
+        <?php if ($alertas_material > 0): ?>
+        <span class="delta d-aviso">Pendente</span>
+        <?php endif; ?>
+    </div>
+
+    <div class="kpi">
+        <div class="ic <?= $equips_manut > 0 ? 'ic-erro' : 'ic-ok' ?>">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        </div>
+        <b><a href="<?= APP_BASE ?>/diarios" style="color:inherit;text-decoration:none"><?= $equips_manut ?></a></b>
+        <span>Equip. em manutenção</span>
+        <?php if ($equips_manut > 0): ?>
+        <span class="delta d-erro">Atenção</span>
+        <?php endif; ?>
+    </div>
+
+</div>
+
 <!-- Grade principal -->
 <div class="grade2">
 

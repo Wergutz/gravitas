@@ -395,6 +395,35 @@ if ($uri === '/repavimentacao/relatorio') {
 }
 
 /* ==========================
+   DIÁRIOS DE EXECUÇÃO (Executor → Planejador)
+========================== */
+if ($uri === '/diarios') {
+    require_once __DIR__ . '/app/controllers/DiarioExecucaoController.php';
+    (new DiarioExecucaoController())->index();
+    exit;
+}
+if ($uri === '/diarios/ver') {
+    require_once __DIR__ . '/app/controllers/DiarioExecucaoController.php';
+    (new DiarioExecucaoController())->ver();
+    exit;
+}
+if ($uri === '/diarios/fotos') {
+    require_once __DIR__ . '/app/controllers/DiarioExecucaoController.php';
+    (new DiarioExecucaoController())->relatorioFotos();
+    exit;
+}
+if ($uri === '/diarios/resolver-alerta') {
+    require_once __DIR__ . '/app/controllers/DiarioExecucaoController.php';
+    (new DiarioExecucaoController())->resolverAlerta();
+    exit;
+}
+if ($uri === '/diarios/resolver-manutencao') {
+    require_once __DIR__ . '/app/controllers/DiarioExecucaoController.php';
+    (new DiarioExecucaoController())->resolverManutencao();
+    exit;
+}
+
+/* ==========================
    LOGOUT
 ========================== */
 if ($uri === '/logout.php') {
