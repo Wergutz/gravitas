@@ -8,8 +8,23 @@ $pageSubtitle = 'PV ' . htmlspecialchars($trecho['pv_montante'] ?? '') . ' → '
 ob_start();
 ?>
 
-<div style="margin-bottom:14px;">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
     <a href="<?= APP_BASE ?>/repavimentacao" class="btn btn-sec btn-sm">← Voltar à fila</a>
+
+    <?php if ($medicao['status'] !== 'concluida'): ?>
+        <form method="post" action="<?= APP_BASE ?>/repavimentacao/concluir-medicao"
+              style="display:inline;"
+              onsubmit="return confirm('Concluir a medição? Verifique se todos os pavimentos têm linhas de dimensão preenchidas.')">
+            <?= csrf_input() ?>
+            <input type="hidden" name="medicao_id" value="<?= (int)$medicao['id'] ?>">
+            <button type="submit" class="btn btn-pri btn-sm">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Concluir medição
+            </button>
+        </form>
+    <?php else: ?>
+        <span class="chip c-ok" style="font-size:12px;padding:5px 12px;">Medição concluída</span>
+    <?php endif; ?>
 </div>
 
 <div class="grade2" style="align-items:start;">

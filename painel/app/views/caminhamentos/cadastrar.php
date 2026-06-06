@@ -18,12 +18,20 @@ ob_start();
             <div class="form-grid col2">
                 <div class="campo">
                     <label>Equipe <span style="color:var(--erro)">*</span></label>
-                    <select name="equipe_id" required>
+                    <select name="equipe_id" required id="sel-equipe" onchange="mostrarAvisoEquipe(this.value)">
                         <option value="">Selecione a equipe</option>
                         <?php foreach ($equipes as $e): ?>
-                            <option value="<?= $e['id'] ?>"><?= htmlspecialchars($e['nome']) ?></option>
+                            <option value="<?= $e['id'] ?>"
+                                data-vencidos="<?= (int)($docs_vencidos_por_equipe[$e['id']] ?? 0) ?>">
+                                <?= htmlspecialchars($e['nome']) ?>
+                                <?php if (($docs_vencidos_por_equipe[$e['id']] ?? 0) > 0): ?>
+                                    ⚠ <?= $docs_vencidos_por_equipe[$e['id']] ?> doc(s) vencido(s)
+                                <?php endif; ?>
+                            </option>
                         <?php endforeach; ?>
                     </select>
+                    <!-- Regra 18: aviso inline de docs vencidos -->
+                    <div id="aviso-docs" style="display:none;margin-top:6px;"></div>
                 </div>
                 <div class="campo">
                     <label>Data de execução <span style="color:var(--erro)">*</span></label>
@@ -157,6 +165,23 @@ function renderSelecionados() {
         inp.value = id;
         document.getElementById('form-caminhamento').appendChild(inp);
     });
+}
+
+function mostrarAvisoEquipe(equipeId) {
+    var sel = document.getElementById('sel-equipe');
+    var opt = sel.options[sel.selectedIndex];
+    var vencidos = parseInt(opt ? opt.getAttribute('data-vencidos') : 0) || 0;
+    var div = document.getElementById('aviso-docs');
+    if (vencidos > 0) {
+        div.innerHTML = '<div class="alerta a-aviso" style="margin:0;font-size:12px;">' +
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>' +
+            vencidos + ' documento(s) vencido(s) nesta equipe. <a href="<?= APP_BASE ?>/funcionarios" style="font-weight:800;color:inherit;">Verificar →</a>' +
+            '</div>';
+        div.style.display = 'block';
+    } else {
+        div.style.display = 'none';
+        div.innerHTML = '';
+    }
 }
 
 function filtrarTrechos(q) {

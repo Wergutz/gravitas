@@ -30,7 +30,8 @@ ob_start();
                         <th>Equipe</th>
                         <th>Trechos</th>
                         <th>Status</th>
-                        <th>Ação</th>
+                        <th>Progresso</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -58,17 +59,24 @@ ob_start();
                             <td><?= (int)$cam['total_trechos'] ?></td>
                             <td><span class="chip <?= $statusClass ?>"><?= $statusLabel ?></span></td>
                             <td>
-                                <?php if ($cam['status'] === 'rascunho'): ?>
-                                    <form method="post" action="<?= APP_BASE ?>/caminhamentos/publicar"
-                                          style="display:inline;"
-                                          onsubmit="return confirm('Publicar este caminhamento?')">
-                                        <?= csrf_input() ?>
-                                        <input type="hidden" name="id" value="<?= (int)$cam['id'] ?>">
-                                        <button type="submit" class="btn btn-pri btn-sm">Publicar</button>
-                                    </form>
-                                <?php else: ?>
-                                    <span style="color:var(--muted);font-size:12px;">—</span>
+                                <?php
+                                $total = (int)$cam['total_trechos'];
+                                $conc  = (int)$cam['trechos_concluidos'];
+                                ?>
+                                <?php if ($total > 0): ?>
+                                    <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);">
+                                        <div style="flex:1;height:6px;border-radius:99px;background:var(--line);min-width:50px;overflow:hidden;">
+                                            <div style="height:100%;border-radius:99px;background:var(--ok);width:<?= $total > 0 ? round($conc/$total*100) : 0 ?>%;"></div>
+                                        </div>
+                                        <?= $conc ?>/<?= $total ?>
+                                    </div>
                                 <?php endif; ?>
+                            </td>
+                            <td>
+                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                    <a href="<?= APP_BASE ?>/caminhamentos/detalhe?id=<?= (int)$cam['id'] ?>"
+                                       class="btn btn-sec btn-sm">Ver</a>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>

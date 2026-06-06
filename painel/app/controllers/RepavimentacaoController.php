@@ -127,6 +127,25 @@ class RepavimentacaoController
         }
         $trecho_id = $row['trecho_id'];
 
+        // Regra 21: ao menos uma linha de dimensão válida
+        $hasValidLine = false;
+        foreach ($comprimentos as $seq => $comp) {
+            $c = str_replace(',', '.', trim($comp));
+            $l = str_replace(',', '.', trim($larguras[$seq] ?? ''));
+            if (is_numeric($c) && is_numeric($l) && (float)$c > 0 && (float)$l > 0) {
+                $hasValidLine = true;
+                break;
+            }
+        }
+        if (!$hasValidLine) {
+            $_SESSION['flash_erro'] = 'Adicione ao menos uma linha de dimensão (comprimento × largura) antes de salvar.';
+            header('Location: ' . APP_BASE . '/repavimentacao/medicao?trecho_id=' . $trecho_id);
+            exit;
+        }
+
+        // Regra 21 (alerta): asfalto sem espessura — salva mas avisa
+        $avisoEspessura = ($tipo_pavimento === 'asfalto' && (!is_numeric($espessura) || (float)$espessura <= 0));
+
         // Próxima ordem
         $stmt = $pdo->prepare("SELECT COALESCE(MAX(ordem), 0) + 1 FROM medicao_pavimentos WHERE medicao_id = ?");
         $stmt->execute([$medicao_id]);
@@ -171,8 +190,99 @@ class RepavimentacaoController
             exit;
         }
 
-        $_SESSION['flash_ok'] = 'Pavimento salvo com sucesso.';
+        if ($avisoEspessura) {
+            $_SESSION['flash_ok'] = 'Pavimento salvo. Atenção: asfalto sem espessura — volume m³ não será calculado no relatório.';
+        } else {
+            $_SESSION['flash_ok'] = 'Pavimento salvo com sucesso.';
+        }
         header('Location: ' . APP_BASE . '/repavimentacao/medicao?trecho_id=' . $trecho_id);
+        exit;
+    }
+
+    /* =====================================================
+       CONCLUIR MEDIÇÃO — Regra 21 (valida linhas + asfalto)
+    ===================================================== */
+    public function concluirMedicao()
+    {
+        auth_required([4]);
+        global $pdo;
+        csrf_verify();
+
+        $medicao_id = (int)($_POST['medicao_id'] ?? 0);
+        if ($medicao_id <= 0) {
+            $_SESSION['flash_erro'] = 'Medição inválida.';
+            header('Location: ' . APP_BASE . '/repavimentacao');
+            exit;
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT mr.*, t.id AS trecho_id
+            FROM medicoes_repavimentacao mr
+            JOIN trechos t ON t.id = mr.trecho_id
+            WHERE mr.id = ?
+        ");
+        $stmt->execute([$medicao_id]);
+        $medicao = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$medicao) {
+            $_SESSION['flash_erro'] = 'Medição não encontrada.';
+            header('Location: ' . APP_BASE . '/repavimentacao');
+            exit;
+        }
+
+        // Regra 21: ao menos um pavimento
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM medicao_pavimentos WHERE medicao_id = ?");
+        $stmt->execute([$medicao_id]);
+        if ((int)$stmt->fetchColumn() === 0) {
+            $_SESSION['flash_erro'] = 'Adicione ao menos um pavimento antes de concluir a medição.';
+            header('Location: ' . APP_BASE . '/repavimentacao/medicao?trecho_id=' . $medicao['trecho_id']);
+            exit;
+        }
+
+        // Regra 21: todos os pavimentos precisam ter ao menos uma linha
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) FROM medicao_pavimentos mp
+            WHERE mp.medicao_id = ?
+            AND NOT EXISTS (
+                SELECT 1 FROM medicao_pavimento_linhas mpl WHERE mpl.pavimento_id = mp.id
+            )
+        ");
+        $stmt->execute([$medicao_id]);
+        if ((int)$stmt->fetchColumn() > 0) {
+            $_SESSION['flash_erro'] = 'Todos os pavimentos precisam ter ao menos uma linha de dimensão para concluir a medição.';
+            header('Location: ' . APP_BASE . '/repavimentacao/medicao?trecho_id=' . $medicao['trecho_id']);
+            exit;
+        }
+
+        // Regra 21: asfalto sem espessura (aviso, não bloqueio)
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) FROM medicao_pavimentos
+            WHERE medicao_id = ? AND tipo_pavimento = 'asfalto'
+              AND (espessura_cm IS NULL OR espessura_cm = 0)
+        ");
+        $stmt->execute([$medicao_id]);
+        $asfSemEspessura = (int)$stmt->fetchColumn();
+
+        $pdo->beginTransaction();
+        try {
+            $pdo->prepare("UPDATE medicoes_repavimentacao SET status = 'concluida' WHERE id = ?")
+                ->execute([$medicao_id]);
+            $pdo->prepare("UPDATE trechos SET status_repav = 'medido' WHERE id = ?")
+                ->execute([$medicao['trecho_id']]);
+            $pdo->commit();
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            $_SESSION['flash_erro'] = 'Erro ao concluir medição.';
+            header('Location: ' . APP_BASE . '/repavimentacao/medicao?trecho_id=' . $medicao['trecho_id']);
+            exit;
+        }
+
+        if ($asfSemEspessura > 0) {
+            $_SESSION['flash_ok'] = 'Medição concluída. Atenção: ' . $asfSemEspessura . ' pavimento(s) de asfalto sem espessura — volume m³ não calculado.';
+        } else {
+            $_SESSION['flash_ok'] = 'Medição concluída com sucesso.';
+        }
+        header('Location: ' . APP_BASE . '/repavimentacao');
         exit;
     }
 
