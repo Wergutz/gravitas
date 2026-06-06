@@ -219,12 +219,7 @@ class AdminController
        ------------------------------------------------------- */
     private function gerarSenhaProvisoria(): string
     {
-        $chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-        $sufixo = '';
-        for ($i = 0; $i < 6; $i++) {
-            $sufixo .= $chars[random_int(0, strlen($chars) - 1)];
-        }
-        return 'Grv@' . $sufixo;
+        return 'Gravitas@2026';
     }
 
     private function auditoria(int $adminId, string $acao, ?int $afetadoId, string $detalhes): void
