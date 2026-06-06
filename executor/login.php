@@ -38,6 +38,9 @@ if (!empty($_SESSION['login_tentativas']) && $_SESSION['login_tentativas'] >= 5)
 }
 
 $erro = $erro ?? '';
+if (empty($erro) && ($_GET['msg'] ?? '') === 'acesso') {
+    $erro = 'Acesso negado. Seu perfil não tem permissão para este sistema. Entre com as credenciais corretas.';
+}
 
 if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
     $tokenPost = $_POST['csrf_token'] ?? '';

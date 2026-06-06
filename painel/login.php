@@ -40,6 +40,11 @@ if (!empty($_SESSION['login_tentativas']) && $_SESSION['login_tentativas'] >= 5)
 
 $erro = $erro ?? '';
 
+// Mensagem de acesso negado vinda dos helpers de auth
+if (empty($erro) && ($_GET['msg'] ?? '') === 'acesso') {
+    $erro = 'Acesso negado. Seu perfil não tem permissão para este sistema. Entre com as credenciais corretas.';
+}
+
 // ----- Processa POST -----
 if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
