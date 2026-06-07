@@ -180,13 +180,13 @@ function navAtivoExato(string $route, string $exact): string {
                 <?php endif; ?>
             </div>
             <?php
-            $usuario = $_SESSION['user'] ?? null;
-            if ($usuario):
-                $iniciais = strtoupper(substr($usuario['nome'] ?? 'U', 0, 1));
+            $nomeLogado = $_SESSION['nome'] ?? null;
+            if ($nomeLogado):
+                $iniciais = strtoupper(substr($nomeLogado, 0, 1));
             ?>
             <div class="perfil">
                 <div class="avatar"><?= htmlspecialchars($iniciais) ?></div>
-                <span><?= htmlspecialchars($usuario['nome'] ?? '') ?></span>
+                <span><?= htmlspecialchars($nomeLogado) ?></span>
             </div>
             <?php endif; ?>
         </div>
