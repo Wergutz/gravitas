@@ -54,17 +54,21 @@ class DiarioExecucaoController {
             ORDER BY af.data DESC
         ")->fetchAll(PDO::FETCH_ASSOC);
 
-        // Equipamentos em manutenção
-        $equipsManut = array_merge(
-            $pdo->query("
-                SELECT id, tipo, modelo, placa, obs_manutencao, 'pesado' AS categoria
-                FROM equipamentos_pesados WHERE status_manutencao = 'manutencao' AND ativo = 1
-            ")->fetchAll(PDO::FETCH_ASSOC),
-            $pdo->query("
-                SELECT id, tipo, modelo, NULL AS placa, obs_manutencao, 'leve' AS categoria
-                FROM equipamentos_leves WHERE status_manutencao = 'manutencao' AND ativo = 1
-            ")->fetchAll(PDO::FETCH_ASSOC)
-        );
+        // Equipamentos em manutenção (colunas podem não existir antes da migration PA12)
+        try {
+            $equipsManut = array_merge(
+                $pdo->query("
+                    SELECT id, tipo, modelo, placa, obs_manutencao, 'pesado' AS categoria
+                    FROM equipamentos_pesados WHERE status_manutencao = 'manutencao' AND ativo = 1
+                ")->fetchAll(PDO::FETCH_ASSOC),
+                $pdo->query("
+                    SELECT id, tipo, modelo, NULL AS placa, obs_manutencao, 'leve' AS categoria
+                    FROM equipamentos_leves WHERE status_manutencao = 'manutencao' AND ativo = 1
+                ")->fetchAll(PDO::FETCH_ASSOC)
+            );
+        } catch (\Exception $e) {
+            $equipsManut = [];
+        }
 
         require __DIR__ . '/../views/diarios/index.php';
     }
