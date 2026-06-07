@@ -22,3 +22,4 @@ jobs:
             git remote set-url origin https://${{ secrets.GH_TOKEN }}@github.com/Wergutz/gravitas.git
             git pull origin main
             echo '<?php header("Location: /principal/", true, 301); exit;' > /home/u278289683/domains/gravitas.net.br/public_html/index.php
+            ln -sf /home/u278289683/domains/gravitas.net.br/public_html/principal/painel /home/u278289683/domains/gravitas.net.br/public_html/painel 2>/dev/null || true

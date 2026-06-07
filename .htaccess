@@ -5,7 +5,6 @@ Options -Indexes
     Allow from all
 </Files>
 
-# C5 — PA8: redirecionar URLs antigas para /painel/
+# C5 — PA8: redirecionar /principal/painel/ → /painel/ (301)
 RewriteEngine On
-RewriteRule ^principal/painel(/.*)?$ /painel$1 [R=301,L]
-RewriteRule ^visionhub(/.*)?$ /painel/ [R=301,L]
+RewriteRule ^painel(/.*)?$ /painel$1 [R=301,L]
