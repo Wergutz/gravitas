@@ -104,7 +104,7 @@ class DiarioController {
         }
 
         // Base URL do painel para acessar OS PDFs (mesmo banco, painel gerencia os uploads)
-        $painelBase = '/painel';
+        $painelBase = '/principal/painel';
 
         require __DIR__ . '/../views/home.php';
     }

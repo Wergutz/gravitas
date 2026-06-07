@@ -5,6 +5,3 @@ Options -Indexes
     Allow from all
 </Files>
 
-# C5 — PA8: redirecionar /principal/painel/ → /painel/ (301)
-RewriteEngine On
-RewriteRule ^painel(/.*)?$ /painel$1 [R=301,L]
