@@ -34,9 +34,14 @@ class PlanejadorController
         $metros_programados = (float)$stmt->fetchColumn();
 
         /* ===============================
-           KPI: Equipes ativas
+           KPI: Equipes ativas hoje (com caminhamento publicado/em execução)
            =============================== */
-        $stmt = $pdo->query("SELECT COUNT(*) FROM equipes WHERE ativo = 1");
+        $stmt = $pdo->prepare("
+            SELECT COUNT(DISTINCT equipe_id)
+            FROM caminhamentos
+            WHERE data_execucao = ? AND status IN ('publicado','execucao')
+        ");
+        $stmt->execute([$hoje]);
         $equipes_ativas = (int)$stmt->fetchColumn();
 
         /* ===============================

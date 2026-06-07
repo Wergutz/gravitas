@@ -10,8 +10,6 @@ function auth_required_repav(): void {
     }
 
     if ((int)($_SESSION['nivel'] ?? 0) !== 7) {
-        session_unset();
-        session_destroy();
         header('Location: ' . REPAV_BASE . '/login.php?msg=acesso');
         exit;
     }

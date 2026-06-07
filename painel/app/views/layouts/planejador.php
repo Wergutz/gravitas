@@ -200,6 +200,10 @@ function navAtivoExato(string $route, string $exact): string {
             <div class="flash flash-erro"><?= htmlspecialchars($_SESSION['flash_erro']) ?></div>
             <?php unset($_SESSION['flash_erro']); ?>
         <?php endif; ?>
+        <?php if (!empty($_SESSION['flash_aviso'])): ?>
+            <div class="flash flash-aviso"><?= htmlspecialchars($_SESSION['flash_aviso']) ?></div>
+            <?php unset($_SESSION['flash_aviso']); ?>
+        <?php endif; ?>
 
         <!-- A VIEW É INJETADA AQUI -->
         <?= $content ?? '' ?>

@@ -440,7 +440,7 @@ class CaminhamentoController
         $materiais = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $stmt = $pdo->prepare("
-            SELECT t.pv_montante, t.pv_jusante, t.extensao, t.rua, ct.sequencia
+            SELECT t.pv_montante, t.pv_jusante, t.extensao, t.rua, t.bacia, t.cidade, ct.sequencia
             FROM caminhamento_trechos ct
             JOIN trechos t ON t.id = ct.trecho_id
             WHERE ct.caminhamento_id = ?

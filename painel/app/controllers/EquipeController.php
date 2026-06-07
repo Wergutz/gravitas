@@ -15,7 +15,10 @@ class EquipeController
         global $pdo;
 
         $equipes = $pdo->query("
-            SELECT e.*, u.nome AS responsavel_nome
+            SELECT e.*, u.nome AS responsavel_nome,
+                (SELECT COUNT(*) FROM equipe_funcionarios ef WHERE ef.equipe_id = e.id AND ef.ativo = 1) AS num_funcionarios,
+                (SELECT COUNT(*) FROM equipes_equipamentos_leves eel WHERE eel.equipe_id = e.id) AS num_leves,
+                (SELECT COUNT(*) FROM equipes_equipamentos_pesados eep WHERE eep.equipe_id = e.id) AS num_pesados
             FROM equipes e
             LEFT JOIN usuarios u ON u.id = e.responsavel_id
             ORDER BY e.nome
