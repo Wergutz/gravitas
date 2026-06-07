@@ -32,6 +32,7 @@ ob_start();
         <a href="<?= APP_BASE ?>/funcionarios/importar" class="btn btn-sec">
             Importar Excel
         </a>
+        <a href="<?= APP_BASE ?>/assets/modelos/funcionarios.xlsx" class="btn btn-sec" download>⬇ Modelo</a>
     </div>
 
     <!-- 🔥 Wrapper para scroll horizontal -->

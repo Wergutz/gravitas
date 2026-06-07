@@ -1,14 +1,14 @@
 <?php
 require_once __DIR__ . '/../../helpers/csrf.php';
-$title     = 'Importar Equipamentos Leves';
-$pageTitle = 'Importar Equipamentos Leves';
+$title     = 'Importar Trechos';
+$pageTitle = 'Importar Trechos';
 $pageSubtitle = 'Importação em lote via Excel (.xlsx)';
 ob_start();
 ?>
 
 <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
-    <a href="<?= APP_BASE ?>/equipamentos-leves" class="btn btn-sec btn-sm">← Voltar</a>
-    <a href="<?= APP_BASE ?>/assets/modelos/equipamentos-leves.xlsx" class="btn btn-sec btn-sm" download>⬇ Baixar modelo</a>
+    <a href="<?= APP_BASE ?>/trechos" class="btn btn-sec btn-sm">← Voltar</a>
+    <a href="<?= APP_BASE ?>/assets/modelos/trechos.xlsx" class="btn btn-sec btn-sm" download>⬇ Baixar modelo</a>
 </div>
 
 <?php if ($preview): ?>
@@ -23,8 +23,9 @@ ob_start();
         <table>
             <thead>
                 <tr>
-                    <th>Status</th><th>Linha</th><th>Tipo</th><th>Referência</th>
-                    <th>Modelo</th><th>Ano</th><th>Proprietário</th><th>Combustível</th>
+                    <th>Status</th><th>Linha</th><th>PV Mont.</th><th>PV Jus.</th>
+                    <th>Bacia</th><th>Tipo PI</th><th>Ext.(m)</th><th>Prof.(m)</th>
+                    <th>DN</th><th>Ramais</th><th>Rua</th><th>Cidade</th><th>Contrato</th>
                 </tr>
             </thead>
             <tbody>
@@ -33,18 +34,23 @@ ob_start();
                 <tr class="<?= $cls ?>">
                     <td><small><?= match($r['_status']){'novo'=>'✅ Novo','atualizar'=>'🔄 Atualizar','erro'=>'❌ '.$r['_msg'],default=>'—'} ?></small></td>
                     <td><?= $r['_linha'] ?></td>
-                    <td><?= htmlspecialchars($r['tipo']) ?></td>
-                    <td><?= htmlspecialchars($r['referencia']) ?></td>
-                    <td><?= htmlspecialchars($r['modelo']) ?></td>
-                    <td><?= $r['ano'] ?></td>
-                    <td><?= htmlspecialchars($r['proprietario']) ?></td>
-                    <td><?= htmlspecialchars($r['combustivel']) ?></td>
+                    <td><?= htmlspecialchars($r['pv_montante']) ?></td>
+                    <td><?= htmlspecialchars($r['pv_jusante']) ?></td>
+                    <td><?= htmlspecialchars($r['bacia']) ?></td>
+                    <td><?= htmlspecialchars($r['tipo_pi_montante']) ?></td>
+                    <td><?= $r['extensao'] !== null ? number_format($r['extensao'],1,',','.') : '—' ?></td>
+                    <td><?= $r['profundidade'] !== null ? number_format($r['profundidade'],2,',','.') : '—' ?></td>
+                    <td><?= htmlspecialchars($r['dn']) ?></td>
+                    <td><?= $r['ramais'] ?></td>
+                    <td><?= htmlspecialchars($r['rua']) ?></td>
+                    <td><?= htmlspecialchars($r['cidade']) ?></td>
+                    <td><?= htmlspecialchars($r['contrato']) ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>
         </table>
     </div>
-    <form method="post" action="<?= APP_BASE ?>/equipamentos-leves/importar" style="margin-top:16px;">
+    <form method="post" action="<?= APP_BASE ?>/trechos/importar" style="margin-top:16px;">
         <?= csrf_input() ?>
         <div class="form-actions">
             <button type="submit" name="fase" value="confirmar" class="btn btn-pri">Confirmar importação</button>
@@ -54,7 +60,7 @@ ob_start();
 </div>
 <?php else: ?>
 <div class="card">
-    <form method="post" action="<?= APP_BASE ?>/equipamentos-leves/importar" enctype="multipart/form-data">
+    <form method="post" action="<?= APP_BASE ?>/trechos/importar" enctype="multipart/form-data">
         <?= csrf_input() ?>
         <input type="hidden" name="fase" value="upload">
         <div class="campo" style="margin-bottom:16px;">
@@ -63,7 +69,7 @@ ob_start();
         </div>
         <div class="form-actions">
             <button type="submit" class="btn btn-pri">Analisar arquivo</button>
-            <a href="<?= APP_BASE ?>/equipamentos-leves" class="btn btn-sec">Cancelar</a>
+            <a href="<?= APP_BASE ?>/trechos" class="btn btn-sec">Cancelar</a>
         </div>
     </form>
 </div>

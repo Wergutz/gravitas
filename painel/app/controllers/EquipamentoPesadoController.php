@@ -176,69 +176,106 @@ class EquipamentoPesadoController
             header('Location: ' . APP_BASE . '/equipamentos-pesados');
             exit;
         }
-        public function importar()
-        {
-            require __DIR__ . '/../views/equipamentos_pesados/importar.php';
+    /* =====================================================
+       IMPORTAÇÃO EXCEL 2-FASES
+    ===================================================== */
+    public function importar()
+    {
+        auth_required([4]);
+        global $pdo;
+
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+        require_once dirname(__DIR__) . '/helpers/import_excel.php';
+
+        // ── Fase: cancelar ───────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'cancelar') {
+            unset($_SESSION['import_prev_eq_pesados']);
+            header('Location: ' . APP_BASE . '/equipamentos-pesados/importar');
+            exit;
         }
-        
-        public function importExcel()
-        {
-            auth_required([4]);
-            global $pdo;
-        
-            require_once dirname(__DIR__) . '/../vendor/autoload.php';
-        
-            if (!isset($_FILES['excel']) || $_FILES['excel']['error'] !== UPLOAD_ERR_OK) {
-                header('Location: ' . APP_BASE . '/equipamentos-pesados?erro=excel');
-                exit;
+
+        // ── Fase: confirmar ──────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'confirmar') {
+            csrf_verify();
+            $rows = $_SESSION['import_prev_eq_pesados']['rows'] ?? [];
+            unset($_SESSION['import_prev_eq_pesados']);
+
+            $stmtIns = $pdo->prepare("
+                INSERT INTO equipamentos_pesados (tipo, placa, modelo, fabricante, ano, proprietario, combustivel, ativo)
+                VALUES (?,?,?,?,?,?,?,1)
+            ");
+            $stmtUpd = $pdo->prepare("
+                UPDATE equipamentos_pesados SET
+                    tipo=?, modelo=?, fabricante=?, ano=?, proprietario=?, combustivel=?
+                WHERE placa=?
+            ");
+
+            $ok = 0;
+            foreach ($rows as $r) {
+                if (!in_array($r['_status'], ['novo', 'atualizar'])) continue;
+                try {
+                    if ($r['_status'] === 'novo') {
+                        $stmtIns->execute([$r['tipo'], $r['placa'], $r['modelo'], $r['fabricante'], $r['ano'], $r['proprietario'], $r['combustivel']]);
+                    } else {
+                        $stmtUpd->execute([$r['tipo'], $r['modelo'], $r['fabricante'], $r['ano'], $r['proprietario'], $r['combustivel'], $r['placa']]);
+                    }
+                    $ok++;
+                } catch (\Exception $e) {}
             }
-        
-            $sheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(
-                $_FILES['excel']['tmp_name']
-            )->getActiveSheet();
-        
-            $linhas = $sheet->toArray(null, true, true, true);
-        
-            foreach ($linhas as $i => $linha) {
-        
-                if ($i === 1) continue; // cabeçalho
-        
-                $placa        = trim($linha['A'] ?? '');
-                $fabricante   = trim($linha['B'] ?? '');
-                $modelo       = trim($linha['C'] ?? '');
-                $ano          = (int)($linha['D'] ?? 0);
-                $proprietario = trim($linha['E'] ?? '');
-                $combustivel  = trim($linha['F'] ?? '');
-                $tipo         = trim($linha['G'] ?? '');
-        
-                if ($placa === '' || $tipo === '') continue;
-        
-                // evita duplicar por placa
-                $check = $pdo->prepare(
-                    "SELECT id FROM equipamentos_pesados WHERE placa = ?"
-                );
-                $check->execute([$placa]);
-                if ($check->fetch()) continue;
-        
-                $stmt = $pdo->prepare("
-                    INSERT INTO equipamentos_pesados
-                    (placa, tipo, fabricante, modelo, ano, proprietario, combustivel, ativo)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, 1)
-                ");
-        
-                $stmt->execute([
-                    strtoupper($placa),
-                    $tipo,
-                    $fabricante,
-                    $modelo,
-                    $ano,
-                    $proprietario,
-                    $combustivel
-                ]);
-            }
-        
+
+            $_SESSION['flash_ok'] = "$ok equipamento(s) importado(s).";
             header('Location: ' . APP_BASE . '/equipamentos-pesados');
             exit;
         }
+
+        // ── Fase: upload ─────────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'upload') {
+            csrf_verify();
+            if (!isset($_FILES['arquivo']) || $_FILES['arquivo']['error'] !== UPLOAD_ERR_OK) {
+                $_SESSION['flash_erro'] = 'Arquivo inválido.';
+                header('Location: ' . APP_BASE . '/equipamentos-pesados/importar');
+                exit;
+            }
+
+            $allRows = \PhpOffice\PhpSpreadsheet\IOFactory::load($_FILES['arquivo']['tmp_name'])
+                ->getActiveSheet()->toArray(null, true, false, false);
+
+            $preview_rows = [];
+            foreach ($allRows as $i => $linha) {
+                if ($i < 6) continue;
+                $placa = strtoupper(trim((string)($linha[1] ?? '')));
+                $tipo  = trim((string)($linha[0] ?? ''));
+                if ($placa === '' || $tipo === '') continue;
+
+                $chk = $pdo->prepare("SELECT COUNT(*) FROM equipamentos_pesados WHERE placa = ?");
+                $chk->execute([$placa]);
+                $status = (int)$chk->fetchColumn() > 0 ? 'atualizar' : 'novo';
+
+                $preview_rows[] = [
+                    '_linha'      => $i + 1,
+                    '_status'     => $status,
+                    '_msg'        => '',
+                    'tipo'        => $tipo,
+                    'placa'       => $placa,
+                    'modelo'      => trim((string)($linha[2] ?? '')),
+                    'fabricante'  => trim((string)($linha[3] ?? '')),
+                    'ano'         => (int)($linha[4] ?? 0),
+                    'proprietario'=> trim((string)($linha[5] ?? '')),
+                    'combustivel' => trim((string)($linha[6] ?? '')),
+                ];
+            }
+
+            $_SESSION['import_prev_eq_pesados'] = [
+                'rows'   => $preview_rows,
+                'totals' => import_preview_totals($preview_rows),
+            ];
+            header('Location: ' . APP_BASE . '/equipamentos-pesados/importar');
+            exit;
+        }
+
+        // ── GET ──────────────────────────────────────────
+        $preview = $_SESSION['import_prev_eq_pesados'] ?? null;
+        require __DIR__ . '/../views/equipamentos_pesados/importar.php';
+    }
 
 }

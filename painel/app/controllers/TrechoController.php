@@ -385,4 +385,130 @@ class TrechoController
         header('Location: ' . APP_BASE . '/trechos?sel=' . $trecho_id);
         exit;
     }
+
+    /* =====================================================
+       IMPORTAÇÃO EXCEL 2-FASES
+    ===================================================== */
+    public function importar()
+    {
+        auth_required([4]);
+        global $pdo;
+
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+        require_once dirname(__DIR__) . '/helpers/import_excel.php';
+
+        // Excel columns (0-indexed): 0=PV Mont, 1=PV Jus, 2=Bacia, 3=Tipo PI Mont,
+        // 4=Extensão(m), 5=Prof.Média(m), 6=DN/Material, 7=Ramais, 8=Rua, 9=Cidade, 10=Contrato
+
+        // ── Fase: cancelar ───────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'cancelar') {
+            unset($_SESSION['import_prev_trechos']);
+            header('Location: ' . APP_BASE . '/trechos/importar');
+            exit;
+        }
+
+        // ── Fase: confirmar ──────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'confirmar') {
+            csrf_verify();
+            $rows = $_SESSION['import_prev_trechos']['rows'] ?? [];
+            unset($_SESSION['import_prev_trechos']);
+
+            $stmtChk = $pdo->prepare("SELECT id FROM trechos WHERE pv_montante = ? AND pv_jusante = ?");
+            $stmtIns = $pdo->prepare("
+                INSERT INTO trechos
+                    (bacia, pv_montante, pv_jusante, tipo_pi_montante, extensao,
+                     profundidade_media, dn, ramais, rua, cidade, contrato, criado_por)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+            ");
+            $stmtUpd = $pdo->prepare("
+                UPDATE trechos SET
+                    bacia=?, tipo_pi_montante=?, extensao=?,
+                    profundidade_media=?, dn=?, ramais=?, rua=?, cidade=?, contrato=?
+                WHERE pv_montante=? AND pv_jusante=?
+            ");
+
+            $ok = 0;
+            $uid = (int)($_SESSION['usuario_id'] ?? 0);
+            foreach ($rows as $r) {
+                if (!in_array($r['_status'], ['novo', 'atualizar'])) continue;
+                try {
+                    if ($r['_status'] === 'novo') {
+                        $stmtIns->execute([
+                            $r['bacia'], $r['pv_montante'], $r['pv_jusante'],
+                            $r['tipo_pi_montante'], $r['extensao'], $r['profundidade'],
+                            $r['dn'], $r['ramais'], $r['rua'], $r['cidade'], $r['contrato'],
+                            $uid,
+                        ]);
+                    } else {
+                        $stmtUpd->execute([
+                            $r['bacia'], $r['tipo_pi_montante'], $r['extensao'],
+                            $r['profundidade'], $r['dn'], $r['ramais'],
+                            $r['rua'], $r['cidade'], $r['contrato'],
+                            $r['pv_montante'], $r['pv_jusante'],
+                        ]);
+                    }
+                    $ok++;
+                } catch (\Exception $e) {}
+            }
+
+            $_SESSION['flash_ok'] = "$ok trecho(s) importado(s) com sucesso.";
+            header('Location: ' . APP_BASE . '/trechos');
+            exit;
+        }
+
+        // ── Fase: upload ─────────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'upload') {
+            csrf_verify();
+            if (!isset($_FILES['arquivo']) || $_FILES['arquivo']['error'] !== UPLOAD_ERR_OK) {
+                $_SESSION['flash_erro'] = 'Arquivo inválido.';
+                header('Location: ' . APP_BASE . '/trechos/importar');
+                exit;
+            }
+
+            $allRows = \PhpOffice\PhpSpreadsheet\IOFactory::load($_FILES['arquivo']['tmp_name'])
+                ->getActiveSheet()->toArray(null, true, false, false);
+
+            $preview_rows = [];
+            $stmtChk = $pdo->prepare("SELECT COUNT(*) FROM trechos WHERE pv_montante = ? AND pv_jusante = ?");
+            foreach ($allRows as $i => $linha) {
+                if ($i < 6) continue;
+                $pv_mont = trim((string)($linha[0] ?? ''));
+                $pv_jus  = trim((string)($linha[1] ?? ''));
+                if ($pv_mont === '') continue;
+
+                $stmtChk->execute([$pv_mont, $pv_jus]);
+                $status = (int)$stmtChk->fetchColumn() > 0 ? 'atualizar' : 'novo';
+
+                $ext  = str_replace(',', '.', (string)($linha[4] ?? ''));
+                $prof = str_replace(',', '.', (string)($linha[5] ?? ''));
+                $preview_rows[] = [
+                    '_linha'         => $i + 1,
+                    '_status'        => $status,
+                    '_msg'           => '',
+                    'pv_montante'    => $pv_mont,
+                    'pv_jusante'     => $pv_jus,
+                    'bacia'          => trim((string)($linha[2] ?? '')),
+                    'tipo_pi_montante'=> trim((string)($linha[3] ?? '')),
+                    'extensao'       => is_numeric($ext) ? (float)$ext : null,
+                    'profundidade'   => is_numeric($prof) ? (float)$prof : null,
+                    'dn'             => trim((string)($linha[6] ?? '')),
+                    'ramais'         => (int)($linha[7] ?? 0),
+                    'rua'            => trim((string)($linha[8] ?? '')),
+                    'cidade'         => trim((string)($linha[9] ?? '')),
+                    'contrato'       => trim((string)($linha[10] ?? '')),
+                ];
+            }
+
+            $_SESSION['import_prev_trechos'] = [
+                'rows'   => $preview_rows,
+                'totals' => import_preview_totals($preview_rows),
+            ];
+            header('Location: ' . APP_BASE . '/trechos/importar');
+            exit;
+        }
+
+        // ── GET ──────────────────────────────────────────
+        $preview = $_SESSION['import_prev_trechos'] ?? null;
+        require __DIR__ . '/../views/trechos/importar.php';
+    }
 }

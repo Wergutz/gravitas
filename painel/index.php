@@ -320,6 +320,21 @@ if ($uri === '/trechos/material-remove') {
     (new TrechoController())->removeMaterial();
     exit;
 }
+if ($uri === '/trechos/importar') {
+    require_once __DIR__ . '/app/controllers/TrechoController.php';
+    (new TrechoController())->importar();
+    exit;
+}
+if ($uri === '/materiais/importar') {
+    require_once __DIR__ . '/app/controllers/MaterialController.php';
+    (new MaterialController())->importar();
+    exit;
+}
+if ($uri === '/materiais/importar-estoque') {
+    require_once __DIR__ . '/app/controllers/MaterialController.php';
+    (new MaterialController())->importarEstoque();
+    exit;
+}
 
 /* ==========================
    CAMINHAMENTOS

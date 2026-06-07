@@ -135,82 +135,106 @@ class EquipamentoLeveController {
         header('Location: ' . APP_BASE . '/equipamentos-leves');
         exit;
     }
-    /* ========= IMPORTAÇÃO ========= */
+    /* =====================================================
+       IMPORTAÇÃO EXCEL 2-FASES
+    ===================================================== */
     public function importar()
     {
+        auth_required([4]);
+        global $pdo;
+
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+        require_once dirname(__DIR__) . '/helpers/import_excel.php';
+
+        // ── Fase: cancelar ───────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'cancelar') {
+            unset($_SESSION['import_prev_eq_leves']);
+            header('Location: ' . APP_BASE . '/equipamentos-leves/importar');
+            exit;
+        }
+
+        // ── Fase: confirmar ──────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'confirmar') {
+            csrf_verify();
+            $rows = $_SESSION['import_prev_eq_leves']['rows'] ?? [];
+            unset($_SESSION['import_prev_eq_leves']);
+
+            $stmtIns = $pdo->prepare("
+                INSERT INTO equipamentos_leves (tipo, referencia, modelo, ano, proprietario, combustivel, ativo)
+                VALUES (?,?,?,?,?,?,1)
+            ");
+            $stmtUpd = $pdo->prepare("
+                UPDATE equipamentos_leves SET
+                    tipo=?, modelo=?, ano=?, proprietario=?, combustivel=?
+                WHERE referencia=?
+            ");
+
+            $ok = 0;
+            foreach ($rows as $r) {
+                if (!in_array($r['_status'], ['novo', 'atualizar'])) continue;
+                try {
+                    if ($r['_status'] === 'novo') {
+                        $stmtIns->execute([$r['tipo'], $r['referencia'], $r['modelo'], $r['ano'], $r['proprietario'], $r['combustivel']]);
+                    } else {
+                        $stmtUpd->execute([$r['tipo'], $r['modelo'], $r['ano'], $r['proprietario'], $r['combustivel'], $r['referencia']]);
+                    }
+                    $ok++;
+                } catch (\Exception $e) {}
+            }
+
+            $_SESSION['flash_ok'] = "$ok equipamento(s) leve(s) importado(s).";
+            header('Location: ' . APP_BASE . '/equipamentos-leves');
+            exit;
+        }
+
+        // ── Fase: upload ─────────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'upload') {
+            csrf_verify();
+            if (!isset($_FILES['arquivo']) || $_FILES['arquivo']['error'] !== UPLOAD_ERR_OK) {
+                $_SESSION['flash_erro'] = 'Arquivo inválido.';
+                header('Location: ' . APP_BASE . '/equipamentos-leves/importar');
+                exit;
+            }
+
+            $allRows = \PhpOffice\PhpSpreadsheet\IOFactory::load($_FILES['arquivo']['tmp_name'])
+                ->getActiveSheet()->toArray(null, true, false, false);
+
+            $preview_rows = [];
+            foreach ($allRows as $i => $linha) {
+                if ($i < 6) continue;
+                $referencia = strtoupper(trim((string)($linha[1] ?? '')));
+                $tipo       = trim((string)($linha[0] ?? ''));
+                if ($referencia === '' || $tipo === '') continue;
+
+                $chk = $pdo->prepare("SELECT COUNT(*) FROM equipamentos_leves WHERE referencia = ?");
+                $chk->execute([$referencia]);
+                $status = (int)$chk->fetchColumn() > 0 ? 'atualizar' : 'novo';
+
+                $preview_rows[] = [
+                    '_linha'       => $i + 1,
+                    '_status'      => $status,
+                    '_msg'         => '',
+                    'tipo'         => $tipo,
+                    'referencia'   => $referencia,
+                    'modelo'       => trim((string)($linha[2] ?? '')),
+                    'ano'          => (int)($linha[3] ?? 0),
+                    'proprietario' => trim((string)($linha[4] ?? '')),
+                    'combustivel'  => trim((string)($linha[5] ?? '')),
+                ];
+            }
+
+            $_SESSION['import_prev_eq_leves'] = [
+                'rows'   => $preview_rows,
+                'totals' => import_preview_totals($preview_rows),
+            ];
+            header('Location: ' . APP_BASE . '/equipamentos-leves/importar');
+            exit;
+        }
+
+        // ── GET ──────────────────────────────────────────
+        $preview = $_SESSION['import_prev_eq_leves'] ?? null;
         require __DIR__ . '/../views/equipamentos_leves/importar.php';
     }
-    
-    public function importExcel()
-{
-    auth_required([4]);
-    global $pdo;
-
-    require_once dirname(__DIR__) . '/../vendor/autoload.php';
-
-    if (!isset($_FILES['excel']) || $_FILES['excel']['error'] !== UPLOAD_ERR_OK) {
-        die('Arquivo não recebido');
-    }
-
-    // força PDO a mostrar erro (temporário, ajuda muito)
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    $sheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(
-        $_FILES['excel']['tmp_name']
-    )->getActiveSheet();
-
-    $linhas = $sheet->toArray(null, true, true, true);
-    $importados = 0;
-
-    foreach ($linhas as $i => $linha) {
-
-        // pula cabeçalho
-        if ($i === 1) continue;
-
-        $referencia   = trim($linha['A'] ?? '');
-        $fabricante   = trim($linha['B'] ?? '');
-        $modelo       = trim($linha['C'] ?? '');
-        $ano          = (int)($linha['D'] ?? 0);
-        $proprietario = trim($linha['E'] ?? '');
-        $combustivel  = trim($linha['F'] ?? '');
-        $tipo         = trim($linha['G'] ?? '');
-
-        // validações mínimas
-        if ($referencia === '' || $tipo === '') {
-            continue;
-        }
-
-        // evita duplicidade
-        $check = $pdo->prepare(
-            "SELECT id FROM equipamentos_leves WHERE referencia = ?"
-        );
-        $check->execute([$referencia]);
-        if ($check->fetch()) {
-            continue;
-        }
-
-        $stmt = $pdo->prepare("
-            INSERT INTO equipamentos_leves
-            (referencia, tipo, fabricante, modelo, ano, proprietario, combustivel, ativo)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
-        ");
-
-        $stmt->execute([
-            strtoupper($referencia),
-            $tipo,
-            $fabricante,
-            $modelo,
-            $ano,
-            $proprietario,
-            $combustivel
-        ]);
-
-        $importados++;
-    }
-
-    header('Location: ' . APP_BASE . '/equipamentos-leves?importado=' . $importados);
-    exit;
-}
 
 
 }

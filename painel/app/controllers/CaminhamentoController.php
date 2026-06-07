@@ -244,6 +244,24 @@ class CaminhamentoController
             exit;
         }
 
+        // Regra PA11: bloquear publicação se há documentos vencidos na equipe
+        $stmtEquipe = $pdo->prepare("SELECT equipe_id FROM caminhamentos WHERE id = ?");
+        $stmtEquipe->execute([$id]);
+        $equipe_id_cam = (int)$stmtEquipe->fetchColumn();
+
+        $stmtDocBlock = $pdo->prepare("
+            SELECT COUNT(*)
+            FROM funcionario_documentos fd
+            JOIN equipe_funcionarios ef ON ef.funcionario_id = fd.funcionario_id AND ef.ativo = 1
+            WHERE ef.equipe_id = ? AND fd.data_validade IS NOT NULL AND fd.data_validade < CURDATE()
+        ");
+        $stmtDocBlock->execute([$equipe_id_cam]);
+        if ((int)$stmtDocBlock->fetchColumn() > 0) {
+            $_SESSION['flash_erro'] = 'Não é possível publicar: há documentos vencidos em membros desta equipe. Atualize os documentos antes de publicar.';
+            header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $id);
+            exit;
+        }
+
         // Buscar trechos do caminhamento
         $stmt = $pdo->prepare("SELECT trecho_id FROM caminhamento_trechos WHERE caminhamento_id = ?");
         $stmt->execute([$id]);

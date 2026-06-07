@@ -152,4 +152,286 @@ class MaterialController
         header('Location: ' . APP_BASE . '/materiais');
         exit;
     }
+
+    /* =====================================================
+       IMPORTAÇÃO EXCEL CATÁLOGO — 2-FASES
+    ===================================================== */
+    public function importar()
+    {
+        auth_required([4]);
+        global $pdo;
+
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+        require_once dirname(__DIR__) . '/helpers/import_excel.php';
+
+        // Excel cols (0-indexed): 0=Código, 1=Nome, 2=Unidade, 3=Estoque mínimo, 4=Estoque atual
+
+        // ── Fase: cancelar ───────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'cancelar') {
+            unset($_SESSION['import_prev_materiais']);
+            header('Location: ' . APP_BASE . '/materiais/importar');
+            exit;
+        }
+
+        // ── Fase: confirmar ──────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'confirmar') {
+            csrf_verify();
+            $rows = $_SESSION['import_prev_materiais']['rows'] ?? [];
+            unset($_SESSION['import_prev_materiais']);
+
+            $stmtIns = $pdo->prepare("
+                INSERT INTO materiais_catalogo (codigo, nome, unidade, estoque_minimo)
+                VALUES (?,?,?,?)
+            ");
+            $stmtUpd = $pdo->prepare("
+                UPDATE materiais_catalogo SET nome=?, unidade=?, estoque_minimo=? WHERE codigo=?
+            ");
+            $stmtEstIns = $pdo->prepare("
+                INSERT INTO materiais_estoque (material_id, quantidade_fisica, quantidade_reservada)
+                VALUES (?,?,0)
+            ");
+            $stmtEstUpd = $pdo->prepare("
+                UPDATE materiais_estoque SET quantidade_fisica=? WHERE material_id=?
+            ");
+            $stmtId = $pdo->prepare("SELECT id FROM materiais_catalogo WHERE codigo = ?");
+
+            $ok = 0;
+            foreach ($rows as $r) {
+                if (!in_array($r['_status'], ['novo', 'atualizar'])) continue;
+                try {
+                    $pdo->beginTransaction();
+                    if ($r['_status'] === 'novo') {
+                        $stmtIns->execute([$r['codigo'], $r['nome'], $r['unidade'], $r['estoque_minimo']]);
+                        $mid = (int)$pdo->lastInsertId();
+                        if ($mid > 0 && $r['estoque_atual'] !== null) {
+                            $stmtEstIns->execute([$mid, $r['estoque_atual']]);
+                        }
+                    } else {
+                        $stmtUpd->execute([$r['nome'], $r['unidade'], $r['estoque_minimo'], $r['codigo']]);
+                        $stmtId->execute([$r['codigo']]);
+                        $mid = (int)$stmtId->fetchColumn();
+                        if ($mid > 0 && $r['estoque_atual'] !== null) {
+                            $stmtEstUpd->execute([$r['estoque_atual'], $mid]);
+                        }
+                    }
+                    $pdo->commit();
+                    $ok++;
+                } catch (\Exception $e) {
+                    $pdo->rollBack();
+                }
+            }
+
+            $_SESSION['flash_ok'] = "$ok material(is) importado(s).";
+            header('Location: ' . APP_BASE . '/materiais');
+            exit;
+        }
+
+        // ── Fase: upload ─────────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'upload') {
+            csrf_verify();
+            if (!isset($_FILES['arquivo']) || $_FILES['arquivo']['error'] !== UPLOAD_ERR_OK) {
+                $_SESSION['flash_erro'] = 'Arquivo inválido.';
+                header('Location: ' . APP_BASE . '/materiais/importar');
+                exit;
+            }
+
+            $allRows = \PhpOffice\PhpSpreadsheet\IOFactory::load($_FILES['arquivo']['tmp_name'])
+                ->getActiveSheet()->toArray(null, true, false, false);
+
+            $preview_rows = [];
+            $stmtChk = $pdo->prepare("SELECT COUNT(*) FROM materiais_catalogo WHERE codigo = ?");
+            foreach ($allRows as $i => $linha) {
+                if ($i < 6) continue;
+                $codigo = trim((string)($linha[0] ?? ''));
+                $nome   = trim((string)($linha[1] ?? ''));
+                if ($codigo === '' || $nome === '') continue;
+
+                $stmtChk->execute([$codigo]);
+                $status = (int)$stmtChk->fetchColumn() > 0 ? 'atualizar' : 'novo';
+
+                $estMin  = str_replace(',', '.', (string)($linha[3] ?? '0'));
+                $estAtual = str_replace(',', '.', (string)($linha[4] ?? ''));
+
+                $preview_rows[] = [
+                    '_linha'        => $i + 1,
+                    '_status'       => $status,
+                    '_msg'          => '',
+                    'codigo'        => $codigo,
+                    'nome'          => $nome,
+                    'unidade'       => trim((string)($linha[2] ?? 'un')),
+                    'estoque_minimo'=> is_numeric($estMin) ? (float)$estMin : 0,
+                    'estoque_atual' => is_numeric($estAtual) ? (float)$estAtual : null,
+                ];
+            }
+
+            $_SESSION['import_prev_materiais'] = [
+                'rows'   => $preview_rows,
+                'totals' => import_preview_totals($preview_rows),
+            ];
+            header('Location: ' . APP_BASE . '/materiais/importar');
+            exit;
+        }
+
+        // ── GET ──────────────────────────────────────────
+        $preview = $_SESSION['import_prev_materiais'] ?? null;
+        require __DIR__ . '/../views/materiais/importar.php';
+    }
+
+    /* =====================================================
+       IMPORTAÇÃO POSIÇÃO DE ESTOQUE — 2-FASES
+    ===================================================== */
+    public function importarEstoque()
+    {
+        auth_required([4]);
+        global $pdo;
+
+        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+        require_once dirname(__DIR__) . '/helpers/import_excel.php';
+
+        // File 06 special structure:
+        // Row 5 (idx 4): metadata — A="Data da verificação:", B=date, C="Responsável pela contagem:", D=name
+        // Row 8 (idx 7): headers — A=Código, B=Tipo de material, C=Unidade, D=Estoque atual
+        // Row 9 (idx 8): gray example — SKIP
+        // Rows 10+ (idx 9+): data
+
+        // ── Fase: cancelar ───────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'cancelar') {
+            unset($_SESSION['import_prev_estoque']);
+            header('Location: ' . APP_BASE . '/materiais/importar-estoque');
+            exit;
+        }
+
+        // ── Fase: confirmar ──────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'confirmar') {
+            csrf_verify();
+            $data = $_SESSION['import_prev_estoque'] ?? [];
+            unset($_SESSION['import_prev_estoque']);
+
+            $rows = $data['rows'] ?? [];
+            $meta = $data['meta'] ?? [];
+
+            // Create contagem record
+            $stmtCont = $pdo->prepare("
+                INSERT INTO contagens_estoque (data_contagem, responsavel, usuario_id)
+                VALUES (?,?,?)
+            ");
+            $stmtCont->execute([
+                $meta['data_contagem'] ?? date('Y-m-d'),
+                $meta['responsavel'] ?? null,
+                (int)($_SESSION['usuario_id'] ?? 0),
+            ]);
+            $contagem_id = (int)$pdo->lastInsertId();
+
+            $stmtId  = $pdo->prepare("SELECT id FROM materiais_catalogo WHERE codigo = ?");
+            $stmtUpd = $pdo->prepare("
+                UPDATE materiais_estoque SET quantidade_fisica = ? WHERE material_id = ?
+            ");
+            $stmtIns = $pdo->prepare("
+                INSERT INTO materiais_estoque (material_id, quantidade_fisica, quantidade_reservada)
+                VALUES (?,?,0)
+                ON DUPLICATE KEY UPDATE quantidade_fisica = VALUES(quantidade_fisica)
+            ");
+            $stmtMov = $pdo->prepare("
+                INSERT INTO materiais_movimentos
+                    (material_id, tipo, quantidade, referencia_tipo, referencia_id, observacao, usuario_id)
+                VALUES (?,'ajuste',?,'contagem',?,'Contagem física importada',?)
+            ");
+            $stmtItem = $pdo->prepare("
+                INSERT INTO contagens_estoque_itens (contagem_id, material_id, estoque_encontrado)
+                VALUES (?,?,?)
+                ON DUPLICATE KEY UPDATE estoque_encontrado=VALUES(estoque_encontrado)
+            ");
+
+            $ok = 0;
+            $uid = (int)($_SESSION['usuario_id'] ?? 0);
+            foreach ($rows as $r) {
+                if ($r['_status'] !== 'atualizar') continue;
+                try {
+                    $stmtId->execute([$r['codigo']]);
+                    $mid = (int)$stmtId->fetchColumn();
+                    if ($mid <= 0) continue;
+
+                    $qtd = (float)$r['estoque_atual'];
+                    $stmtIns->execute([$mid, $qtd]);
+                    $stmtMov->execute([$mid, $qtd, $contagem_id, $uid]);
+                    $stmtItem->execute([$contagem_id, $mid, $qtd]);
+                    $ok++;
+                } catch (\Exception $e) {}
+            }
+
+            $_SESSION['flash_ok'] = "Contagem aplicada: $ok material(is) atualizado(s).";
+            header('Location: ' . APP_BASE . '/materiais');
+            exit;
+        }
+
+        // ── Fase: upload ─────────────────────────────────
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'upload') {
+            csrf_verify();
+            if (!isset($_FILES['arquivo']) || $_FILES['arquivo']['error'] !== UPLOAD_ERR_OK) {
+                $_SESSION['flash_erro'] = 'Arquivo inválido.';
+                header('Location: ' . APP_BASE . '/materiais/importar-estoque');
+                exit;
+            }
+
+            $allRows = \PhpOffice\PhpSpreadsheet\IOFactory::load($_FILES['arquivo']['tmp_name'])
+                ->getActiveSheet()->toArray(null, true, false, false);
+
+            // Extract metadata from row index 4 (Excel row 5)
+            $metaRow = $allRows[4] ?? [];
+            $meta = [
+                'data_contagem' => import_parse_date($metaRow[1] ?? null) ?? date('Y-m-d'),
+                'responsavel'   => trim((string)($metaRow[3] ?? '')),
+            ];
+
+            $stmtChk = $pdo->prepare("SELECT id, nome FROM materiais_catalogo WHERE codigo = ?");
+            $preview_rows = [];
+            foreach ($allRows as $i => $linha) {
+                if ($i < 9) continue; // skip banner(0-2), instr(3), metadata(4), blank(5-6), headers(7), example(8)
+                $codigo = trim((string)($linha[0] ?? ''));
+                if ($codigo === '') continue;
+
+                $estAtual = str_replace(',', '.', (string)($linha[3] ?? ''));
+
+                $stmtChk->execute([$codigo]);
+                $mat = $stmtChk->fetch(\PDO::FETCH_ASSOC);
+
+                if (!$mat) {
+                    $preview_rows[] = [
+                        '_linha'       => $i + 1,
+                        '_status'      => 'erro',
+                        '_msg'         => 'Código não encontrado',
+                        'codigo'       => $codigo,
+                        'tipo_material'=> trim((string)($linha[1] ?? '')),
+                        'nome'         => '',
+                        'unidade'      => trim((string)($linha[2] ?? '')),
+                        'estoque_atual'=> $estAtual,
+                    ];
+                    continue;
+                }
+
+                $preview_rows[] = [
+                    '_linha'       => $i + 1,
+                    '_status'      => 'atualizar',
+                    '_msg'         => '',
+                    'codigo'       => $codigo,
+                    'tipo_material'=> trim((string)($linha[1] ?? '')),
+                    'nome'         => $mat['nome'],
+                    'unidade'      => trim((string)($linha[2] ?? '')),
+                    'estoque_atual'=> is_numeric($estAtual) ? (float)$estAtual : 0,
+                ];
+            }
+
+            $_SESSION['import_prev_estoque'] = [
+                'rows'   => $preview_rows,
+                'meta'   => $meta,
+                'totals' => import_preview_totals($preview_rows),
+            ];
+            header('Location: ' . APP_BASE . '/materiais/importar-estoque');
+            exit;
+        }
+
+        // ── GET ──────────────────────────────────────────
+        $preview = $_SESSION['import_prev_estoque'] ?? null;
+        require __DIR__ . '/../views/materiais/importar_estoque.php';
+    }
 }

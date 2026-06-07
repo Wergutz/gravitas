@@ -154,3 +154,9 @@ tr:hover td { background:#f9fafc; }
   .topo .acoes { margin-left:0; width:100%; }
   .topo .acoes .btn { flex:1; justify-content:center; }
 }
+
+/* PA11: Import preview row colors */
+.imp-novo      { background: #d4edda !important; }
+.imp-atualizar { background: #cce5ff !important; }
+.imp-erro      { background: #f8d7da !important; }
+.imp-ignorar   { background: #f8f9fa !important; color: #aaa; }

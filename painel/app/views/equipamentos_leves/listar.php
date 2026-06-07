@@ -16,6 +16,7 @@ ob_start();
         <a href="<?= APP_BASE ?>/equipamentos-leves/importar" class="btn btn-sec">
             Importar Excel
         </a>
+        <a href="<?= APP_BASE ?>/assets/modelos/equipamentos-leves.xlsx" class="btn btn-sec" download>⬇ Modelo</a>
     </div>
 
     <!-- 🔥 Wrapper para scroll horizontal -->
