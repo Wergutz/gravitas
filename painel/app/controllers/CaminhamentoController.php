@@ -100,6 +100,18 @@ class CaminhamentoController
         $stmt->execute([$id]);
         $docs_vencidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // Trechos disponíveis para adicionar (status livre, não já vinculados)
+        $trechos_vinculados = array_column($trechos_cam, 'trecho_id');
+        $trechos_disponiveis_det = [];
+        if (in_array($caminhamento['status'], ['rascunho', 'publicado'])) {
+            $trechos_disponiveis_det = $pdo->query("
+                SELECT t.id, t.pv_montante, t.pv_jusante, t.bacia, t.extensao, t.rua
+                FROM trechos t
+                WHERE t.status_rede = 'livre'
+                ORDER BY t.bacia, t.pv_montante
+            ")->fetchAll(PDO::FETCH_ASSOC);
+        }
+
         require __DIR__ . '/../views/caminhamentos/detalhe.php';
     }
 
@@ -114,12 +126,12 @@ class CaminhamentoController
         $equipes = $pdo->query("SELECT id, nome FROM equipes WHERE ativo = 1 ORDER BY nome")
                        ->fetchAll(PDO::FETCH_ASSOC);
 
-        // Trechos disponíveis: com OS ativa e status=livre
+        // Trechos disponíveis: status=livre (OS é opcional)
         $trechos_disponiveis = $pdo->query("
             SELECT t.id, t.pv_montante, t.pv_jusante, t.bacia, t.extensao, t.rua,
                    os.versao AS os_versao
             FROM trechos t
-            JOIN ordens_servico os ON os.trecho_id = t.id AND os.ativa = 1
+            LEFT JOIN ordens_servico os ON os.trecho_id = t.id AND os.ativa = 1
             WHERE t.status_rede = 'livre'
             ORDER BY t.bacia, t.pv_montante
         ")->fetchAll(PDO::FETCH_ASSOC);
@@ -172,19 +184,10 @@ class CaminhamentoController
             exit;
         }
 
-        // Regra 17: Validar que cada trecho tem OS ativa
         $trechos_validos = [];
         foreach ($trechos_ids as $tid) {
             $tid = (int)$tid;
-            if ($tid <= 0) continue;
-            $stmt = $pdo->prepare("
-                SELECT COUNT(*) FROM ordens_servico
-                WHERE trecho_id = ? AND ativa = 1
-            ");
-            $stmt->execute([$tid]);
-            if ($stmt->fetchColumn() > 0) {
-                $trechos_validos[] = $tid;
-            }
+            if ($tid > 0) $trechos_validos[] = $tid;
         }
 
         $pdo->beginTransaction();
@@ -426,6 +429,151 @@ class CaminhamentoController
 
         $_SESSION['flash_ok'] = 'Trecho concluído. Material baixado e trecho adicionado à fila de repavimentação.';
         header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $caminhamento_id);
+        exit;
+    }
+
+    /* =====================================================
+       EXCLUIR — só rascunho ou publicado (sem diários)
+    ===================================================== */
+    public function excluir()
+    {
+        auth_required([4]);
+        global $pdo;
+        csrf_verify();
+
+        $id = (int)($_POST['id'] ?? 0);
+        if ($id <= 0) {
+            $_SESSION['flash_erro'] = 'Caminhamento inválido.';
+            header('Location: ' . APP_BASE . '/caminhamentos');
+            exit;
+        }
+
+        $cam = $pdo->prepare("SELECT id, status FROM caminhamentos WHERE id = ?");
+        $cam->execute([$id]);
+        $cam = $cam->fetch(PDO::FETCH_ASSOC);
+
+        if (!$cam || in_array($cam['status'], ['execucao', 'concluido'])) {
+            $_SESSION['flash_erro'] = 'Não é possível excluir um caminhamento em execução ou concluído.';
+            header('Location: ' . APP_BASE . '/caminhamentos');
+            exit;
+        }
+
+        $pdo->beginTransaction();
+        try {
+            // Pegar trechos vinculados
+            $stmtT = $pdo->prepare("SELECT trecho_id FROM caminhamento_trechos WHERE caminhamento_id = ?");
+            $stmtT->execute([$id]);
+            $trechoIds = $stmtT->fetchAll(PDO::FETCH_COLUMN);
+
+            if (!empty($trechoIds)) {
+                // Liberar materiais reservados se estava publicado
+                if ($cam['status'] === 'publicado') {
+                    foreach ($trechoIds as $tid) {
+                        $stmtMat = $pdo->prepare("SELECT material_id, quantidade FROM trecho_materiais WHERE trecho_id = ?");
+                        $stmtMat->execute([$tid]);
+                        $stmtLib = $pdo->prepare("
+                            UPDATE materiais_estoque
+                            SET quantidade_reservada = GREATEST(0, quantidade_reservada - ?)
+                            WHERE material_id = ?
+                        ");
+                        foreach ($stmtMat->fetchAll(PDO::FETCH_ASSOC) as $mat) {
+                            $stmtLib->execute([$mat['quantidade'], $mat['material_id']]);
+                        }
+                    }
+                }
+                // Voltar trechos para livre
+                $in = implode(',', array_fill(0, count($trechoIds), '?'));
+                $pdo->prepare("UPDATE trechos SET status_rede = 'livre' WHERE id IN ($in) AND status_rede = 'programado'")
+                    ->execute($trechoIds);
+            }
+
+            $pdo->prepare("DELETE FROM caminhamento_trechos WHERE caminhamento_id = ?")->execute([$id]);
+            $pdo->prepare("DELETE FROM caminhamentos WHERE id = ?")->execute([$id]);
+
+            $pdo->commit();
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            $_SESSION['flash_erro'] = 'Erro ao excluir: ' . $e->getMessage();
+            header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $id);
+            exit;
+        }
+
+        $_SESSION['flash_ok'] = 'Caminhamento excluído. Trechos liberados.';
+        header('Location: ' . APP_BASE . '/caminhamentos');
+        exit;
+    }
+
+    /* =====================================================
+       ADICIONAR TRECHOS — a um caminhamento rascunho ou publicado
+    ===================================================== */
+    public function adicionarTrechos()
+    {
+        auth_required([4]);
+        global $pdo;
+        csrf_verify();
+
+        $id         = (int)($_POST['id'] ?? 0);
+        $trechoIds  = $_POST['trechos'] ?? [];
+
+        $cam = $pdo->prepare("SELECT id, status FROM caminhamentos WHERE id = ?");
+        $cam->execute([$id]);
+        $cam = $cam->fetch(PDO::FETCH_ASSOC);
+
+        if (!$cam || in_array($cam['status'], ['execucao', 'concluido'])) {
+            $_SESSION['flash_erro'] = 'Não é possível alterar trechos de um caminhamento em execução ou concluído.';
+            header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $id);
+            exit;
+        }
+
+        $pdo->beginTransaction();
+        try {
+            // Próxima sequência
+            $maxSeq = $pdo->prepare("SELECT COALESCE(MAX(sequencia), 0) FROM caminhamento_trechos WHERE caminhamento_id = ?");
+            $maxSeq->execute([$id]);
+            $seq = (int)$maxSeq->fetchColumn();
+
+            $stmtIns = $pdo->prepare("INSERT IGNORE INTO caminhamento_trechos (caminhamento_id, trecho_id, sequencia) VALUES (?, ?, ?)");
+            $novos = [];
+            foreach ($trechoIds as $tid) {
+                $tid = (int)$tid;
+                if ($tid <= 0) continue;
+                $seq++;
+                $stmtIns->execute([$id, $tid, $seq]);
+                if ($stmtIns->rowCount() > 0) $novos[] = $tid;
+            }
+
+            if (!empty($novos)) {
+                $in = implode(',', array_fill(0, count($novos), '?'));
+                $pdo->prepare("UPDATE trechos SET status_rede = 'programado' WHERE id IN ($in)")
+                    ->execute($novos);
+
+                // Se publicado, reservar materiais dos novos trechos
+                if ($cam['status'] === 'publicado') {
+                    $stmtMat = $pdo->prepare("SELECT material_id, quantidade FROM trecho_materiais WHERE trecho_id = ?");
+                    $stmtRes = $pdo->prepare("
+                        INSERT INTO materiais_estoque (material_id, quantidade_reservada)
+                        VALUES (?, ?)
+                        ON DUPLICATE KEY UPDATE quantidade_reservada = quantidade_reservada + VALUES(quantidade_reservada)
+                    ");
+                    foreach ($novos as $tid) {
+                        $stmtMat->execute([$tid]);
+                        foreach ($stmtMat->fetchAll(PDO::FETCH_ASSOC) as $mat) {
+                            $stmtRes->execute([$mat['material_id'], $mat['quantidade']]);
+                        }
+                    }
+                }
+            }
+
+            $pdo->commit();
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            $_SESSION['flash_erro'] = 'Erro ao adicionar trechos: ' . $e->getMessage();
+            header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $id);
+            exit;
+        }
+
+        $_SESSION['flash_ok'] = count($novos ?? []) . ' trecho(s) adicionado(s) ao caminhamento.';
+        header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $id);
         exit;
     }
 

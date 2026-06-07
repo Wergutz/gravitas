@@ -45,6 +45,18 @@ ob_start();
         Relatório de Medição
     </a>
 
+    <?php if (in_array($caminhamento['status'], ['rascunho', 'publicado'])): ?>
+        <form method="post" action="<?= APP_BASE ?>/caminhamentos/excluir"
+              style="display:inline;"
+              onsubmit="return confirm('Excluir este caminhamento? Os trechos voltarão para \'livre\'.')">
+            <?= csrf_input() ?>
+            <input type="hidden" name="id" value="<?= (int)$caminhamento['id'] ?>">
+            <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;">
+                🗑 Excluir
+            </button>
+        </form>
+    <?php endif; ?>
+
     <a href="<?= APP_BASE ?>/caminhamentos" class="btn btn-sec btn-sm">← Voltar</a>
 </div>
 
@@ -153,6 +165,38 @@ ob_start();
         <?php endforeach; ?>
     <?php endif; ?>
 </div>
+
+<?php if (!empty($trechos_disponiveis_det) && in_array($caminhamento['status'], ['rascunho', 'publicado'])): ?>
+<div class="card" style="margin-top:18px;">
+    <div class="label">➕ Adicionar trechos a este caminhamento</div>
+    <form method="post" action="<?= APP_BASE ?>/caminhamentos/adicionar-trechos">
+        <?= csrf_input() ?>
+        <input type="hidden" name="id" value="<?= (int)$caminhamento['id'] ?>">
+        <div class="table-wrap" style="margin-bottom:12px;">
+            <table>
+                <thead><tr><th></th><th>PV Montante</th><th>PV Jusante</th><th>Rua</th><th>Bacia</th><th>Extensão</th></tr></thead>
+                <tbody>
+                <?php foreach ($trechos_disponiveis_det as $td): ?>
+                <tr>
+                    <td style="width:36px;text-align:center;">
+                        <input type="checkbox" name="trechos[]" value="<?= (int)$td['id'] ?>">
+                    </td>
+                    <td><?= htmlspecialchars($td['pv_montante']) ?></td>
+                    <td><?= htmlspecialchars($td['pv_jusante']) ?></td>
+                    <td style="font-size:12px;color:var(--muted)"><?= htmlspecialchars($td['rua'] ?? '') ?></td>
+                    <td><?= htmlspecialchars($td['bacia'] ?? '') ?></td>
+                    <td><?= $td['extensao'] ? number_format($td['extensao'], 0, ',', '.') . ' m' : '—' ?></td>
+                </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <button type="submit" class="btn btn-pri btn-sm">Adicionar selecionados</button>
+    </form>
+</div>
+<?php elseif (in_array($caminhamento['status'], ['rascunho', 'publicado'])): ?>
+<div class="alerta a-info" style="margin-top:18px;">Todos os trechos disponíveis já estão neste caminhamento.</div>
+<?php endif; ?>
 
 <?php
 $content = ob_get_clean();

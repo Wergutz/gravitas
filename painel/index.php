@@ -387,6 +387,18 @@ if ($uri === '/caminhamentos/relatorio-medicao') {
     exit;
 }
 
+if ($uri === '/caminhamentos/excluir') {
+    require_once __DIR__ . '/app/controllers/CaminhamentoController.php';
+    (new CaminhamentoController())->excluir();
+    exit;
+}
+
+if ($uri === '/caminhamentos/adicionar-trechos') {
+    require_once __DIR__ . '/app/controllers/CaminhamentoController.php';
+    (new CaminhamentoController())->adicionarTrechos();
+    exit;
+}
+
 /* ==========================
    MATERIAIS
 ========================== */
