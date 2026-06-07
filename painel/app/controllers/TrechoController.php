@@ -451,6 +451,11 @@ class TrechoController
                 } catch (\Exception $e) {}
             }
 
+            try {
+                $pdo->prepare("INSERT INTO log_auditoria (admin_id, acao, detalhes) VALUES (?,?,?)")
+                    ->execute([(int)($_SESSION['usuario_id']??0), 'importacao',
+                        json_encode(['modulo'=>'trechos','linhas'=>count($rows),'importadas'=>$ok])]);
+            } catch (\Exception $e) {}
             $_SESSION['flash_ok'] = "$ok trecho(s) importado(s) com sucesso.";
             header('Location: ' . APP_BASE . '/trechos');
             exit;
@@ -475,7 +480,17 @@ class TrechoController
                 $pv_mont  = trim((string)($linha[0] ?? ''));
                 $pv_jus   = trim((string)($linha[1] ?? ''));
                 $contrato = trim((string)($linha[10] ?? '')) ?: null;
-                if ($pv_mont === '') continue;
+                if ($pv_mont === '') {
+                    $ext2  = str_replace(',', '.', (string)($linha[4] ?? ''));
+                    $prof2 = str_replace(',', '.', (string)($linha[5] ?? ''));
+                    $preview_rows[] = [
+                        '_linha'=>$i+1,'_status'=>'erro','_msg'=>"'PV Montante' obrigatório",
+                        'pv_montante'=>'','pv_jusante'=>$pv_jus,'bacia'=>trim((string)($linha[2]??'')),
+                        'tipo_pi_montante'=>'','extensao'=>null,'profundidade'=>null,'dn'=>'',
+                        'ramais'=>0,'rua'=>'','cidade'=>'','contrato'=>$contrato,
+                    ];
+                    continue;
+                }
 
                 $stmtChk->execute([$pv_mont, $pv_jus, $contrato, $contrato]);
                 $status = (int)$stmtChk->fetchColumn() > 0 ? 'atualizar' : 'novo';

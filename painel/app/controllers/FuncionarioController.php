@@ -337,6 +337,11 @@ class FuncionarioController
                 } catch (\Exception $e) {}
             }
 
+            try {
+                $pdo->prepare("INSERT INTO log_auditoria (admin_id, acao, detalhes) VALUES (?,?,?)")
+                    ->execute([(int)($_SESSION['usuario_id']??0), 'importacao',
+                        json_encode(['modulo'=>'funcionarios','linhas'=>count($rows),'importadas'=>$ok])]);
+            } catch (\Exception $e) {}
             $_SESSION['flash_ok'] = "$ok funcionário(s) importado(s) com sucesso.";
             header('Location: ' . APP_BASE . '/funcionarios');
             exit;
@@ -355,17 +360,34 @@ class FuncionarioController
             $allRows = $spreadsheet->getActiveSheet()->toArray(null, true, false, false);
 
             $preview_rows = [];
+            $chkCpf = $pdo->prepare("SELECT COUNT(*) FROM funcionarios WHERE cpf = ?");
             foreach ($allRows as $i => $linha) {
                 $lineNum = $i + 1;
-                if ($i < 6) continue; // skip banner(0-2), instruções(3), headers(4), exemplo(5)
-                $nome = trim((string)($linha[0] ?? ''));
-                $cpf  = preg_replace('/\D/', '', (string)($linha[1] ?? ''));
-                if ($nome === '' || $cpf === '') continue;
+                if ($i < 6) continue;
+                $nome    = trim((string)($linha[0] ?? ''));
+                $cpf_raw = trim((string)($linha[1] ?? ''));
+                $cpf     = preg_replace('/\D/', '', $cpf_raw);
 
-                $status = 'novo';
-                $chk = $pdo->prepare("SELECT COUNT(*) FROM funcionarios WHERE cpf = ?");
-                $chk->execute([$cpf]);
-                if ((int)$chk->fetchColumn() > 0) $status = 'atualizar';
+                if ($nome === '') {
+                    $preview_rows[] = ['_linha'=>$lineNum,'_status'=>'erro','_msg'=>"'Nome completo' obrigatório",
+                        'nome'=>'','cpf'=>$cpf,'empresa'=>'','funcao'=>'','salario'=>0,
+                        'aso'=>0,'val_aso'=>null,'nr06'=>0,'val_nr06'=>null,'nr10'=>0,'val_nr10'=>null,
+                        'nr11'=>0,'val_nr11'=>null,'nr12'=>0,'val_nr12'=>null,'nr18'=>0,'val_nr18'=>null,
+                        'nr20'=>0,'val_nr20'=>null,'nr23'=>0,'val_nr23'=>null,'nr33'=>0,'val_nr33'=>null,'nr35'=>0,'val_nr35'=>null];
+                    continue;
+                }
+                if (strlen($cpf) !== 11) {
+                    $preview_rows[] = ['_linha'=>$lineNum,'_status'=>'erro',
+                        '_msg'=>"'CPF' inválido (".strlen($cpf)." dígitos, esperado 11)",
+                        'nome'=>$nome,'cpf'=>$cpf,'empresa'=>'','funcao'=>'','salario'=>0,
+                        'aso'=>0,'val_aso'=>null,'nr06'=>0,'val_nr06'=>null,'nr10'=>0,'val_nr10'=>null,
+                        'nr11'=>0,'val_nr11'=>null,'nr12'=>0,'val_nr12'=>null,'nr18'=>0,'val_nr18'=>null,
+                        'nr20'=>0,'val_nr20'=>null,'nr23'=>0,'val_nr23'=>null,'nr33'=>0,'val_nr33'=>null,'nr35'=>0,'val_nr35'=>null];
+                    continue;
+                }
+
+                $chkCpf->execute([$cpf]);
+                $status = (int)$chkCpf->fetchColumn() > 0 ? 'atualizar' : 'novo';
 
                 $preview_rows[] = [
                     '_linha'   => $lineNum,

@@ -200,29 +200,30 @@ class EquipamentoPesadoController
             $rows = $_SESSION['import_prev_eq_pesados']['rows'] ?? [];
             unset($_SESSION['import_prev_eq_pesados']);
 
-            $stmtIns = $pdo->prepare("
-                INSERT INTO equipamentos_pesados (tipo, placa, modelo, fabricante, ano, proprietario, combustivel, ativo)
-                VALUES (?,?,?,?,?,?,?,1)
-            ");
-            $stmtUpd = $pdo->prepare("
-                UPDATE equipamentos_pesados SET
-                    tipo=?, modelo=?, fabricante=?, ano=?, proprietario=?, combustivel=?
-                WHERE placa=?
-            ");
+            $stmtIns    = $pdo->prepare("INSERT INTO equipamentos_pesados (tipo, placa, modelo, fabricante, ano, proprietario, combustivel, ativo) VALUES (?,?,?,?,?,?,?,1)");
+            $stmtUpd    = $pdo->prepare("UPDATE equipamentos_pesados SET tipo=?, modelo=?, fabricante=?, ano=?, proprietario=?, combustivel=? WHERE placa=?");
+            $stmtUpdFb  = $pdo->prepare("UPDATE equipamentos_pesados SET tipo=?, proprietario=?, combustivel=? WHERE (placa IS NULL OR placa='') AND modelo=? AND fabricante=? AND ano=?");
 
             $ok = 0;
             foreach ($rows as $r) {
                 if (!in_array($r['_status'], ['novo', 'atualizar'])) continue;
                 try {
                     if ($r['_status'] === 'novo') {
-                        $stmtIns->execute([$r['tipo'], $r['placa'], $r['modelo'], $r['fabricante'], $r['ano'], $r['proprietario'], $r['combustivel']]);
-                    } else {
+                        $stmtIns->execute([$r['tipo'], $r['placa'] ?: null, $r['modelo'], $r['fabricante'], $r['ano'], $r['proprietario'], $r['combustivel']]);
+                    } elseif (($r['_chave_tipo'] ?? 'placa') === 'placa') {
                         $stmtUpd->execute([$r['tipo'], $r['modelo'], $r['fabricante'], $r['ano'], $r['proprietario'], $r['combustivel'], $r['placa']]);
+                    } else {
+                        $stmtUpdFb->execute([$r['tipo'], $r['proprietario'], $r['combustivel'], $r['modelo'], $r['fabricante'], $r['ano']]);
                     }
                     $ok++;
                 } catch (\Exception $e) {}
             }
 
+            try {
+                $pdo->prepare("INSERT INTO log_auditoria (admin_id, acao, detalhes) VALUES (?,?,?)")
+                    ->execute([(int)($_SESSION['usuario_id']??0), 'importacao',
+                        json_encode(['modulo'=>'equipamentos_pesados','linhas'=>count($rows),'importadas'=>$ok])]);
+            } catch (\Exception $e) {}
             $_SESSION['flash_ok'] = "$ok equipamento(s) importado(s).";
             header('Location: ' . APP_BASE . '/equipamentos-pesados');
             exit;
@@ -241,25 +242,50 @@ class EquipamentoPesadoController
                 ->getActiveSheet()->toArray(null, true, false, false);
 
             $preview_rows = [];
+            $chkPlaca = $pdo->prepare("SELECT COUNT(*) FROM equipamentos_pesados WHERE placa = ?");
+            $chkFb    = $pdo->prepare("SELECT COUNT(*) FROM equipamentos_pesados WHERE (placa IS NULL OR placa='') AND modelo=? AND fabricante=? AND ano=?");
             foreach ($allRows as $i => $linha) {
                 if ($i < 6) continue;
-                $placa = strtoupper(trim((string)($linha[1] ?? '')));
-                $tipo  = trim((string)($linha[0] ?? ''));
-                if ($placa === '' || $tipo === '') continue;
+                $tipo       = trim((string)($linha[0] ?? ''));
+                $placa      = strtoupper(trim((string)($linha[1] ?? '')));
+                $modelo     = trim((string)($linha[2] ?? ''));
+                $fabricante = trim((string)($linha[3] ?? ''));
+                $ano        = (int)($linha[4] ?? 0);
 
-                $chk = $pdo->prepare("SELECT COUNT(*) FROM equipamentos_pesados WHERE placa = ?");
-                $chk->execute([$placa]);
-                $status = (int)$chk->fetchColumn() > 0 ? 'atualizar' : 'novo';
+                if ($tipo === '') {
+                    $preview_rows[] = ['_linha'=>$i+1,'_status'=>'erro','_msg'=>"'Tipo' obrigatório",
+                        '_chave_tipo'=>'placa','tipo'=>'','placa'=>$placa,'modelo'=>$modelo,
+                        'fabricante'=>$fabricante,'ano'=>$ano,'proprietario'=>trim((string)($linha[5]??'')),'combustivel'=>trim((string)($linha[6]??''))];
+                    continue;
+                }
+
+                if ($placa !== '') {
+                    $chkPlaca->execute([$placa]);
+                    $status = (int)$chkPlaca->fetchColumn() > 0 ? 'atualizar' : 'novo';
+                    $chave_tipo = 'placa';
+                } else {
+                    if ($modelo === '' && $fabricante === '') {
+                        $preview_rows[] = ['_linha'=>$i+1,'_status'=>'erro',
+                            '_msg'=>"'Placa' ausente; informe Modelo e Fabricante como alternativa",
+                            '_chave_tipo'=>'fallback','tipo'=>$tipo,'placa'=>'','modelo'=>$modelo,
+                            'fabricante'=>$fabricante,'ano'=>$ano,'proprietario'=>trim((string)($linha[5]??'')),'combustivel'=>trim((string)($linha[6]??''))];
+                        continue;
+                    }
+                    $chkFb->execute([$modelo, $fabricante, $ano]);
+                    $status = (int)$chkFb->fetchColumn() > 0 ? 'atualizar' : 'novo';
+                    $chave_tipo = 'fallback';
+                }
 
                 $preview_rows[] = [
                     '_linha'      => $i + 1,
                     '_status'     => $status,
                     '_msg'        => '',
+                    '_chave_tipo' => $chave_tipo,
                     'tipo'        => $tipo,
                     'placa'       => $placa,
-                    'modelo'      => trim((string)($linha[2] ?? '')),
-                    'fabricante'  => trim((string)($linha[3] ?? '')),
-                    'ano'         => (int)($linha[4] ?? 0),
+                    'modelo'      => $modelo,
+                    'fabricante'  => $fabricante,
+                    'ano'         => $ano,
                     'proprietario'=> trim((string)($linha[5] ?? '')),
                     'combustivel' => trim((string)($linha[6] ?? '')),
                 ];

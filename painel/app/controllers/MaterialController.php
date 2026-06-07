@@ -188,21 +188,13 @@ class MaterialController
             $rows = $_SESSION['import_prev_materiais']['rows'] ?? [];
             unset($_SESSION['import_prev_materiais']);
 
-            $stmtIns = $pdo->prepare("
-                INSERT INTO materiais_catalogo (codigo, nome, unidade, estoque_minimo)
-                VALUES (?,?,?,?)
-            ");
-            $stmtUpd = $pdo->prepare("
-                UPDATE materiais_catalogo SET nome=?, unidade=?, estoque_minimo=? WHERE codigo=?
-            ");
-            $stmtEstIns = $pdo->prepare("
-                INSERT INTO materiais_estoque (material_id, quantidade_fisica, quantidade_reservada)
-                VALUES (?,?,0)
-            ");
-            $stmtEstUpd = $pdo->prepare("
-                UPDATE materiais_estoque SET quantidade_fisica=? WHERE material_id=?
-            ");
-            $stmtId = $pdo->prepare("SELECT id FROM materiais_catalogo WHERE codigo = ?");
+            $stmtIns     = $pdo->prepare("INSERT INTO materiais_catalogo (codigo, nome, unidade, estoque_minimo) VALUES (?,?,?,?)");
+            $stmtUpdCod  = $pdo->prepare("UPDATE materiais_catalogo SET nome=?, unidade=?, estoque_minimo=? WHERE codigo=?");
+            $stmtUpdNome = $pdo->prepare("UPDATE materiais_catalogo SET unidade=?, estoque_minimo=? WHERE (codigo IS NULL OR codigo='') AND nome=?");
+            $stmtEstIns  = $pdo->prepare("INSERT INTO materiais_estoque (material_id, quantidade_fisica, quantidade_reservada) VALUES (?,?,0)");
+            $stmtEstUpd  = $pdo->prepare("UPDATE materiais_estoque SET quantidade_fisica=? WHERE material_id=?");
+            $stmtIdCod   = $pdo->prepare("SELECT id FROM materiais_catalogo WHERE codigo = ?");
+            $stmtIdNome  = $pdo->prepare("SELECT id FROM materiais_catalogo WHERE (codigo IS NULL OR codigo='') AND nome = ?");
 
             $ok = 0;
             foreach ($rows as $r) {
@@ -210,15 +202,22 @@ class MaterialController
                 try {
                     $pdo->beginTransaction();
                     if ($r['_status'] === 'novo') {
-                        $stmtIns->execute([$r['codigo'], $r['nome'], $r['unidade'], $r['estoque_minimo']]);
+                        $stmtIns->execute([$r['codigo'] ?: null, $r['nome'], $r['unidade'], $r['estoque_minimo']]);
                         $mid = (int)$pdo->lastInsertId();
                         if ($mid > 0 && $r['estoque_atual'] !== null) {
                             $stmtEstIns->execute([$mid, $r['estoque_atual']]);
                         }
+                    } elseif (($r['_chave_tipo'] ?? 'codigo') === 'codigo') {
+                        $stmtUpdCod->execute([$r['nome'], $r['unidade'], $r['estoque_minimo'], $r['codigo']]);
+                        $stmtIdCod->execute([$r['codigo']]);
+                        $mid = (int)$stmtIdCod->fetchColumn();
+                        if ($mid > 0 && $r['estoque_atual'] !== null) {
+                            $stmtEstUpd->execute([$r['estoque_atual'], $mid]);
+                        }
                     } else {
-                        $stmtUpd->execute([$r['nome'], $r['unidade'], $r['estoque_minimo'], $r['codigo']]);
-                        $stmtId->execute([$r['codigo']]);
-                        $mid = (int)$stmtId->fetchColumn();
+                        $stmtUpdNome->execute([$r['unidade'], $r['estoque_minimo'], $r['nome']]);
+                        $stmtIdNome->execute([$r['nome']]);
+                        $mid = (int)$stmtIdNome->fetchColumn();
                         if ($mid > 0 && $r['estoque_atual'] !== null) {
                             $stmtEstUpd->execute([$r['estoque_atual'], $mid]);
                         }
@@ -230,6 +229,11 @@ class MaterialController
                 }
             }
 
+            try {
+                $pdo->prepare("INSERT INTO log_auditoria (admin_id, acao, detalhes) VALUES (?,?,?)")
+                    ->execute([(int)($_SESSION['usuario_id']??0), 'importacao',
+                        json_encode(['modulo'=>'materiais','linhas'=>count($rows),'importadas'=>$ok])]);
+            } catch (\Exception $e) {}
             $_SESSION['flash_ok'] = "$ok material(is) importado(s).";
             header('Location: ' . APP_BASE . '/materiais');
             exit;
@@ -248,23 +252,38 @@ class MaterialController
                 ->getActiveSheet()->toArray(null, true, false, false);
 
             $preview_rows = [];
-            $stmtChk = $pdo->prepare("SELECT COUNT(*) FROM materiais_catalogo WHERE codigo = ?");
+            $chkCod  = $pdo->prepare("SELECT COUNT(*) FROM materiais_catalogo WHERE codigo = ?");
+            $chkNome = $pdo->prepare("SELECT COUNT(*) FROM materiais_catalogo WHERE (codigo IS NULL OR codigo='') AND nome = ?");
             foreach ($allRows as $i => $linha) {
                 if ($i < 6) continue;
                 $codigo = trim((string)($linha[0] ?? ''));
                 $nome   = trim((string)($linha[1] ?? ''));
-                if ($codigo === '' || $nome === '') continue;
 
-                $stmtChk->execute([$codigo]);
-                $status = (int)$stmtChk->fetchColumn() > 0 ? 'atualizar' : 'novo';
+                if ($nome === '') {
+                    $preview_rows[] = ['_linha'=>$i+1,'_status'=>'erro',
+                        '_msg'=>"'Nome do material' obrigatório",'_chave_tipo'=>'codigo',
+                        'codigo'=>$codigo,'nome'=>'','unidade'=>'un','estoque_minimo'=>0,'estoque_atual'=>null];
+                    continue;
+                }
 
-                $estMin  = str_replace(',', '.', (string)($linha[3] ?? '0'));
+                $estMin   = str_replace(',', '.', (string)($linha[3] ?? '0'));
                 $estAtual = str_replace(',', '.', (string)($linha[4] ?? ''));
+
+                if ($codigo !== '') {
+                    $chkCod->execute([$codigo]);
+                    $status = (int)$chkCod->fetchColumn() > 0 ? 'atualizar' : 'novo';
+                    $chave_tipo = 'codigo';
+                } else {
+                    $chkNome->execute([$nome]);
+                    $status = (int)$chkNome->fetchColumn() > 0 ? 'atualizar' : 'novo';
+                    $chave_tipo = 'nome';
+                }
 
                 $preview_rows[] = [
                     '_linha'        => $i + 1,
                     '_status'       => $status,
                     '_msg'          => '',
+                    '_chave_tipo'   => $chave_tipo,
                     'codigo'        => $codigo,
                     'nome'          => $nome,
                     'unidade'       => trim((string)($linha[2] ?? 'un')),
@@ -368,6 +387,11 @@ class MaterialController
                 } catch (\Exception $e) {}
             }
 
+            try {
+                $pdo->prepare("INSERT INTO log_auditoria (admin_id, acao, detalhes) VALUES (?,?,?)")
+                    ->execute([(int)($_SESSION['usuario_id']??0), 'importacao',
+                        json_encode(['modulo'=>'posicao_estoque','contagem_id'=>$contagem_id,'itens'=>$ok])]);
+            } catch (\Exception $e) {}
             $_SESSION['flash_ok'] = "Contagem aplicada: $ok material(is) atualizado(s).";
             header('Location: ' . APP_BASE . '/materiais');
             exit;

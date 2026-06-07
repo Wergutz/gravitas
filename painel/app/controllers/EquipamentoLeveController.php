@@ -159,29 +159,30 @@ class EquipamentoLeveController {
             $rows = $_SESSION['import_prev_eq_leves']['rows'] ?? [];
             unset($_SESSION['import_prev_eq_leves']);
 
-            $stmtIns = $pdo->prepare("
-                INSERT INTO equipamentos_leves (tipo, referencia, modelo, ano, proprietario, combustivel, ativo)
-                VALUES (?,?,?,?,?,?,1)
-            ");
-            $stmtUpd = $pdo->prepare("
-                UPDATE equipamentos_leves SET
-                    tipo=?, modelo=?, ano=?, proprietario=?, combustivel=?
-                WHERE referencia=?
-            ");
+            $stmtIns   = $pdo->prepare("INSERT INTO equipamentos_leves (tipo, referencia, modelo, ano, proprietario, combustivel, ativo) VALUES (?,?,?,?,?,?,1)");
+            $stmtUpd   = $pdo->prepare("UPDATE equipamentos_leves SET tipo=?, modelo=?, ano=?, proprietario=?, combustivel=? WHERE referencia=?");
+            $stmtUpdFb = $pdo->prepare("UPDATE equipamentos_leves SET proprietario=?, combustivel=? WHERE (referencia IS NULL OR referencia='') AND tipo=? AND modelo=? AND ano=?");
 
             $ok = 0;
             foreach ($rows as $r) {
                 if (!in_array($r['_status'], ['novo', 'atualizar'])) continue;
                 try {
                     if ($r['_status'] === 'novo') {
-                        $stmtIns->execute([$r['tipo'], $r['referencia'], $r['modelo'], $r['ano'], $r['proprietario'], $r['combustivel']]);
-                    } else {
+                        $stmtIns->execute([$r['tipo'], $r['referencia'] ?: null, $r['modelo'], $r['ano'], $r['proprietario'], $r['combustivel']]);
+                    } elseif (($r['_chave_tipo'] ?? 'referencia') === 'referencia') {
                         $stmtUpd->execute([$r['tipo'], $r['modelo'], $r['ano'], $r['proprietario'], $r['combustivel'], $r['referencia']]);
+                    } else {
+                        $stmtUpdFb->execute([$r['proprietario'], $r['combustivel'], $r['tipo'], $r['modelo'], $r['ano']]);
                     }
                     $ok++;
                 } catch (\Exception $e) {}
             }
 
+            try {
+                $pdo->prepare("INSERT INTO log_auditoria (admin_id, acao, detalhes) VALUES (?,?,?)")
+                    ->execute([(int)($_SESSION['usuario_id']??0), 'importacao',
+                        json_encode(['modulo'=>'equipamentos_leves','linhas'=>count($rows),'importadas'=>$ok])]);
+            } catch (\Exception $e) {}
             $_SESSION['flash_ok'] = "$ok equipamento(s) leve(s) importado(s).";
             header('Location: ' . APP_BASE . '/equipamentos-leves');
             exit;
@@ -200,24 +201,48 @@ class EquipamentoLeveController {
                 ->getActiveSheet()->toArray(null, true, false, false);
 
             $preview_rows = [];
+            $chkRef = $pdo->prepare("SELECT COUNT(*) FROM equipamentos_leves WHERE referencia = ?");
+            $chkFbL = $pdo->prepare("SELECT COUNT(*) FROM equipamentos_leves WHERE (referencia IS NULL OR referencia='') AND tipo=? AND modelo=? AND ano=?");
             foreach ($allRows as $i => $linha) {
                 if ($i < 6) continue;
-                $referencia = strtoupper(trim((string)($linha[1] ?? '')));
                 $tipo       = trim((string)($linha[0] ?? ''));
-                if ($referencia === '' || $tipo === '') continue;
+                $referencia = strtoupper(trim((string)($linha[1] ?? '')));
+                $modelo     = trim((string)($linha[2] ?? ''));
+                $ano        = (int)($linha[3] ?? 0);
 
-                $chk = $pdo->prepare("SELECT COUNT(*) FROM equipamentos_leves WHERE referencia = ?");
-                $chk->execute([$referencia]);
-                $status = (int)$chk->fetchColumn() > 0 ? 'atualizar' : 'novo';
+                if ($tipo === '') {
+                    $preview_rows[] = ['_linha'=>$i+1,'_status'=>'erro','_msg'=>"'Tipo' obrigatório",
+                        '_chave_tipo'=>'referencia','tipo'=>'','referencia'=>$referencia,'modelo'=>$modelo,
+                        'ano'=>$ano,'proprietario'=>trim((string)($linha[4]??'')),'combustivel'=>trim((string)($linha[5]??''))];
+                    continue;
+                }
+
+                if ($referencia !== '') {
+                    $chkRef->execute([$referencia]);
+                    $status = (int)$chkRef->fetchColumn() > 0 ? 'atualizar' : 'novo';
+                    $chave_tipo = 'referencia';
+                } else {
+                    if ($modelo === '') {
+                        $preview_rows[] = ['_linha'=>$i+1,'_status'=>'erro',
+                            '_msg'=>"'Referência' ausente; informe o Modelo como alternativa",
+                            '_chave_tipo'=>'fallback','tipo'=>$tipo,'referencia'=>'','modelo'=>$modelo,
+                            'ano'=>$ano,'proprietario'=>trim((string)($linha[4]??'')),'combustivel'=>trim((string)($linha[5]??''))];
+                        continue;
+                    }
+                    $chkFbL->execute([$tipo, $modelo, $ano]);
+                    $status = (int)$chkFbL->fetchColumn() > 0 ? 'atualizar' : 'novo';
+                    $chave_tipo = 'fallback';
+                }
 
                 $preview_rows[] = [
                     '_linha'       => $i + 1,
                     '_status'      => $status,
                     '_msg'         => '',
+                    '_chave_tipo'  => $chave_tipo,
                     'tipo'         => $tipo,
                     'referencia'   => $referencia,
-                    'modelo'       => trim((string)($linha[2] ?? '')),
-                    'ano'          => (int)($linha[3] ?? 0),
+                    'modelo'       => $modelo,
+                    'ano'          => $ano,
                     'proprietario' => trim((string)($linha[4] ?? '')),
                     'combustivel'  => trim((string)($linha[5] ?? '')),
                 ];

@@ -52,7 +52,14 @@ ob_start();
     <form method="post" action="<?= APP_BASE ?>/materiais/importar-estoque" style="margin-top:16px;">
         <?= csrf_input() ?>
         <div class="form-actions">
-            <button type="submit" name="fase" value="confirmar" class="btn btn-pri">Confirmar contagem</button>
+            <?php $temErros = ($preview['totals']['erro'] ?? 0) > 0; ?>
+            <button type="submit" name="fase" value="confirmar" class="btn btn-pri"
+                <?= $temErros ? 'disabled' : '' ?>>
+                Confirmar contagem
+            </button>
+            <?php if ($temErros): ?>
+            <span style="color:#721c24;font-size:12px;">❌ <?= $preview['totals']['erro'] ?> código(s) não encontrado(s) — cadastre os materiais primeiro</span>
+            <?php endif; ?>
             <button type="submit" name="fase" value="cancelar" class="btn btn-sec">Cancelar</button>
         </div>
     </form>

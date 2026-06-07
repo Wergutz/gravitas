@@ -155,6 +155,9 @@ tr:hover td { background:#f9fafc; }
   .topo .acoes .btn { flex:1; justify-content:center; }
 }
 
+/* Filtro ativo */
+.btn-ativo { background: var(--navy) !important; color: #fff !important; border-color: var(--navy) !important; }
+
 /* PA11: Import preview row colors */
 .imp-novo      { background: #d4edda !important; }
 .imp-atualizar { background: #cce5ff !important; }
