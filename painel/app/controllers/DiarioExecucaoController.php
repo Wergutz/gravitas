@@ -45,14 +45,18 @@ class DiarioExecucaoController {
                        ->fetchAll(PDO::FETCH_ASSOC);
 
         // Alertas de falta de material não resolvidos
-        $alertasMat = $pdo->query("
-            SELECT af.*, e.nome AS equipe_nome, t.pv_montante, t.pv_jusante
-            FROM alertas_falta_material af
-            JOIN equipes e ON e.id = af.equipe_id
-            JOIN trechos t ON t.id = af.trecho_id
-            WHERE af.resolvido = 0
-            ORDER BY af.data DESC
-        ")->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $alertasMat = $pdo->query("
+                SELECT af.*, e.nome AS equipe_nome, t.pv_montante, t.pv_jusante
+                FROM alertas_falta_material af
+                JOIN equipes e ON e.id = af.equipe_id
+                JOIN trechos t ON t.id = af.trecho_id
+                WHERE af.resolvido = 0
+                ORDER BY af.data DESC
+            ")->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            $alertasMat = [];
+        }
 
         // Equipamentos em manutenção (colunas podem não existir antes da migration PA12)
         try {
