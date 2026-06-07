@@ -16,35 +16,59 @@ class DiarioExecucaoController {
         $filtroData  = $_GET['data']   ?? date('Y-m-d');
         $filtroEq    = (int)($_GET['equipe_id'] ?? 0);
 
-        $sql = "
-            SELECT de.id, de.data, de.status, de.step_atual, de.versao,
-                   de.extensao_gps_m, de.step3_estoque_ok, de.step3_materiais_faltando,
-                   e.nome AS equipe_nome,
-                   t.pv_montante, t.pv_jusante, t.extensao AS extensao_planejada, t.rua,
-                   u.nome AS autor_nome
-            FROM diarios_execucao de
-            JOIN equipes e ON e.id = de.equipe_id
-            JOIN trechos t ON t.id = de.trecho_id
-            JOIN usuarios u ON u.id = de.autor_id
-            WHERE de.data = ?
-        ";
-        $params = [$filtroData];
-
-        if ($filtroEq) {
-            $sql .= " AND de.equipe_id = ?";
-            $params[] = $filtroEq;
+        // Tenta query completa; se colunas PA5 não existirem, usa query básica
+        try {
+            $sql = "
+                SELECT de.id, de.data, de.status, de.step_atual, de.versao,
+                       de.extensao_gps_m, de.step3_estoque_ok, de.step3_materiais_faltando,
+                       e.nome AS equipe_nome,
+                       t.pv_montante, t.pv_jusante, t.extensao AS extensao_planejada, t.rua,
+                       u.nome AS autor_nome
+                FROM diarios_execucao de
+                JOIN equipes e ON e.id = de.equipe_id
+                JOIN trechos t ON t.id = de.trecho_id
+                JOIN usuarios u ON u.id = de.autor_id
+                WHERE de.data = ?
+            ";
+            $params = [$filtroData];
+            if ($filtroEq) { $sql .= " AND de.equipe_id = ?"; $params[] = $filtroEq; }
+            $sql .= " ORDER BY e.nome, de.id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $diarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            // Fallback sem colunas opcionais
+            try {
+                $sql = "
+                    SELECT de.id, de.data, de.status, de.step_atual, de.versao,
+                           NULL AS extensao_gps_m, NULL AS step3_estoque_ok, NULL AS step3_materiais_faltando,
+                           e.nome AS equipe_nome,
+                           t.pv_montante, t.pv_jusante, t.extensao AS extensao_planejada, t.rua,
+                           u.nome AS autor_nome
+                    FROM diarios_execucao de
+                    JOIN equipes e ON e.id = de.equipe_id
+                    JOIN trechos t ON t.id = de.trecho_id
+                    JOIN usuarios u ON u.id = de.autor_id
+                    WHERE de.data = ?
+                ";
+                $params = [$filtroData];
+                if ($filtroEq) { $sql .= " AND de.equipe_id = ?"; $params[] = $filtroEq; }
+                $sql .= " ORDER BY e.nome, de.id";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute($params);
+                $diarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (\Exception $e2) {
+                $diarios = [];
+            }
         }
 
-        $sql .= " ORDER BY e.nome, de.id";
+        try {
+            $equipes = $pdo->query("SELECT id, nome FROM equipes WHERE ativo = 1 ORDER BY nome")
+                           ->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            $equipes = [];
+        }
 
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        $diarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        $equipes = $pdo->query("SELECT id, nome FROM equipes WHERE ativo = 1 ORDER BY nome")
-                       ->fetchAll(PDO::FETCH_ASSOC);
-
-        // Alertas de falta de material não resolvidos
         try {
             $alertasMat = $pdo->query("
                 SELECT af.*, e.nome AS equipe_nome, t.pv_montante, t.pv_jusante
@@ -58,7 +82,6 @@ class DiarioExecucaoController {
             $alertasMat = [];
         }
 
-        // Equipamentos em manutenção (colunas podem não existir antes da migration PA12)
         try {
             $equipsManut = array_merge(
                 $pdo->query("
