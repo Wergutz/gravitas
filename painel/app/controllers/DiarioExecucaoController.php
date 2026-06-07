@@ -10,8 +10,6 @@ class DiarioExecucaoController {
     // Lista de diários enviados (visão do Planejador)
     // --------------------------------------------------------
     public function index(): void {
-        ini_set('display_errors', 1);
-        error_reporting(E_ALL);
         auth_required([4]);
         global $pdo;
 

@@ -155,4 +155,4 @@ ob_start();
 
 <?php
 $content = ob_get_clean();
-require __DIR__ . '/../../layouts/planejador.php';
+require __DIR__ . '/../layouts/planejador.php';
