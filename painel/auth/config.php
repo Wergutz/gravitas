@@ -9,7 +9,7 @@ if (!defined('PAINEL_GRAVITAS')) {
 }
 
 // Caminho público do painel no domínio (ajuste se mudar a pasta)
-const GV_BASE = '/principal/painel/';
+const GV_BASE = '/painel/';
 
 // Sessão expira após 8h sem atividade
 const GV_TEMPO_INATIVIDADE = 28800;

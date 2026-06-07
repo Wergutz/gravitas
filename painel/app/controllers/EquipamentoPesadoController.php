@@ -172,7 +172,8 @@ class EquipamentoPesadoController
                 trim($_POST['descricao'])
             ]);
         
-            header('Location: ' . APP_BASE . '/equipamentos-pesados?salvo=1');
+            $_SESSION['flash_ok'] = 'Equipamento salvo com sucesso.';
+            header('Location: ' . APP_BASE . '/equipamentos-pesados');
             exit;
         }
         public function importar()

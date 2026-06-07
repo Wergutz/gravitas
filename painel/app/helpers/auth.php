@@ -11,10 +11,11 @@ function auth_required($niveis = []) {
 
     if (empty($niveis)) return;
 
-    if (!in_array((int)($_SESSION['nivel'] ?? 0), $niveis, true)) {
-        session_unset();
-        session_destroy();
-        header('Location: ' . APP_BASE . '/login.php?msg=acesso');
+    $nivel = (int)($_SESSION['nivel'] ?? 0);
+    if (!in_array($nivel, $niveis, true)) {
+        $_SESSION['flash_aviso'] = 'Acesso restrito. Você não tem permissão para esta área.';
+        $destinos = [5 => EXECUTOR_BASE . '/', 6 => MASTER_BASE . '/', 7 => REPAV_BASE . '/'];
+        header('Location: ' . ($destinos[$nivel] ?? APP_BASE . '/'));
         exit;
     }
 }

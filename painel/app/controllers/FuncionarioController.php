@@ -89,6 +89,7 @@ class FuncionarioController
             $_POST['sertras']
         ]);
 
+        $_SESSION['flash_ok'] = 'Funcionário cadastrado com sucesso.';
         header('Location: ' . APP_BASE . '/funcionarios');
         exit;
     }
@@ -115,6 +116,16 @@ class FuncionarioController
             header('Location: ' . APP_BASE . '/funcionarios');
             exit;
         }
+
+        // C3: carregar datas de validade dos documentos
+        $docs_map = [];
+        try {
+            $stmt = $pdo->prepare("SELECT tipo, data_validade FROM funcionario_documentos WHERE funcionario_id = ?");
+            $stmt->execute([$id]);
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                $docs_map[$row['tipo']] = $row;
+            }
+        } catch (\PDOException $e) { /* tabela ainda não existe */ }
 
         require __DIR__ . '/../views/funcionarios/editar.php';
     }
@@ -163,6 +174,28 @@ class FuncionarioController
             $_POST['id']
         ]);
 
+        // C3: salvar datas de validade em funcionario_documentos
+        $tipos_doc = ['aso','nr06','nr10','nr11','nr12','nr18','nr20','nr23','nr33','nr35','integracao_corsan','sertras'];
+        try {
+            $stmtDoc = $pdo->prepare("
+                INSERT INTO funcionario_documentos (funcionario_id, tipo, status, data_validade)
+                VALUES (?, ?, ?, ?)
+                ON DUPLICATE KEY UPDATE status = VALUES(status), data_validade = VALUES(data_validade),
+                                        atualizado_em = CURRENT_TIMESTAMP
+            ");
+            foreach ($tipos_doc as $tipo) {
+                $status   = (int)($_POST[$tipo] ?? 1);
+                $validade = trim($_POST['validade_' . $tipo] ?? '');
+                $stmtDoc->execute([
+                    (int)$_POST['id'],
+                    $tipo,
+                    $status,
+                    ($validade !== '' ? $validade : null),
+                ]);
+            }
+        } catch (\PDOException $e) { /* tabela ainda não existe: ignora */ }
+
+        $_SESSION['flash_ok'] = 'Funcionário atualizado com sucesso.';
         header('Location: ' . APP_BASE . '/funcionarios');
         exit;
     }
@@ -187,6 +220,7 @@ class FuncionarioController
             WHERE id = ?
         ")->execute([$id]);
 
+        $_SESSION['flash_ok'] = 'Status do funcionário atualizado.';
         header('Location: ' . APP_BASE . '/funcionarios');
         exit;
     }

@@ -50,14 +50,23 @@ $campos = [
 ];
 ?>
 
-<?php foreach ($campos as $campo => $label): ?>
-<div class="campo">
-    <label><?= $label ?></label>
-    <select name="<?= $campo ?>">
-        <option value="1" <?= $funcionario[$campo]==1?'selected':'' ?>>Apto</option>
-        <option value="2" <?= $funcionario[$campo]==2?'selected':'' ?>>Inapto</option>
-        <option value="3" <?= $funcionario[$campo]==3?'selected':'' ?>>N/A</option>
-    </select>
+<?php foreach ($campos as $campo => $label):
+    $doc = $docs_map[$campo] ?? null;
+    $validade = $doc['data_validade'] ?? '';
+?>
+<div class="form-grid col2" style="margin-bottom:6px;">
+    <div class="campo" style="margin-bottom:0;">
+        <label><?= $label ?> — Situação</label>
+        <select name="<?= $campo ?>">
+            <option value="1" <?= ($funcionario[$campo] ?? 1)==1?'selected':'' ?>>Apto</option>
+            <option value="2" <?= ($funcionario[$campo] ?? 1)==2?'selected':'' ?>>Inapto</option>
+            <option value="3" <?= ($funcionario[$campo] ?? 1)==3?'selected':'' ?>>N/A</option>
+        </select>
+    </div>
+    <div class="campo" style="margin-bottom:0;">
+        <label>Validade <?= $label ?></label>
+        <input type="date" name="validade_<?= $campo ?>" value="<?= htmlspecialchars($validade) ?>">
+    </div>
 </div>
 <?php endforeach; ?>
 

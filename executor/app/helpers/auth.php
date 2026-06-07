@@ -10,8 +10,6 @@ function auth_required_executor(): void {
     }
 
     if ((int)($_SESSION['nivel'] ?? 0) !== 5) {
-        session_unset();
-        session_destroy();
         header('Location: ' . EXECUTOR_BASE . '/login.php?msg=acesso');
         exit;
     }

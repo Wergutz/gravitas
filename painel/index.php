@@ -309,6 +309,18 @@ if ($uri === '/trechos/upload-os') {
     exit;
 }
 
+if ($uri === '/trechos/material-add') {
+    require_once __DIR__ . '/app/controllers/TrechoController.php';
+    (new TrechoController())->addMaterial();
+    exit;
+}
+
+if ($uri === '/trechos/material-remove') {
+    require_once __DIR__ . '/app/controllers/TrechoController.php';
+    (new TrechoController())->removeMaterial();
+    exit;
+}
+
 /* ==========================
    CAMINHAMENTOS
 ========================== */

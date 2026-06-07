@@ -93,7 +93,7 @@ table.trch tfoot td{background:#f8f9fb;font-weight:700;border-top:1.5px solid #d
             </svg>
             <div class="marca-txt">
                 <b>GRAVITAS</b>
-                <small>Saneamento Básico</small>
+                <small>Painel de Controle</small>
             </div>
         </div>
         <div class="doc-meta">
@@ -128,6 +128,36 @@ table.trch tfoot td{background:#f8f9fb;font-weight:700;border-top:1.5px solid #d
         <?php if (!empty($caminhamento['observacoes'])): ?>
         <div class="obs-box"><?= htmlspecialchars($caminhamento['observacoes']) ?></div>
         <?php endif; ?>
+    </div>
+
+    <!-- Local da Obra -->
+    <?php
+    $bacias  = array_unique(array_filter(array_column($trechos, 'bacia')));
+    $ruas    = array_unique(array_filter(array_column($trechos, 'rua')));
+    $cidades = array_unique(array_filter(array_column($trechos, 'cidade')));
+    $local_obra = implode(' · ', array_filter([
+        !empty($bacias)  ? 'Bacia ' . implode(', ', $bacias)   : null,
+        !empty($ruas)    ? implode(', ', $ruas)                  : null,
+        !empty($cidades) ? implode(', ', $cidades)               : null,
+    ])) ?: '—';
+    ?>
+    <div class="secao">
+        <div class="secao-titulo">Local da Obra</div>
+        <div class="grade-dados" style="grid-template-columns:1fr;">
+            <div class="dado"><label>Endereço / Bacia</label><span><?= htmlspecialchars($local_obra) ?></span></div>
+        </div>
+    </div>
+
+    <!-- Local de Retirada (CORSAN) -->
+    <div class="secao">
+        <div class="secao-titulo">Local de Retirada — Solicitação à CORSAN</div>
+        <div style="background:#f8f9fb;border:1px solid #dde;border-radius:4px;padding:10px 14px;font-size:11px;color:#333;">
+            Solicitamos à CORSAN que informe o local de retirada dos materiais listados acima,
+            bem como data e horário disponíveis para retirada.
+            <br><br>
+            <b>Local de retirada indicado pela CORSAN:</b>
+            <span style="border-bottom:1px solid #aaa;display:inline-block;min-width:260px;">&nbsp;</span>
+        </div>
     </div>
 
     <!-- Materiais Solicitados -->

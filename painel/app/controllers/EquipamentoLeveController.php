@@ -131,7 +131,8 @@ class EquipamentoLeveController {
             trim($_POST['numero_serie'])
         ]);
     
-        header('Location: ' . APP_BASE . '/equipamentos-leves?salvo=1');
+        $_SESSION['flash_ok'] = 'Equipamento salvo com sucesso.';
+        header('Location: ' . APP_BASE . '/equipamentos-leves');
         exit;
     }
     /* ========= IMPORTAÇÃO ========= */

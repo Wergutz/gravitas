@@ -153,7 +153,92 @@ class TrechoController
             exit;
         }
 
+        // C1: materiais do trecho e catálogo disponível
+        $stmt = $pdo->prepare("
+            SELECT tm.id, tm.material_id, mc.nome, mc.unidade, tm.quantidade
+            FROM trecho_materiais tm
+            JOIN materiais_catalogo mc ON mc.id = tm.material_id
+            WHERE tm.trecho_id = ?
+            ORDER BY mc.nome
+        ");
+        $stmt->execute([$id]);
+        $materiais_trecho = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $catalogo = $pdo->query("
+            SELECT id, nome, unidade
+            FROM materiais_catalogo
+            WHERE ativo = 1
+            ORDER BY nome
+        ")->fetchAll(PDO::FETCH_ASSOC);
+
         require __DIR__ . '/../views/trechos/editar.php';
+    }
+
+    /* =====================================================
+       C1 — MATERIAIS DO TRECHO (AJAX)
+    ===================================================== */
+    public function addMaterial()
+    {
+        auth_required([4]);
+        global $pdo;
+        csrf_verify();
+        header('Content-Type: application/json');
+
+        $trecho_id   = (int)($_POST['trecho_id'] ?? 0);
+        $material_id = (int)($_POST['material_id'] ?? 0);
+        $quantidade  = str_replace(',', '.', trim($_POST['quantidade'] ?? ''));
+
+        if ($trecho_id <= 0 || $material_id <= 0 || !is_numeric($quantidade) || (float)$quantidade <= 0) {
+            echo json_encode(['ok' => false, 'erro' => 'Dados inválidos.']);
+            exit;
+        }
+
+        $stmt = $pdo->prepare("SELECT id FROM trechos WHERE id = ?");
+        $stmt->execute([$trecho_id]);
+        if (!$stmt->fetch()) {
+            echo json_encode(['ok' => false, 'erro' => 'Trecho não encontrado.']);
+            exit;
+        }
+
+        $pdo->prepare("
+            INSERT INTO trecho_materiais (trecho_id, material_id, quantidade)
+            VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE quantidade = VALUES(quantidade)
+        ")->execute([$trecho_id, $material_id, (float)$quantidade]);
+
+        $stmt = $pdo->prepare("
+            SELECT tm.id, tm.material_id, mc.nome, mc.unidade, tm.quantidade
+            FROM trecho_materiais tm
+            JOIN materiais_catalogo mc ON mc.id = tm.material_id
+            WHERE tm.trecho_id = ? AND tm.material_id = ?
+        ");
+        $stmt->execute([$trecho_id, $material_id]);
+        $item = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        echo json_encode(['ok' => true, 'item' => $item]);
+        exit;
+    }
+
+    public function removeMaterial()
+    {
+        auth_required([4]);
+        global $pdo;
+        csrf_verify();
+        header('Content-Type: application/json');
+
+        $id        = (int)($_POST['id'] ?? 0);
+        $trecho_id = (int)($_POST['trecho_id'] ?? 0);
+
+        if ($id <= 0) {
+            echo json_encode(['ok' => false, 'erro' => 'ID inválido.']);
+            exit;
+        }
+
+        $pdo->prepare("DELETE FROM trecho_materiais WHERE id = ? AND trecho_id = ?")
+            ->execute([$id, $trecho_id]);
+
+        echo json_encode(['ok' => true]);
+        exit;
     }
 
     /* =====================================================
