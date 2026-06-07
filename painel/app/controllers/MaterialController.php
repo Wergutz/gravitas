@@ -26,6 +26,15 @@ class MaterialController
         ");
         $materiais = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // Última contagem de estoque
+        $ultima_contagem = null;
+        try {
+            $ultima_contagem = $pdo->query("
+                SELECT data_contagem, responsavel FROM contagens_estoque
+                ORDER BY criado_em DESC LIMIT 1
+            ")->fetch(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {}
+
         require __DIR__ . '/../views/materiais/listar.php';
     }
 

@@ -124,17 +124,29 @@ class CaminhamentoController
             ORDER BY t.bacia, t.pv_montante
         ")->fetchAll(PDO::FETCH_ASSOC);
 
-        // Regra 18: docs vencidos por equipe
+        // Regra 18: docs vencidos e a vencer (≤30d) por equipe
         $docs_vencidos_por_equipe = [];
+        $docs_a_vencer_por_equipe = [];
+        $stmtVenc = $pdo->prepare("
+            SELECT COUNT(*)
+            FROM funcionario_documentos fd
+            JOIN equipe_funcionarios ef ON ef.funcionario_id = fd.funcionario_id AND ef.ativo = 1
+            WHERE ef.equipe_id = ? AND fd.data_validade IS NOT NULL AND fd.data_validade < CURDATE()
+        ");
+        $stmtAVenc = $pdo->prepare("
+            SELECT COUNT(*)
+            FROM funcionario_documentos fd
+            JOIN equipe_funcionarios ef ON ef.funcionario_id = fd.funcionario_id AND ef.ativo = 1
+            WHERE ef.equipe_id = ?
+              AND fd.data_validade IS NOT NULL
+              AND fd.data_validade >= CURDATE()
+              AND fd.data_validade <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+        ");
         foreach ($equipes as $e) {
-            $stmt = $pdo->prepare("
-                SELECT COUNT(*)
-                FROM funcionario_documentos fd
-                JOIN equipe_funcionarios ef ON ef.funcionario_id = fd.funcionario_id AND ef.ativo = 1
-                WHERE ef.equipe_id = ? AND fd.data_validade < CURDATE()
-            ");
-            $stmt->execute([$e['id']]);
-            $docs_vencidos_por_equipe[$e['id']] = (int)$stmt->fetchColumn();
+            $stmtVenc->execute([$e['id']]);
+            $docs_vencidos_por_equipe[$e['id']] = (int)$stmtVenc->fetchColumn();
+            $stmtAVenc->execute([$e['id']]);
+            $docs_a_vencer_por_equipe[$e['id']] = (int)$stmtAVenc->fetchColumn();
         }
 
         require __DIR__ . '/../views/caminhamentos/cadastrar.php';

@@ -16,12 +16,38 @@ class FuncionarioController
         auth_required([4]); // Planejador
         global $pdo;
 
+        $filtro_aptos = isset($_GET['aptos']);
+
         $stmt = $pdo->query("
-            SELECT *
-            FROM funcionarios
-            ORDER BY nome
+            SELECT f.*,
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM funcionario_documentos fd
+                        WHERE fd.funcionario_id = f.id
+                          AND fd.data_validade IS NOT NULL
+                          AND fd.data_validade < CURDATE()
+                    ) THEN 'vencido'
+                    WHEN EXISTS (
+                        SELECT 1 FROM funcionario_documentos fd
+                        WHERE fd.funcionario_id = f.id
+                          AND fd.data_validade IS NOT NULL
+                          AND fd.data_validade BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+                    ) THEN 'a_vencer'
+                    WHEN EXISTS (
+                        SELECT 1 FROM funcionario_documentos fd
+                        WHERE fd.funcionario_id = f.id
+                          AND fd.data_validade IS NOT NULL
+                    ) THEN 'em_dia'
+                    ELSE 'sem_info'
+                END AS status_docs
+            FROM funcionarios f
+            ORDER BY f.nome
         ");
-        $funcionarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $todos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $funcionarios = $filtro_aptos
+            ? array_filter($todos, fn($f) => $f['status_docs'] === 'em_dia')
+            : $todos;
 
         require __DIR__ . '/../views/funcionarios/listar.php';
     }

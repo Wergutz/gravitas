@@ -8,6 +8,20 @@ $pageSubtitle = 'Catálogo e controle de estoque';
 ob_start();
 ?>
 
+<?php if ($ultima_contagem): ?>
+<div class="card" style="margin-bottom:14px;padding:12px 16px;display:flex;align-items:center;gap:10px;background:var(--ok-bg,#eafaf1);border:1px solid var(--ok,#28a745);">
+    <span style="font-size:18px;">📦</span>
+    <div style="font-size:13px;">
+        <b>Última contagem:</b>
+        <?= date('d/m/Y', strtotime($ultima_contagem['data_contagem'])) ?>
+        <?php if ($ultima_contagem['responsavel']): ?>
+            <span style="color:var(--muted)"> por <?= htmlspecialchars($ultima_contagem['responsavel']) ?></span>
+        <?php endif; ?>
+    </div>
+    <a href="<?= APP_BASE ?>/materiais/importar-estoque" class="btn btn-sec btn-sm" style="margin-left:auto;">Nova contagem</a>
+</div>
+<?php endif; ?>
+
 <div class="topo" style="margin-bottom:14px;">
     <div class="acoes">
         <a href="<?= APP_BASE ?>/materiais/importar" class="btn btn-sec">Importar Catálogo</a>

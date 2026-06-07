@@ -413,7 +413,7 @@ class TrechoController
             $rows = $_SESSION['import_prev_trechos']['rows'] ?? [];
             unset($_SESSION['import_prev_trechos']);
 
-            $stmtChk = $pdo->prepare("SELECT id FROM trechos WHERE pv_montante = ? AND pv_jusante = ?");
+            $stmtChk = $pdo->prepare("SELECT id FROM trechos WHERE pv_montante = ? AND pv_jusante = ? AND (contrato = ? OR (contrato IS NULL AND ? IS NULL))");
             $stmtIns = $pdo->prepare("
                 INSERT INTO trechos
                     (bacia, pv_montante, pv_jusante, tipo_pi_montante, extensao,
@@ -423,8 +423,8 @@ class TrechoController
             $stmtUpd = $pdo->prepare("
                 UPDATE trechos SET
                     bacia=?, tipo_pi_montante=?, extensao=?,
-                    profundidade_media=?, dn=?, ramais=?, rua=?, cidade=?, contrato=?
-                WHERE pv_montante=? AND pv_jusante=?
+                    profundidade_media=?, dn=?, ramais=?, rua=?, cidade=?
+                WHERE pv_montante=? AND pv_jusante=? AND (contrato = ? OR (contrato IS NULL AND ? IS NULL))
             ");
 
             $ok = 0;
@@ -443,8 +443,8 @@ class TrechoController
                         $stmtUpd->execute([
                             $r['bacia'], $r['tipo_pi_montante'], $r['extensao'],
                             $r['profundidade'], $r['dn'], $r['ramais'],
-                            $r['rua'], $r['cidade'], $r['contrato'],
-                            $r['pv_montante'], $r['pv_jusante'],
+                            $r['rua'], $r['cidade'],
+                            $r['pv_montante'], $r['pv_jusante'], $r['contrato'], $r['contrato'],
                         ]);
                     }
                     $ok++;
@@ -469,14 +469,15 @@ class TrechoController
                 ->getActiveSheet()->toArray(null, true, false, false);
 
             $preview_rows = [];
-            $stmtChk = $pdo->prepare("SELECT COUNT(*) FROM trechos WHERE pv_montante = ? AND pv_jusante = ?");
+            $stmtChk = $pdo->prepare("SELECT COUNT(*) FROM trechos WHERE pv_montante = ? AND pv_jusante = ? AND (contrato = ? OR (contrato IS NULL AND ? IS NULL))");
             foreach ($allRows as $i => $linha) {
                 if ($i < 6) continue;
-                $pv_mont = trim((string)($linha[0] ?? ''));
-                $pv_jus  = trim((string)($linha[1] ?? ''));
+                $pv_mont  = trim((string)($linha[0] ?? ''));
+                $pv_jus   = trim((string)($linha[1] ?? ''));
+                $contrato = trim((string)($linha[10] ?? '')) ?: null;
                 if ($pv_mont === '') continue;
 
-                $stmtChk->execute([$pv_mont, $pv_jus]);
+                $stmtChk->execute([$pv_mont, $pv_jus, $contrato, $contrato]);
                 $status = (int)$stmtChk->fetchColumn() > 0 ? 'atualizar' : 'novo';
 
                 $ext  = str_replace(',', '.', (string)($linha[4] ?? ''));
