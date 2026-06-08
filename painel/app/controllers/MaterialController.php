@@ -259,6 +259,9 @@ class MaterialController
                 $codigo = trim((string)($linha[0] ?? ''));
                 $nome   = trim((string)($linha[1] ?? ''));
 
+                // Ignorar linha totalmente vazia (células formatadas sem valor)
+                if (!array_filter($linha, fn($c) => $c !== null && trim((string)$c) !== '')) continue;
+
                 if ($nome === '') {
                     $preview_rows[] = ['_linha'=>$i+1,'_status'=>'erro',
                         '_msg'=>"'Nome do material' obrigatório",'_chave_tipo'=>'codigo',

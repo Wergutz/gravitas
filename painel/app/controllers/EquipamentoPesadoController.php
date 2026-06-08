@@ -252,6 +252,9 @@ class EquipamentoPesadoController
                 $fabricante = trim((string)($linha[3] ?? ''));
                 $ano        = (int)($linha[4] ?? 0);
 
+                // Ignorar linha totalmente vazia (células formatadas sem valor)
+                if (!array_filter($linha, fn($c) => $c !== null && trim((string)$c) !== '')) continue;
+
                 if ($tipo === '') {
                     $preview_rows[] = ['_linha'=>$i+1,'_status'=>'erro','_msg'=>"'Tipo' obrigatório",
                         '_chave_tipo'=>'placa','tipo'=>'','placa'=>$placa,'modelo'=>$modelo,

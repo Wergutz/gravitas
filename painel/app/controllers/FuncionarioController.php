@@ -317,29 +317,32 @@ class FuncionarioController
                             $r['cpf'],
                         ]);
                     }
-                    $stmtId->execute([$r['cpf']]);
-                    $func_id = (int)$stmtId->fetchColumn();
-                    if ($func_id > 0) {
-                        $docMap = [
-                            'aso'  => [$r['aso'],   $r['val_aso']],
-                            'nr06' => [$r['nr06'],  $r['val_nr06']],
-                            'nr10' => [$r['nr10'],  $r['val_nr10']],
-                            'nr11' => [$r['nr11'],  $r['val_nr11']],
-                            'nr12' => [$r['nr12'],  $r['val_nr12']],
-                            'nr18' => [$r['nr18'],  $r['val_nr18']],
-                            'nr20' => [$r['nr20'],  $r['val_nr20']],
-                            'nr23' => [$r['nr23'],  $r['val_nr23']],
-                            'nr33' => [$r['nr33'],  $r['val_nr33']],
-                            'nr35' => [$r['nr35'],  $r['val_nr35']],
-                            'integracao_corsan' => [$r['integracao_corsan'], null],
-                            'sertras'           => [$r['sertras'],           null],
-                        ];
-                        foreach ($docMap as $tipo => [$status, $validade]) {
-                            $stmtDoc->execute([$func_id, $tipo, $status, $validade]);
-                        }
+                    $ok++; // conta aqui, antes do docMap
+                } catch (\Exception $e) { continue; }
+
+                // Salvar documentos separadamente — falha não cancela $ok
+                $stmtId->execute([$r['cpf']]);
+                $func_id = (int)$stmtId->fetchColumn();
+                if ($func_id > 0) {
+                    $docMap = [
+                        'aso'               => [$r['aso'],               $r['val_aso']],
+                        'nr06'              => [$r['nr06'],              $r['val_nr06']],
+                        'nr10'              => [$r['nr10'],              $r['val_nr10']],
+                        'nr11'              => [$r['nr11'],              $r['val_nr11']],
+                        'nr12'              => [$r['nr12'],              $r['val_nr12']],
+                        'nr18'              => [$r['nr18'],              $r['val_nr18']],
+                        'nr20'              => [$r['nr20'],              $r['val_nr20']],
+                        'nr23'              => [$r['nr23'],              $r['val_nr23']],
+                        'nr33'              => [$r['nr33'],              $r['val_nr33']],
+                        'nr35'              => [$r['nr35'],              $r['val_nr35']],
+                        'integracao_corsan' => [$r['integracao_corsan'], null],
+                        'sertras'           => [$r['sertras'],           null],
+                    ];
+                    foreach ($docMap as $tipo => [$status, $validade]) {
+                        try { $stmtDoc->execute([$func_id, $tipo, $status, $validade]); }
+                        catch (\Exception $e) {}
                     }
-                    $ok++;
-                } catch (\Exception $e) {}
+                }
             }
 
             try {
@@ -372,6 +375,9 @@ class FuncionarioController
                 $nome    = trim((string)($linha[0] ?? ''));
                 $cpf_raw = trim((string)($linha[1] ?? ''));
                 $cpf     = preg_replace('/\D/', '', $cpf_raw);
+
+                // Ignorar linha totalmente vazia (células formatadas sem valor)
+                if (!array_filter($linha, fn($c) => $c !== null && trim((string)$c) !== '')) continue;
 
                 if ($nome === '') {
                     $preview_rows[] = ['_linha'=>$lineNum,'_status'=>'erro','_msg'=>"'Nome completo' obrigatório",

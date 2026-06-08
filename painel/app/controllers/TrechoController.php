@@ -480,6 +480,10 @@ class TrechoController
                 $pv_mont  = trim((string)($linha[0] ?? ''));
                 $pv_jus   = trim((string)($linha[1] ?? ''));
                 $contrato = trim((string)($linha[10] ?? '')) ?: null;
+
+                // Ignorar linha totalmente vazia (células formatadas sem valor)
+                if (!array_filter($linha, fn($c) => $c !== null && trim((string)$c) !== '')) continue;
+
                 if ($pv_mont === '') {
                     $ext2  = str_replace(',', '.', (string)($linha[4] ?? ''));
                     $prof2 = str_replace(',', '.', (string)($linha[5] ?? ''));

@@ -23,7 +23,8 @@ ob_start();
     <?php if ($caminhamento['status'] === 'rascunho'): ?>
         <form method="post" action="<?= APP_BASE ?>/caminhamentos/publicar"
               style="display:inline;"
-              onsubmit="return confirm('Publicar este caminhamento? Os materiais dos trechos serão reservados no estoque.')">
+              data-confirmar="Publicar este caminhamento? Os materiais dos trechos serão reservados no estoque."
+              data-cor="#1A6B3C">
             <?= csrf_input() ?>
             <input type="hidden" name="id" value="<?= (int)$caminhamento['id'] ?>">
             <button type="submit" class="btn btn-pri btn-sm">
@@ -48,7 +49,8 @@ ob_start();
     <?php if (in_array($caminhamento['status'], ['rascunho', 'publicado'])): ?>
         <form method="post" action="<?= APP_BASE ?>/caminhamentos/excluir"
               style="display:inline;"
-              onsubmit="return confirm('Excluir este caminhamento? Os trechos voltarão para \'livre\'.')">
+              data-confirmar="Excluir este caminhamento? Os trechos voltarão para 'livre'."
+              data-cor="#b91c1c">
             <?= csrf_input() ?>
             <input type="hidden" name="id" value="<?= (int)$caminhamento['id'] ?>">
             <button type="submit" class="btn btn-sm" style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;">
@@ -133,7 +135,8 @@ ob_start();
                         <?php if ($tc['ct_status'] !== 'concluido' && in_array($caminhamento['status'], ['publicado', 'execucao'])): ?>
                             <form method="post" action="<?= APP_BASE ?>/caminhamentos/concluir-trecho"
                                   style="display:inline;"
-                                  onsubmit="return confirm('Marcar trecho como concluído? Materiais serão baixados do estoque e o trecho entrará na fila de repavimentação.')">
+                                  data-confirmar="Marcar trecho como concluído? Materiais serão baixados do estoque e o trecho entrará na fila de repavimentação."
+                                  data-cor="#1A6B3C">
                                 <?= csrf_input() ?>
                                 <input type="hidden" name="caminhamento_id" value="<?= (int)$caminhamento['id'] ?>">
                                 <input type="hidden" name="trecho_id" value="<?= (int)$tc['trecho_id'] ?>">
@@ -144,6 +147,15 @@ ob_start();
                 </div>
 
                 <!-- Materiais do trecho -->
+                <div style="margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <?php if (empty($mats)): ?>
+                    <span style="font-size:12px;color:var(--cor-aviso,#E07B39);">⚠️ Nenhum material lançado neste trecho</span>
+                    <?php endif; ?>
+                    <a href="<?= APP_BASE ?>/trechos/editar?id=<?= (int)$tc['trecho_id'] ?>" class="btn btn-sec btn-sm" style="font-size:11.5px;">
+                        📦 <?= empty($mats) ? 'Lançar materiais' : 'Editar materiais (' . count($mats) . ')' ?>
+                    </a>
+                </div>
+
                 <?php if (!empty($mats)): ?>
                     <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);">
                         <div style="font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px;">Materiais</div>
@@ -200,4 +212,42 @@ ob_start();
 
 <?php
 $content = ob_get_clean();
+
+// Append modal + JS before layout
+$content .= <<<'HTML'
+<!-- Modal de confirmação customizado -->
+<div id="modal-confirm" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:14px;padding:28px 28px 20px;max-width:380px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.18)">
+    <div id="modal-msg" style="font-size:14px;line-height:1.55;margin-bottom:20px;color:#1E2738"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="modalResponder(false)" style="border:1px solid #E4E8EF;background:#F4F6FA;color:#1E2738;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">Cancelar</button>
+      <button id="modal-btn-ok" onclick="modalResponder(true)" style="border:0;background:#1A2D4F;color:#fff;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer">Confirmar</button>
+    </div>
+  </div>
+</div>
+<script>
+let _modalResolve = null;
+function abrirModal(msg, corBtn) {
+  document.getElementById('modal-msg').textContent = msg;
+  const btn = document.getElementById('modal-btn-ok');
+  btn.style.background = corBtn || '#1A2D4F';
+  document.getElementById('modal-confirm').style.display = 'flex';
+  return new Promise(r => { _modalResolve = r; });
+}
+function modalResponder(ok) {
+  document.getElementById('modal-confirm').style.display = 'none';
+  if (_modalResolve) { _modalResolve(ok); _modalResolve = null; }
+}
+document.querySelectorAll('form[data-confirmar]').forEach(form => {
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const msg  = this.dataset.confirmar;
+    const cor  = this.dataset.cor || null;
+    const ok   = await abrirModal(msg, cor);
+    if (ok) this.submit();
+  });
+});
+</script>
+HTML;
+
 require __DIR__ . '/../layouts/planejador.php';

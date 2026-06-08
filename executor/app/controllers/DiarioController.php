@@ -126,13 +126,27 @@ class DiarioController {
             return;
         }
 
+        // Usa a data_execucao do caminhamento publicado (não a data atual do servidor)
+        $stmtCamData = $this->db->prepare("
+            SELECT c.data_execucao
+            FROM caminhamentos c
+            JOIN caminhamento_trechos ct ON ct.caminhamento_id = c.id
+            WHERE c.equipe_id = ? AND ct.trecho_id = ?
+              AND c.status IN ('publicado','execucao')
+            ORDER BY c.data_execucao ASC
+            LIMIT 1
+        ");
+        $stmtCamData->execute([$equipeId, $trechoId]);
+        $camRow    = $stmtCamData->fetch(PDO::FETCH_ASSOC);
+        $dataDiario = $camRow ? $camRow['data_execucao'] : date('Y-m-d');
+
         // Evita duplicata (mesmo equipe/trecho/dia na última versão)
         $stmt = $this->db->prepare("
-            SELECT id, status FROM diarios_execucao
-            WHERE equipe_id = ? AND trecho_id = ? AND data = CURDATE()
+            SELECT id, status, versao FROM diarios_execucao
+            WHERE equipe_id = ? AND trecho_id = ? AND data = ?
             ORDER BY versao DESC LIMIT 1
         ");
-        $stmt->execute([$equipeId, $trechoId]);
+        $stmt->execute([$equipeId, $trechoId, $dataDiario]);
         $existente = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($existente && $existente['status'] !== 'enviado') {
@@ -146,9 +160,9 @@ class DiarioController {
         $ins = $this->db->prepare("
             INSERT INTO diarios_execucao
                 (equipe_id, trecho_id, data, autor_id, status, versao, step_atual)
-            VALUES (?, ?, CURDATE(), ?, 'rascunho', ?, 1)
+            VALUES (?, ?, ?, ?, 'rascunho', ?, 1)
         ");
-        $ins->execute([$equipeId, $trechoId, $autorId, $versao]);
+        $ins->execute([$equipeId, $trechoId, $dataDiario, $autorId, $versao]);
         $diarioId = (int)$this->db->lastInsertId();
 
         header('Location: ' . EXECUTOR_BASE . '/diario/' . $diarioId);
@@ -255,7 +269,7 @@ class DiarioController {
         $this->db->beginTransaction();
         try {
             // 1. Marca como enviado
-            $this->db->prepare("UPDATE diarios_execucao SET status = 'enviado', step_atual = 21 WHERE id = ?")
+            $this->db->prepare("UPDATE diarios_execucao SET status = 'enviado' WHERE id = ?")
                      ->execute([$id]);
 
             // 2. GPS → extensão executada no caminhamento_trechos
@@ -463,19 +477,17 @@ class DiarioController {
     private function processarStep(int $diarioId, int $step, array $diario): bool {
         // Cada step persiste os campos que lhe cabem
         switch ($step) {
-            case 1: // Presença inicial
-                $ids  = $_POST['presentes']  ?? [];
-                $aus  = $_POST['ausentes']   ?? [];
-                // Zera presença existente para o diário, reinsere
+            case 1: // Presença inicial — lê presenca[ID]=status direto do FormData
+                $presencaPost = $_POST['presenca'] ?? [];
                 $this->db->prepare("DELETE FROM diario_presencas WHERE diario_id = ?")->execute([$diarioId]);
-                foreach ($ids as $fid) {
-                    $this->db->prepare("INSERT INTO diario_presencas (diario_id,funcionario_id,status) VALUES (?,?,'presente')")
-                             ->execute([$diarioId, (int)$fid]);
-                }
-                foreach ($aus as $fid) {
-                    $obs = substr($_POST['obs_' . $fid] ?? '', 0, 255);
-                    $this->db->prepare("INSERT INTO diario_presencas (diario_id,funcionario_id,status,obs) VALUES (?,?,'ausente',?)")
-                             ->execute([$diarioId, (int)$fid, $obs]);
+                $statusValidos = ['presente', 'ausente', 'atrasou', 'saiu_cedo'];
+                foreach ($presencaPost as $fid => $status) {
+                    $s   = in_array($status, $statusValidos) ? $status : 'presente';
+                    $obs = substr($_POST['obs_' . (int)$fid] ?? '', 0, 255);
+                    $this->db->prepare("
+                        INSERT INTO diario_presencas (diario_id, funcionario_id, status, obs)
+                        VALUES (?, ?, ?, ?)
+                    ")->execute([$diarioId, (int)$fid, $s, $obs]);
                 }
                 return true;
 

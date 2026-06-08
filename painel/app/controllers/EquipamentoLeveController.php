@@ -210,6 +210,9 @@ class EquipamentoLeveController {
                 $modelo     = trim((string)($linha[2] ?? ''));
                 $ano        = (int)($linha[3] ?? 0);
 
+                // Ignorar linha totalmente vazia (células formatadas sem valor)
+                if (!array_filter($linha, fn($c) => $c !== null && trim((string)$c) !== '')) continue;
+
                 if ($tipo === '') {
                     $preview_rows[] = ['_linha'=>$i+1,'_status'=>'erro','_msg'=>"'Tipo' obrigatório",
                         '_chave_tipo'=>'referencia','tipo'=>'','referencia'=>$referencia,'modelo'=>$modelo,
