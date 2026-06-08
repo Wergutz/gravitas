@@ -1,0 +1,1241 @@
+<!-- DEPLOY TEST: 2026-05-27 -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1A2D4F">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<meta name="author" content="Gravitas — Suporte Técnico e Administrativo para Contratos">
+<meta name="description" content="Apps personalizados para obra, perícias judiciais (engenharia e contábil) e elaboração de aditivos administrativos e judiciais. Foco total na sua produção. Nós cuidamos do resto.">
+<meta name="keywords" content="apps para obra, medição automática, perícia de engenharia, perícia contábil, assistência técnica judicial, aditivo administrativo, aditivo judicial, RDO digital, gestão de obras, painel de controle Gravitas">
+<link rel="canonical" href="https://gravitas.net.br/">
+
+<!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://gravitas.net.br/">
+<meta property="og:title" content="MARCO URBANO — Foco total na sua produção. Nós cuidamos do resto.">
+<meta property="og:description" content="Três serviços, uma única operação técnica: apps personalizados para sua obra, perícias judiciais (engenharia e contábil) e elaboração de aditivos administrativos e judiciais.">
+<meta property="og:image" content="https://gravitas.net.br/img/og-gravitas.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:site_name" content="MARCO URBANO">
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MARCO URBANO — Foco total na sua produção.">
+<meta name="twitter:description" content="Apps, perícias e aditivos para contratos de obra. Uma única equipe — do buraco aberto ao recebimento.">
+<meta name="twitter:image" content="https://gravitas.net.br/img/og-gravitas.jpg">
+
+<title>MARCO URBANO — Apps, Perícias e Aditivos para Contratos de Obra</title>
+
+<!-- Performance: preconnect às origens que vão carregar -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="video" href="img/videogravitas.mp4" type="video/mp4">
+
+<!-- Fontes (Inter + Plus Jakarta Sans) -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- Schema.org JSON-LD: Organization + 3 Services -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://gravitas.net.br/#org",
+      "name": "Gravitas",
+      "alternateName": "Gravitas — Suporte Técnico e Administrativo para Contratos",
+      "url": "https://gravitas.net.br/",
+      "logo": "https://gravitas.net.br/img/logo-gravitas-transparent.png",
+      "description": "Apps personalizados para obras, perícias judiciais e elaboração de aditivos administrativos e judiciais.",
+      "contactPoint": [{
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "email": "contato@gravitas.net.br",
+        "areaServed": "BR",
+        "availableLanguage": ["Portuguese"]
+      }]
+    },
+    {
+      "@type": "Service",
+      "name": "App de Produção",
+      "serviceType": "Aplicativo personalizado para obras",
+      "provider": { "@id": "https://gravitas.net.br/#org" },
+      "description": "Aplicativo personalizado para coleta de campo, geração automática de medições, planejamento diário e controle de recursos. Adapta-se à planilha de cada obra.",
+      "areaServed": "BR"
+    },
+    {
+      "@type": "Service",
+      "name": "Perícias Judiciais",
+      "serviceType": "Perícia técnica em obras e contratos",
+      "provider": { "@id": "https://gravitas.net.br/#org" },
+      "description": "Perícia de engenharia, perícia contábil e assistência técnica em ações judiciais envolvendo obras, contratos e cálculos.",
+      "areaServed": "BR"
+    },
+    {
+      "@type": "Service",
+      "name": "Aditivos",
+      "serviceType": "Elaboração de aditivos administrativos e judiciais",
+      "provider": { "@id": "https://gravitas.net.br/#org" },
+      "description": "Elaboração de aditivos administrativos e judiciais com memorial técnico defensável, do levantamento ao protocolo.",
+      "areaServed": "BR"
+    }
+  ]
+}
+</script>
+
+<style>
+  :root{
+    /* --navy sincronizado com a cor exata do fundo do logo (amostrada da arte) */
+    --navy:#1E304B;
+    --navy-2:#142339;
+    --blue:#2E75B6;
+    --orange:#E89C2A;
+    --orange-2:#D08A1F;
+    --bg:#F5F7FA;
+    --bg-2:#FFFFFF;
+    --text:#1B1F26;
+    --muted:#5B6470;
+    --grey:#888;
+    --radius:14px;
+    --radius-lg:18px;
+    --shadow:0 12px 30px rgba(16,32,72,.08);
+    --shadow-lg:0 20px 50px rgba(16,32,72,.14);
+    --maxw:1180px;
+    --transition:all .2s ease;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    color:var(--text); background:var(--bg-2); line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  h1,h2,h3,h4{font-family:"Plus Jakarta Sans","Inter",sans-serif;letter-spacing:-.01em}
+  img{max-width:100%;display:block;height:auto}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit}
+  .container{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+  /* Acessibilidade — skip link */
+  .skip-link{
+    position:absolute;top:-100px;left:0;background:var(--orange);color:var(--navy);
+    padding:12px 18px;font-weight:700;z-index:100;border-bottom-right-radius:8px;
+  }
+  .skip-link:focus{top:0;outline:3px solid var(--navy)}
+
+  /* prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
+    .hero-video{display:none}
+    .hero{background:var(--navy)}
+  }
+
+  /* ==== HEADER ==== */
+  header.site{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    background:rgba(15,29,56,.85);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  header.site .bar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 24px;max-width:var(--maxw);margin:0 auto;
+  }
+  .logo{
+    display:flex;align-items:center;gap:12px;text-decoration:none;
+  }
+  .logo-img{
+    height:48px;width:auto;display:block;
+    filter:drop-shadow(0 4px 12px rgba(0,0,0,.25));
+    transition:var(--transition);
+  }
+  .logo:hover .logo-img,.logo:focus .logo-img{transform:scale(1.04)}
+  nav.primary{display:flex;gap:26px;font-size:14px;color:rgba(255,255,255,.85)}
+  nav.primary a{transition:var(--transition);font-weight:500;position:relative}
+  nav.primary a:hover,nav.primary a:focus{color:var(--orange);outline:none}
+  nav.primary a[aria-current="page"]{color:var(--orange)}
+  .nav-cta{
+    background:var(--orange);color:var(--navy);font-weight:700;
+    padding:10px 18px;border-radius:8px;font-size:14px;
+    transition:var(--transition);
+  }
+  .nav-cta:hover,.nav-cta:focus{background:#fff;transform:translateY(-1px);outline:none}
+  .burger{display:none;color:#fff;font-size:22px;background:transparent;border:0;cursor:pointer;padding:8px}
+  .burger:focus{outline:2px solid var(--orange);outline-offset:2px}
+
+  /* ==== HERO ==== */
+  .hero{
+    position:relative;min-height:100vh;
+    display:flex;align-items:center;
+    overflow:hidden;color:#fff;padding:120px 0 80px;
+    background:var(--navy);
+  }
+  .hero-grid{
+    display:grid;grid-template-columns:minmax(280px,420px) 1fr;
+    align-items:center;gap:56px;
+  }
+  .hero-logo-wrap{
+    background:var(--navy);
+    overflow:hidden;line-height:0;
+    animation:logoIn 1.1s cubic-bezier(.2,.7,.2,1) both;
+  }
+  .hero-logo{
+    width:100%;height:auto;display:block;
+  }
+  @keyframes logoIn{
+    from{opacity:0;transform:translateY(20px) scale(.96)}
+    to{opacity:1;transform:none}
+  }
+  .hero-video{
+    position:absolute;top:0;left:0;right:0;bottom:0;width:100%;height:100%;object-fit:cover;z-index:0;
+  }
+  .hero-overlay{
+    position:absolute;top:0;left:0;right:0;bottom:0;z-index:1;
+    /* Lado esquerdo (logo): cor sólida idêntica ao fundo do logo. Lado direito: gradiente leve, vídeo aparece discreto */
+    background:linear-gradient(90deg,
+      rgba(30,48,75,1)    0%,
+      rgba(30,48,75,1)   35%,
+      rgba(30,48,75,.86) 65%,
+      rgba(30,48,75,.78) 100%);
+  }
+  .hero .container{position:relative;z-index:2}
+  .hero .eyebrow{
+    display:inline-block;padding:6px 14px;border:1px solid var(--orange);
+    color:var(--orange);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+    border-radius:99px;margin-bottom:24px;font-weight:700;
+  }
+  .hero h1{
+    font-size:clamp(36px,5.5vw,72px);font-weight:800;line-height:1.05;
+    max-width:14ch;margin-bottom:20px;letter-spacing:-.02em;
+  }
+  .hero h1 span{color:var(--orange)}
+  .hero p.lead{
+    font-size:clamp(17px,1.6vw,22px);max-width:54ch;color:rgba(255,255,255,.88);
+    margin-bottom:18px;line-height:1.5;
+  }
+  .hero p.sub-promise{
+    font-size:14px;color:var(--orange);text-transform:uppercase;letter-spacing:.18em;
+    font-weight:700;margin-bottom:32px;
+  }
+  .cta-row{display:flex;gap:14px;flex-wrap:wrap}
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:15px 26px;border-radius:10px;font-weight:700;font-size:15px;
+    transition:var(--transition);
+    border:0;cursor:pointer;letter-spacing:.01em;
+    font-family:"Inter",sans-serif;
+  }
+  .btn:focus{outline:2px solid var(--orange);outline-offset:3px}
+  .btn-primary{background:var(--orange);color:var(--navy);box-shadow:0 8px 24px rgba(232,156,42,.35)}
+  .btn-primary:hover{background:#fff;transform:translateY(-2px);box-shadow:0 12px 32px rgba(232,156,42,.45)}
+  .btn-ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.4)}
+  .btn-ghost:hover{background:rgba(255,255,255,.1);border-color:#fff}
+  .btn-dark{background:var(--navy);color:#fff}
+  .btn-dark:hover{background:var(--navy-2);transform:translateY(-2px)}
+
+  /* ==== STRIP ==== */
+  .strip{
+    background:var(--navy);color:#fff;padding:22px 0;
+    border-top:3px solid var(--orange);
+  }
+  .strip .container{
+    display:flex;align-items:center;justify-content:center;gap:18px;
+    font-size:15px;text-align:center;flex-wrap:wrap;
+  }
+  .strip strong{color:var(--orange);font-weight:700}
+
+  /* ==== SECTION BASES ==== */
+  section.block{padding:96px 0;position:relative}
+  section.alt{background:var(--bg)}
+  .eyebrow-s{
+    color:var(--blue);font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+    font-weight:700;margin-bottom:14px;display:block;
+    font-family:"Plus Jakarta Sans",sans-serif;
+  }
+  h2.section-title{
+    font-size:clamp(28px,3.6vw,46px);color:var(--navy);font-weight:800;line-height:1.1;
+    max-width:24ch;margin-bottom:18px;
+  }
+  p.section-lead{
+    font-size:clamp(16px,1.4vw,19px);color:var(--muted);max-width:68ch;margin-bottom:48px;
+  }
+
+  /* ==== OVERVIEW (3 cards) ==== */
+  .overview{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
+  }
+  .ov-card{
+    background:#fff;border-radius:var(--radius-lg);padding:36px 32px;
+    border:1px solid #e5eaf2;transition:var(--transition);
+    display:flex;flex-direction:column;position:relative;overflow:hidden;
+  }
+  .ov-card::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:4px;
+    background:var(--orange);transform:scaleX(0);transform-origin:left;
+    transition:transform .35s ease;
+  }
+  .ov-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:transparent}
+  .ov-card:hover::before{transform:scaleX(1)}
+  .ov-card .ov-num{
+    font-family:"Plus Jakarta Sans",sans-serif;
+    font-size:14px;color:var(--blue);font-weight:700;letter-spacing:.18em;
+    margin-bottom:18px;
+  }
+  .ov-card .ov-ico{
+    width:64px;height:64px;border-radius:14px;background:var(--bg);
+    display:flex;align-items:center;justify-content:center;font-size:32px;
+    margin-bottom:22px;
+  }
+  .ov-card h3{
+    color:var(--navy);font-size:24px;font-weight:800;margin-bottom:12px;line-height:1.2;
+  }
+  .ov-card p{color:var(--muted);font-size:15.5px;line-height:1.55;margin-bottom:24px;flex:1}
+  .ov-card .ov-link{
+    color:var(--blue);font-weight:700;font-size:15px;
+    display:inline-flex;align-items:center;gap:6px;transition:var(--transition);
+  }
+  .ov-card .ov-link:hover{color:var(--orange);gap:10px}
+
+  /* ==== MANIFESTO ==== */
+  .manifesto{
+    display:grid;grid-template-columns:1.1fr .9fr;gap:64px;align-items:center;
+  }
+  .manifesto-quote{
+    background:#fff;border-left:5px solid var(--orange);
+    padding:32px 36px;border-radius:10px;box-shadow:var(--shadow);
+    font-size:20px;color:var(--navy);font-weight:600;line-height:1.45;
+  }
+  .gears{
+    aspect-ratio:1;position:relative;display:flex;align-items:center;justify-content:center;
+    min-height:340px;
+  }
+  .gear{
+    width:240px;height:240px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%,#fff,#e9eef5);
+    border:3px solid var(--navy);position:absolute;display:flex;align-items:center;justify-content:center;
+    font-weight:800;color:var(--navy);text-align:center;font-size:14px;letter-spacing:.18em;
+    box-shadow:0 10px 30px rgba(15,29,56,.15);
+    font-family:"Plus Jakarta Sans",sans-serif;
+  }
+  .gear.exec{left:0;background:radial-gradient(circle at 30% 30%,#ffd998,#E89C2A);color:#fff;border-color:#b76e10}
+  .gear.gest{right:0;background:radial-gradient(circle at 70% 30%,#4a6da3,#1A2D4F);color:#fff;border-color:#0a1730}
+  .gear-icon{font-size:38px;display:block;margin-bottom:6px}
+
+  /* ==== SERVICE 1: APPS ==== */
+  .grid-apps{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:22px;
+  }
+  .app-card{
+    background:#fff;border-radius:var(--radius);padding:30px 26px;
+    border:1px solid #e5eaf2;transition:var(--transition);
+    position:relative;overflow:hidden;
+  }
+  .app-card:hover{
+    transform:translateY(-4px);box-shadow:var(--shadow);border-color:var(--blue);
+  }
+  .app-card .letter{
+    position:absolute;top:14px;right:20px;font-size:44px;font-weight:800;
+    color:var(--bg);line-height:1;letter-spacing:-.05em;
+    transition:color .2s;font-family:"Plus Jakarta Sans",sans-serif;
+  }
+  .app-card:hover .letter{color:var(--orange)}
+  .app-card .icon{
+    width:50px;height:50px;border-radius:12px;background:var(--bg);
+    display:flex;align-items:center;justify-content:center;font-size:24px;
+    margin-bottom:18px;
+  }
+  .app-card h3{
+    color:var(--navy);font-size:17px;font-weight:800;margin-bottom:10px;line-height:1.25;
+  }
+  .app-card p{color:var(--muted);font-size:14.5px;line-height:1.55}
+
+  .anchor-quote{
+    background:var(--navy);color:#fff;padding:28px 32px;border-radius:12px;
+    margin-top:56px;border-left:5px solid var(--orange);font-size:18px;
+    display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;
+  }
+  .anchor-quote strong{color:var(--orange);font-weight:700}
+
+  /* ==== SERVICE 2: PERÍCIAS (NOVO) ==== */
+  .pericias-intro{
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);
+    color:#fff;padding:48px 56px;border-radius:var(--radius-lg);margin-bottom:40px;
+    border-left:6px solid var(--orange);
+  }
+  .pericias-intro p{font-size:18px;line-height:1.55;color:rgba(255,255,255,.92)}
+  .pericias-intro strong{color:var(--orange);font-weight:700}
+  .pericias-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
+  }
+  .per-card{
+    background:#fff;border-radius:var(--radius);padding:36px 30px;
+    border-top:5px solid var(--blue);box-shadow:var(--shadow);
+    display:flex;flex-direction:column;
+  }
+  .per-card.contabil{border-top-color:var(--orange)}
+  .per-card.assistencia{border-top-color:var(--navy)}
+  .per-card h3{
+    color:var(--navy);font-size:21px;font-weight:800;margin-bottom:14px;
+  }
+  .per-card .per-tag{
+    display:inline-block;font-size:12px;color:var(--blue);background:rgba(46,117,182,.1);
+    padding:4px 10px;border-radius:99px;font-weight:700;letter-spacing:.08em;
+    margin-bottom:14px;
+  }
+  .per-card.contabil .per-tag{color:var(--orange);background:rgba(232,156,42,.12)}
+  .per-card.assistencia .per-tag{color:var(--navy);background:rgba(26,45,79,.08)}
+  .per-card ul{list-style:none;padding:0;margin:14px 0 0}
+  .per-card li{
+    padding:9px 0 9px 22px;position:relative;font-size:14.5px;color:var(--text);
+    line-height:1.5;
+  }
+  .per-card li::before{
+    content:"";position:absolute;left:0;top:16px;width:10px;height:10px;
+    background:currentColor;border-radius:2px;transform:rotate(45deg);opacity:.3;
+  }
+
+  .pericias-callout{
+    margin-top:48px;background:#fff;padding:32px 36px;border-radius:var(--radius);
+    border-left:5px solid var(--orange);font-size:17px;line-height:1.55;color:var(--text);
+    box-shadow:var(--shadow);
+  }
+  .pericias-callout strong{color:var(--navy);font-weight:800}
+
+  /* ==== SERVICE 3: ADITIVOS ==== */
+  .additives{
+    display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:8px;
+  }
+  .add-card{
+    background:#fff;border-radius:var(--radius);padding:40px 36px;
+    border-top:5px solid var(--orange);box-shadow:var(--shadow);
+  }
+  .add-card.judicial{border-top-color:var(--navy)}
+  .add-card h3{
+    color:var(--navy);font-size:24px;font-weight:800;margin-bottom:12px;
+  }
+  .add-card .sub{color:var(--muted);font-size:15px;margin-bottom:14px;line-height:1.5}
+  .add-card ul{list-style:none;padding:0;margin:14px 0 0}
+  .add-card li{
+    padding:11px 0 11px 28px;position:relative;font-size:15px;color:var(--text);
+    line-height:1.5;border-bottom:1px solid #eef2f7;
+  }
+  .add-card li:last-child{border-bottom:0}
+  .add-card li::before{
+    content:"";position:absolute;left:0;top:18px;width:14px;height:14px;
+    background:var(--orange);border-radius:3px;transform:rotate(45deg);
+  }
+  .add-card.judicial li::before{background:var(--navy)}
+  .add-bigquote{
+    text-align:center;font-size:clamp(22px,2.6vw,32px);color:var(--navy);font-weight:800;
+    margin-top:48px;max-width:34ch;margin-left:auto;margin-right:auto;line-height:1.25;
+    font-family:"Plus Jakarta Sans",sans-serif;
+  }
+  .add-bigquote::before,.add-bigquote::after{
+    content:"";display:block;width:60px;height:4px;background:var(--orange);
+    margin:24px auto;
+  }
+  .cross-ref{
+    text-align:center;margin-top:18px;font-size:15px;color:var(--muted);
+  }
+  .cross-ref a{color:var(--blue);font-weight:700;border-bottom:1px solid currentColor}
+
+  /* ==== HOW IT WORKS ==== */
+  .steps{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:20px;position:relative;
+  }
+  .step{
+    background:#fff;border-radius:var(--radius);padding:30px 26px;
+    border:1px solid #e5eaf2;position:relative;
+  }
+  .step .num{
+    width:38px;height:38px;border-radius:50%;background:var(--orange);color:var(--navy);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:17px;
+    margin-bottom:16px;font-family:"Plus Jakarta Sans",sans-serif;
+  }
+  .step h3{color:var(--navy);font-size:17px;margin-bottom:10px;font-weight:800}
+  .step p{color:var(--muted);font-size:14.5px;line-height:1.55}
+
+  /* ==== PROOFS ==== */
+  .proofs{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;
+  }
+  .proof{
+    background:#fff;border-radius:var(--radius);padding:30px 26px;
+    text-align:left;box-shadow:var(--shadow);
+  }
+  .proof .num{
+    font-size:46px;font-weight:800;color:var(--orange);line-height:1;
+    margin-bottom:10px;letter-spacing:-.03em;font-family:"Plus Jakarta Sans",sans-serif;
+  }
+  .proof .label{color:var(--navy);font-weight:800;font-size:15px;margin-bottom:6px;display:block}
+  .proof .desc{color:var(--muted);font-size:14px;line-height:1.5}
+
+  .testimonial{
+    margin-top:48px;background:var(--navy);color:#fff;border-radius:var(--radius);
+    padding:48px 56px;text-align:center;position:relative;overflow:hidden;
+  }
+  .testimonial::before{
+    content:"“";font-size:160px;color:var(--orange);position:absolute;top:-30px;left:30px;
+    font-family:Georgia,serif;line-height:1;opacity:.4;
+  }
+  .testimonial p{font-size:clamp(20px,2.2vw,28px);font-weight:600;line-height:1.35;max-width:46ch;margin:0 auto;font-family:"Plus Jakarta Sans",sans-serif}
+  .testimonial .source{margin-top:18px;font-size:13px;color:var(--orange);letter-spacing:.16em;text-transform:uppercase;font-weight:700}
+
+  /* ==== WHATSAPP ICON BUTTON ==== */
+  .btn-wa{
+    background:#25D366;color:#fff;
+    box-shadow:0 8px 24px rgba(37,211,102,.35);
+  }
+  .btn-wa:hover{background:#1FB955;color:#fff;transform:translateY(-2px);box-shadow:0 12px 32px rgba(37,211,102,.45)}
+  .btn-wa svg{width:22px;height:22px;flex-shrink:0}
+
+  /* ==== AUDIENCES ==== */
+  .audiences{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:22px;
+  }
+  .aud{
+    background:#fff;border-radius:var(--radius);padding:30px 26px;
+    border:1px solid #e5eaf2;transition:var(--transition);
+  }
+  .aud:hover{transform:translateY(-3px);border-color:var(--orange)}
+  .aud .ico{font-size:32px;margin-bottom:14px}
+  .aud h3{color:var(--navy);font-size:16px;font-weight:800;margin-bottom:10px}
+  .aud p{color:var(--muted);font-size:14.5px;line-height:1.55}
+
+  /* ==== FINAL CTA ==== */
+  .final-cta{
+    background:var(--navy);color:#fff;padding:96px 0;text-align:center;
+    position:relative;overflow:hidden;
+  }
+  .final-cta::before{
+    content:"";position:absolute;top:0;left:50%;width:120%;height:4px;
+    background:linear-gradient(90deg,transparent,var(--orange),transparent);
+    transform:translateX(-50%);
+  }
+  .final-cta h2{
+    font-size:clamp(28px,3.8vw,44px);font-weight:800;max-width:24ch;
+    margin:0 auto 18px;line-height:1.15;
+  }
+  .final-cta h2 span{color:var(--orange)}
+  .final-cta p{font-size:17px;color:rgba(255,255,255,.78);max-width:54ch;margin:0 auto 32px}
+  .final-cta .cta-row{justify-content:center}
+
+  /* ==== FOOTER ==== */
+  footer.site{background:var(--navy-2);color:rgba(255,255,255,.7);padding:54px 0 28px}
+  footer.site .top{
+    display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:36px;padding-bottom:32px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  footer.site h4{color:#fff;font-size:13px;margin-bottom:16px;text-transform:uppercase;letter-spacing:.14em;font-family:"Plus Jakarta Sans",sans-serif}
+  footer.site a{color:rgba(255,255,255,.7);display:block;padding:4px 0;font-size:14px;transition:color .2s}
+  footer.site a:hover{color:var(--orange)}
+  footer.site .desc{font-size:14px;color:rgba(255,255,255,.6);max-width:36ch;line-height:1.6;margin-top:12px}
+  footer.site .bottom{
+    padding-top:22px;display:flex;justify-content:space-between;align-items:center;
+    font-size:12.5px;color:rgba(255,255,255,.5);flex-wrap:wrap;gap:12px;
+  }
+  footer.site .bottom a{display:inline;padding:0;color:rgba(255,255,255,.6);text-decoration:underline;text-underline-offset:3px}
+
+  /* ==== COOKIE BANNER ==== */
+  .cookie-banner{
+    position:fixed;bottom:20px;left:20px;right:20px;max-width:540px;
+    background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-lg);
+    padding:20px 24px;display:none;align-items:center;gap:16px;
+    z-index:60;border:1px solid #e5eaf2;
+  }
+  .cookie-banner.show{display:flex;animation:slideUp .35s ease}
+  .cookie-banner p{font-size:14px;color:var(--text);line-height:1.5;flex:1}
+  .cookie-banner p a{color:var(--blue);text-decoration:underline}
+  .cookie-banner button{
+    background:var(--navy);color:#fff;border:0;padding:10px 18px;border-radius:8px;
+    font-weight:700;cursor:pointer;font-size:14px;flex-shrink:0;
+  }
+  .cookie-banner button:hover{background:var(--navy-2)}
+  @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+  /* ==== RESPONSIVE ==== */
+  @media (max-width: 980px){
+    .overview{grid-template-columns:1fr;gap:18px}
+    .pericias-grid{grid-template-columns:1fr;gap:18px}
+    nav.primary{display:none}
+    nav.primary.open{
+      display:flex;flex-direction:column;position:absolute;top:64px;left:0;right:0;
+      background:var(--navy-2);padding:20px 24px;gap:16px;border-top:1px solid rgba(255,255,255,.1);
+    }
+    .burger{display:block}
+    .manifesto{grid-template-columns:1fr;gap:48px}
+    .additives{grid-template-columns:1fr}
+    .steps{grid-template-columns:1fr 1fr}
+    footer.site .top{grid-template-columns:1fr 1fr;gap:28px}
+    .pericias-intro{padding:32px 28px}
+    .pericias-intro p{font-size:16px}
+  }
+  @media (max-width: 980px){
+    .hero-grid{grid-template-columns:1fr;gap:36px;text-align:left}
+    .hero-logo-wrap{max-width:340px}
+    .logo-img{height:42px}
+  }
+  @media (max-width: 560px){
+    section.block{padding:72px 0}
+    .hero{min-height:88vh;padding:140px 0 60px}
+    .hero-logo-wrap{max-width:260px}
+    .logo-img{height:38px}
+    .steps{grid-template-columns:1fr}
+    footer.site .top{grid-template-columns:1fr}
+    .testimonial{padding:36px 24px}
+    .testimonial::before{font-size:110px;top:-20px;left:14px}
+    .anchor-quote{flex-direction:column;text-align:center}
+    .nav-cta{padding:8px 14px;font-size:13px}
+    .cookie-banner{flex-direction:column;text-align:left;align-items:stretch}
+  }
+
+  /* ==== UTILS ==== */
+  .reveal{opacity:0;transform:translateY(20px);transition:opacity .6s ease,transform .6s ease}
+  .reveal.in{opacity:1;transform:none}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+
+/* ---------- Botão "Painel de Controle" — header (fundo navy escuro) -------- */
+.gv-painel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 16px;
+  border: 1.5px solid rgba(255, 255, 255, .55);
+  border-radius: 999px;
+  background: transparent;
+  color: #FFFFFF;
+  font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, color .2s ease;
+}
+.gv-painel-btn__icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  display: block;
+}
+.gv-painel-btn:hover {
+  background: #142339;
+  border-color: #C9A227;
+  color: #FFFFFF;
+}
+.gv-painel-btn:focus-visible {
+  outline: 2px solid #C9A227;
+  outline-offset: 3px;
+}
+@media (max-width: 768px) {
+  .gv-painel-btn {
+    padding: 4px;
+    gap: 0;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+  }
+  .gv-painel-btn__label { display: none; }
+  .gv-painel-btn__icon { width: 30px; height: 30px; }
+}
+.gv-painel-footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: inherit;
+  text-decoration: none;
+  transition: color .2s ease;
+}
+.gv-painel-footer-link:hover,
+.gv-painel-footer-link:focus-visible { color: #C9A227; }
+.gv-painel-footer-link:focus-visible { outline: 2px solid #C9A227; outline-offset: 2px; }
+.gv-painel-footer-link__icon { width: 16px; height: 16px; flex: 0 0 auto; }
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Pular para o conteúdo</a>
+
+<!-- HEADER -->
+<header class="site">
+  <div class="bar">
+    <a href="#top" class="logo" aria-label="Gravitas — início">
+      <img src="img/logo-gravitas-transparent.png" alt="MARCO URBANO — Suporte Técnico e Administrativo para Contratos" class="logo-img" width="180" height="48">
+    </a>
+    <nav class="primary" id="nav-primary" aria-label="Menu principal">
+      <a href="#servicos">Serviços</a>
+      <a href="#app">App</a>
+      <a href="#pericias">Perícias</a>
+      <a href="#aditivos">Aditivos</a>
+      <a href="#como">Como fazemos</a>
+    </nav>
+    <a href="https://gravitas.net.br/marco_urbano/painel/"
+       class="gv-painel-btn"
+       aria-label="Acessar o Painel de Controle Gravitas"
+       title="Painel de Controle Gravitas">
+      <svg class="gv-painel-btn__icon" viewBox="-4 -4 108 108" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+        <ellipse cx="50" cy="50" rx="54" ry="19" fill="none" stroke="#B9C1CC" stroke-width="3.5" transform="rotate(-24 50 50)"/>
+        <circle cx="50" cy="50" r="44" fill="#1A2D4F" stroke="#B9C1CC" stroke-width="2.5"/>
+        <path d="M 7.2 76.9 A 54 19 -24 0 1 92.8 23.1" fill="none" stroke="#B9C1CC" stroke-width="3.5" opacity="0.55"/>
+        <circle cx="92.8" cy="23.1" r="4.5" fill="#C9A227"/>
+        <path d="M 26.7 73.3 A 33 33 0 1 1 73.3 73.3" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+        <g stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0.85">
+          <line x1="50" y1="17" x2="50" y2="24"/>
+          <line x1="26.7" y1="26.7" x2="31.6" y2="31.6"/>
+          <line x1="73.3" y1="26.7" x2="68.4" y2="31.6"/>
+        </g>
+        <path d="M 50 50 L 67.4 29.3 L 55.5 53.5 Z" fill="#C9A227"/>
+        <circle cx="50" cy="50" r="6.5" fill="#C9A227"/>
+        <circle cx="50" cy="50" r="3" fill="#1A2D4F"/>
+      </svg>
+      <span class="gv-painel-btn__label">Painel de Controle</span>
+    </a>
+    <a href="#contato" class="nav-cta">Falar com a Gravitas</a>
+    <button class="burger" aria-label="Abrir menu" aria-controls="nav-primary" aria-expanded="false" id="burger-btn">☰</button>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- HERO -->
+<section id="top" class="hero" aria-label="Apresentação Gravitas">
+  <video class="hero-video" autoplay muted loop playsinline preload="auto" poster="img/videogravitas-poster.jpg" aria-hidden="true">
+    <source src="img/videogravitas.mp4" type="video/mp4">
+    <source src="img/videogravitas.mov" type="video/quicktime">
+  </video>
+  <div class="hero-overlay" aria-hidden="true"></div>
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-logo-wrap">
+        <img src="img/logo-gravitas.png" alt="MARCO URBANO — Suporte Técnico e Administrativo para Contratos" class="hero-logo" width="437" height="352" loading="eager" fetchpriority="high">
+      </div>
+      <div class="hero-text">
+        <span class="eyebrow">Suporte Técnico e Administrativo para Contratos</span>
+        <h1>Foco total na sua produção. <span>Nós cuidamos do resto.</span></h1>
+        <p class="lead">Apps personalizados para sua obra, perícias judiciais (engenharia e contábil) e elaboração de aditivos administrativos e judiciais — em uma única equipe.</p>
+        <p class="sub-promise">App · Perícias · Aditivos</p>
+        <div class="cta-row">
+          <a href="#contato" class="btn btn-primary">Falar com a Gravitas →</a>
+          <a href="#servicos" class="btn btn-ghost">Ver os 3 serviços</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STRIP -->
+<div class="strip" role="region" aria-label="Resumo da proposta">
+  <div class="container">
+    <span>Três serviços, uma única operação técnica: <strong>App</strong> que mede, <strong>Perícia</strong> que defende, <strong>Aditivo</strong> que cobra.</span>
+  </div>
+</div>
+
+<!-- OVERVIEW 3 SERVIÇOS (NOVO) -->
+<section id="servicos" class="block">
+  <div class="container">
+    <span class="eyebrow-s">O que entregamos</span>
+    <h2 class="section-title">Três frentes. Uma operação técnica.</h2>
+    <p class="section-lead">Tudo que sua obra precisa para produzir bem, defender o que produziu e cobrar o que executou — em um único parceiro, sem terceirização.</p>
+
+    <div class="overview">
+      <article class="ov-card reveal">
+        <span class="ov-num">01 · APP</span>
+        <div class="ov-ico" aria-hidden="true">📱</div>
+        <h3>App de Produção</h3>
+        <p>Aplicativo personalizado para a sua obra: coleta de campo, geração automática da medição, produção em tempo real, planejamento diário e controle de equipamentos, equipes e materiais.</p>
+        <a class="ov-link" href="#app">Ver detalhes →</a>
+      </article>
+
+      <article class="ov-card reveal">
+        <span class="ov-num">02 · PERÍCIAS</span>
+        <div class="ov-ico" aria-hidden="true">⚖️</div>
+        <h3>Perícias Judiciais</h3>
+        <p>Perícia de engenharia, perícia contábil e assistência técnica em ações judiciais envolvendo obras, contratos e cálculos. Laudo técnico defensável feito por quem entende de obra e de planilha.</p>
+        <a class="ov-link" href="#pericias">Ver detalhes →</a>
+      </article>
+
+      <article class="ov-card reveal">
+        <span class="ov-num">03 · ADITIVOS</span>
+        <div class="ov-ico" aria-hidden="true">📑</div>
+        <h3>Aditivos</h3>
+        <p>Elaboração de aditivos administrativos e judiciais — do levantamento técnico ao protocolo, com memorial de cálculo, fotos georreferenciadas e vínculo a OS e ART. Documentação que a fiscalização aceita.</p>
+        <a class="ov-link" href="#aditivos">Ver detalhes →</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- MANIFESTO -->
+<section id="manifesto" class="block alt">
+  <div class="container">
+    <span class="eyebrow-s">Por que existimos</span>
+    <h2 class="section-title">A sua zona de conforto é a produção.</h2>
+    <p class="section-lead">A execução de obras exige agilidade e qualidade. A gestão contratual, em contrapartida, impõe imprevistos técnicos, administrativos e jurídicos que desviam o foco do seu negócio principal — o cronograma escorrega, a medição vaza, o aditivo não é cobrado, e o que era margem vira balanço no fim do ano.</p>
+    <div class="manifesto">
+      <div class="manifesto-quote reveal">
+        A Gravitas existe para absorver a complexidade burocrática, permitindo que a empresa executora se concentre exclusivamente em produzir.
+        <div style="margin-top:18px;font-size:15px;color:var(--muted);font-weight:500;">Não somos consultores que entregam relatório. Somos o braço direito da sua operação — operando o sistema, organizando o campo, defendendo o que sua obra produziu e cobrando o que ficou para trás.</div>
+      </div>
+      <div class="gears reveal" aria-hidden="true">
+        <div class="gear exec" style="transform:translateX(-30px)">
+          <div><span class="gear-icon">🚜</span>EXECUÇÃO<br><small style="opacity:.85;font-weight:500;letter-spacing:.06em">CLIENTE</small></div>
+        </div>
+        <div class="gear gest" style="transform:translateX(30px)">
+          <div><span class="gear-icon">🛡️</span>GESTÃO<br><small style="opacity:.85;font-weight:500;letter-spacing:.06em">MARCO URBANO</small></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVIÇO 1: APP DE PRODUÇÃO -->
+<section id="app" class="block">
+  <div class="container">
+    <span class="eyebrow-s">Serviço 01 — App de Produção</span>
+    <h2 class="section-title">Sua obra tem planilhas únicas. O seu app também.</h2>
+    <p class="section-lead"><strong>Nos adaptamos à planilha de cada obra — você não precisa se adaptar ao nosso sistema.</strong> O encarregado lança no celular, o coordenador vê no escritório, o dono recebe o relatório no domingo de manhã. E a medição se monta sozinha.</p>
+
+    <div class="grid-apps">
+      <div class="app-card reveal">
+        <span class="letter">a</span>
+        <div class="icon" aria-hidden="true">📋</div>
+        <h3>Coleta de campo para medições</h3>
+        <p>Encarregado lança a produção do dia direto no celular, com foto, GPS e vínculo à OS. O app se adapta à planilha de medição do seu contrato — quantitativos, unidades, códigos e regras de cobrança.</p>
+      </div>
+      <div class="app-card reveal">
+        <span class="letter">b</span>
+        <div class="icon" aria-hidden="true">🧮</div>
+        <h3>Geração automática da medição</h3>
+        <p>Os lançamentos do campo viram, no fim do dia, a planilha de medição pronta para o cliente. Fim de digitar a mesma informação três vezes. Fim do retrabalho entre o caderno e o escritório.</p>
+      </div>
+      <div class="app-card reveal">
+        <span class="letter">c</span>
+        <div class="icon" aria-hidden="true">📊</div>
+        <h3>Produção em tempo real</h3>
+        <p>Dashboards consolidados em segundos. A diretoria sabe o que cada equipe entregou hoje sem precisar ligar para o encarregado. Decisão na segunda, não no dia 30.</p>
+      </div>
+      <div class="app-card reveal">
+        <span class="letter">d</span>
+        <div class="icon" aria-hidden="true">🗓️</div>
+        <h3>Planejamento diário</h3>
+        <p>Programe amanhã, hoje. Material na frente certa, retro no horário, equipe sabendo o que vai fazer. Sem aumento de folha. Sem hora extra. Só organização.</p>
+      </div>
+      <div class="app-card reveal">
+        <span class="letter">e</span>
+        <div class="icon" aria-hidden="true">⚙️</div>
+        <h3>Equipamentos, funcionários e materiais</h3>
+        <p>Quem está em campo, em qual frente, com qual retro, com qual caçamba. Estoque de tubo, brita, asfalto — entrada, saída e sobra. Equipamento ocioso identificado no mesmo dia.</p>
+      </div>
+      <div class="app-card reveal">
+        <span class="letter">f</span>
+        <div class="icon" aria-hidden="true">💰</div>
+        <h3>Levantamento de aditivos</h3>
+        <p>Tudo que sua obra executou fora do contrato — registrado no ato, com foto, medida, data, equipe e responsável. Memorial de cálculo pronto para protocolar. O pavimento que você fez deixa de virar doação.</p>
+      </div>
+      <div class="app-card reveal">
+        <span class="letter">g</span>
+        <div class="icon" aria-hidden="true">📝</div>
+        <h3>Diário de obra (RDO)</h3>
+        <p>RDO completo, com clima, equipe presente, equipamento mobilizado, atividades do dia e evidências fotográficas — gerado a partir do que já foi lançado. Documento defensável, na primeira vez, sem retrabalho.</p>
+      </div>
+      <div class="app-card reveal">
+        <span class="letter">h</span>
+        <div class="icon" aria-hidden="true">📈</div>
+        <h3>Diário gerencial</h3>
+        <p>Relatório executivo para a diretoria — produção por equipe, comparativo de equipamento, frequência mensal, saldo de estoque, quantitativos para faturamento e aditivos. Indicadores que orientam decisão.</p>
+      </div>
+    </div>
+
+    <div class="anchor-quote">
+      <span>Aplicativo desenhado para o <strong>seu</strong> contrato. Não um modelo genérico para você se enquadrar.</span>
+      <a href="#contato" class="btn btn-primary">Quero um app para minha obra →</a>
+    </div>
+  </div>
+</section>
+
+<!-- SERVIÇO 2: PERÍCIAS JUDICIAIS (NOVO) -->
+<section id="pericias" class="block alt">
+  <div class="container">
+    <span class="eyebrow-s">Serviço 02 — Perícias Judiciais</span>
+    <h2 class="section-title">Onde a obra vira processo, a perícia decide o desfecho.</h2>
+    <p class="section-lead">Quando um contrato de obra chega à Justiça — em casos de desequilíbrio econômico, descumprimento, atraso, execução duvidosa ou inadimplência — o que sustenta a sentença não é a tese: é a prova técnica. A Gravitas atua como <strong>perito ou assistente técnico</strong> das partes, combinando engenharia e contabilidade em uma única equipe.</p>
+
+    <div class="pericias-intro reveal">
+      <p>Em obras públicas e privadas de médio porte, uma perícia mal feita custa milhões. Uma bem feita decide milhões — para o lado certo. A vantagem rara da Gravitas é ter <strong>engenheiros que conhecem a planilha do contrato</strong> sentados ao lado de <strong>contadores periciais habilitados</strong>, sem terceirização e sem prazos travados por agendas de outros escritórios.</p>
+    </div>
+
+    <div class="pericias-grid">
+      <article class="per-card reveal">
+        <span class="per-tag">🏗️ ENGENHARIA</span>
+        <h3>Perícia de Engenharia</h3>
+        <ul>
+          <li>Laudos técnicos sobre execução, materiais e ensaios</li>
+          <li>Inspeção de obra com registro fotográfico georreferenciado</li>
+          <li>Quantificação de serviços realizados, parados ou refeitos</li>
+          <li>Análise de projetos, especificações e diários de obra (RDO)</li>
+          <li>Resposta a quesitos das partes e do juízo</li>
+          <li>Avaliação de causa raiz em sinistros e falhas construtivas</li>
+        </ul>
+      </article>
+
+      <article class="per-card contabil reveal">
+        <span class="per-tag">📐 CONTÁBIL</span>
+        <h3>Perícia Contábil</h3>
+        <ul>
+          <li>Liquidação de sentença e memória de cálculo</li>
+          <li>Atualização monetária (IPCA, INPC, SELIC) e juros</li>
+          <li>Apuração de prejuízos contratuais e lucros cessantes</li>
+          <li>Cálculo de verbas trabalhistas e rescisórias</li>
+          <li>Reequilíbrio econômico-financeiro de contratos públicos</li>
+          <li>Auditoria de planilhas de medição e fechamento</li>
+        </ul>
+      </article>
+
+      <article class="per-card assistencia reveal">
+        <span class="per-tag">🛡️ ASSISTÊNCIA</span>
+        <h3>Assistência Técnica</h3>
+        <ul>
+          <li>Atuação como assistente técnico da parte (PIC ou réu)</li>
+          <li>Crítica fundamentada a laudo do perito oficial</li>
+          <li>Produção de quesitos e contraquesitos</li>
+          <li>Pareceres técnicos preliminares para estratégia processual</li>
+          <li>Acompanhamento de diligências e audiências técnicas</li>
+          <li>Apoio à banca de advogados na argumentação técnica</li>
+        </ul>
+      </article>
+    </div>
+
+    <div class="pericias-callout reveal">
+      <strong>Para advogados parceiros:</strong> trabalhamos com escritórios que atuam em direito da construção, contratos administrativos e ações de cobrança contra órgãos públicos. Entregamos a parte técnica do laudo (engenharia + contábil) com a profundidade que sustenta a tese — e nos comunicamos diretamente com o juízo quando preciso.
+    </div>
+
+    <div style="text-align:center;margin-top:36px">
+      <a href="#contato" class="btn btn-primary">Quero discutir uma perícia →</a>
+    </div>
+  </div>
+</section>
+
+<!-- SERVIÇO 3: ADITIVOS -->
+<section id="aditivos" class="block">
+  <div class="container">
+    <span class="eyebrow-s">Serviço 03 — Aditivos</span>
+    <h2 class="section-title">O pavimento que você fez. E não cobrou.</h2>
+    <p class="section-lead">Toda obra produz mais do que mede. Mais do que está em contrato. Mais do que aparece no fechamento. Quando o aditivo administrativo não passa, o caminho é o judicial — e nós montamos os dois com o mesmo cuidado técnico: memória de cálculo, ensaios, fotos com GPS, vínculo a OS e ART.</p>
+
+    <div class="additives">
+      <div class="add-card reveal">
+        <h3>Aditivo Administrativo</h3>
+        <p class="sub">Quando o contrato comporta, o caminho é cobrar bem — com documentação que a fiscalização aceita na primeira leitura.</p>
+        <ul>
+          <li>Levantamento detalhado de trechos, materiais e serviços extras a partir do histórico do app ou de auditoria documental.</li>
+          <li>Memorial de cálculo com vínculo a OS, ART, ensaios, fotos georreferenciadas e frente executada.</li>
+          <li>Protocolo junto ao contratante e acompanhamento da análise técnica.</li>
+          <li>Defesa em reuniões com a fiscalização e revisão de quantitativos contestados.</li>
+        </ul>
+      </div>
+      <div class="add-card judicial reveal">
+        <h3>Aditivo Judicial</h3>
+        <p class="sub">Quando o administrativo não anda, o caminho é o judicial — e o que sustenta a ação é a mesma documentação técnica.</p>
+        <ul>
+          <li>Equipe combinada: engenharia (memorial, laudo) e direito (petição, tutela).</li>
+          <li>Estratégia processual definida com você — judicializa só o que tem prova.</li>
+          <li>Quando o caso entra em fase pericial, integramos com o nosso time de <strong>Perícias Judiciais</strong>.</li>
+          <li>Acompanhamento de audiência técnica e produção de quesitos.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="add-bigquote reveal">Documentação defensável é a diferença entre receber e doar.</div>
+    <div class="cross-ref">Quando o caso vira processo → ver <a href="#pericias">Perícias Judiciais</a>.</div>
+
+    <div style="text-align:center;margin-top:32px">
+      <a href="#contato" class="btn btn-dark">Quero discutir um aditivo →</a>
+    </div>
+  </div>
+</section>
+
+<!-- COMO TRABALHAMOS -->
+<section id="como" class="block alt">
+  <div class="container">
+    <span class="eyebrow-s">Como trabalhamos</span>
+    <h2 class="section-title">Quatro etapas. Sem proposta longa. Sem vendedor.</h2>
+    <p class="section-lead">Trinta minutos de conversa de obra — e você decide o que fazer.</p>
+
+    <div class="steps">
+      <div class="step reveal">
+        <div class="num">1</div>
+        <h3>Conversa</h3>
+        <p>30 minutos com a sua última medição (ou processo, ou aditivo) na mesa. A gente abre os números juntos e mostra, no seu próprio caso, onde está vazando valor.</p>
+      </div>
+      <div class="step reveal">
+        <div class="num">2</div>
+        <h3>Setup</h3>
+        <p>Em até 7 dias: para o App, cadastros e ordens de serviço; para Perícia/Aditivo, auditoria documental e plano de prova. Acessos liberados para até 5 usuários.</p>
+      </div>
+      <div class="step reveal">
+        <div class="num">3</div>
+        <h3>Operação</h3>
+        <p>Lançamento diário (App) ou desenvolvimento do laudo/aditivo (Perícia/Aditivo), com conferência da equipe Gravitas e relatórios semanais.</p>
+      </div>
+      <div class="step reveal">
+        <div class="num">4</div>
+        <h3>Resultado</h3>
+        <p>Cada metro executado virando R$ na conta. Aditivo entrando no mês certo. Perícia que sustenta a sentença. Documentação defensável para qualquer fiscalização ou juízo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROVAS -->
+<section id="provas" class="block">
+  <div class="container">
+    <span class="eyebrow-s">Provas e números</span>
+    <h2 class="section-title">Resultados concretos de quem opera no campo.</h2>
+    <p class="section-lead">Métricas observadas em contratos de saneamento e pavimentação atendidos pela Gravitas. Resultados variam por contrato e fase do projeto.</p>
+
+    <div class="proofs">
+      <div class="proof reveal">
+        <div class="num">100m</div>
+        <span class="label">por equipe / dia</span>
+        <p class="desc">Capacidade real de uma equipe de 4 pessoas + retro + caçamba quando a obra para de atropelar o cronograma.</p>
+      </div>
+      <div class="proof reveal">
+        <div class="num">−18%</div>
+        <span class="label">em equipamento ocioso</span>
+        <p class="desc">Status atualizado no campo, máquinas ociosas identificadas no mesmo dia, decisão de devolver ou realocar com dado na mão.</p>
+      </div>
+      <div class="proof reveal">
+        <div class="num">2×</div>
+        <span class="label">em aditivos recuperados</span>
+        <p class="desc">Toda a informação da obra guardada e estruturada — pavimento, ramal, interferência e ensaio prontos para virar aditivo.</p>
+      </div>
+      <div class="proof reveal">
+        <div class="num">3</div>
+        <span class="label">frentes técnicas integradas</span>
+        <p class="desc">App de Produção + Perícias Judiciais + Aditivos — em uma única equipe, sem terceirização, sem agenda de outros escritórios.</p>
+      </div>
+    </div>
+
+    <div class="testimonial reveal">
+      <p>O mercado foca na exigência da companhia estatal. Nós focamos no sucesso da empresa executora.</p>
+      <div class="source">— Posicionamento Gravitas</div>
+    </div>
+  </div>
+</section>
+
+<!-- PARA QUEM -->
+<section class="block alt">
+  <div class="container">
+    <span class="eyebrow-s">Para quem é a Gravitas</span>
+    <h2 class="section-title">Quatro tipos de cliente. Uma mesma operação técnica.</h2>
+    <p class="section-lead">Construtoras, órgãos públicos, engenheiros de obra e escritórios de advocacia — a Gravitas conecta esses quatro mundos no que eles precisam ter em comum: documentação técnica defensável.</p>
+
+    <div class="audiences">
+      <div class="aud reveal">
+        <div class="ico" aria-hidden="true">🏗️</div>
+        <h3>Construtoras e empreiteiras</h3>
+        <p>Empresas que executam obras de infraestrutura, saneamento, pavimentação e edificações sob contrato de medição. Para quem a margem mora no detalhe da planilha.</p>
+      </div>
+      <div class="aud reveal">
+        <div class="ico" aria-hidden="true">🏛️</div>
+        <h3>Órgãos públicos contratantes</h3>
+        <p>Fiscais, gestores de contrato e diretorias técnicas que precisam de documentação consistente, rastreabilidade de execução e memoriais defensáveis.</p>
+      </div>
+      <div class="aud reveal">
+        <div class="ico" aria-hidden="true">👷</div>
+        <h3>Engenheiros e gerentes de obra</h3>
+        <p>Para quem precisa parar de viver em planilha, parar de ligar para o encarregado para saber o que aconteceu, e começar a decidir na segunda, não no dia 30.</p>
+      </div>
+      <div class="aud reveal">
+        <div class="ico" aria-hidden="true">⚖️</div>
+        <h3>Escritórios de advocacia</h3>
+        <p>Bancas que atuam em direito da construção e contratos administrativos. Parceria para perícia técnica e aditivos judiciais — memorial, laudo e prova documental.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section id="contato" class="final-cta">
+  <div class="container">
+    <h2>Vamos abrir os números da sua <span>última medição, perícia ou aditivo</span> juntos.</h2>
+    <p>Sem proposta. Sem vendedor. 30 minutos de conversa de obra — e você decide o que fazer.</p>
+    <div class="cta-row">
+      <a href="https://wa.me/5551993311500?text=Ol%C3%A1%2C%20quero%20conversar%20com%20a%20Gravitas." class="btn btn-wa" target="_blank" rel="noopener" aria-label="Falar com a Gravitas pelo WhatsApp">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+        <span>Falar pelo WhatsApp</span>
+      </a>
+      <a href="mailto:contato@gravitas.net.br?subject=Quero%20falar%20com%20a%20Gravitas" class="btn btn-ghost">
+        contato@gravitas.net.br
+      </a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="site">
+  <div class="container">
+    <div class="top">
+      <div>
+        <img src="img/logo-gravitas-transparent.png" alt="MARCO URBANO" width="180" height="48" style="height:56px;width:auto;display:block;margin-bottom:8px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.35))">
+        <p class="desc">Suporte Técnico e Administrativo para Contratos. Três serviços, uma equipe: App de Produção, Perícias Judiciais e Aditivos.</p>
+      </div>
+      <div>
+        <h4>Serviços</h4>
+        <a href="#app">App de Produção</a>
+        <a href="#pericias">Perícias Judiciais</a>
+        <a href="#aditivos">Aditivos</a>
+        <a href="#como">Como trabalhamos</a>
+        <a href="https://gravitas.net.br/marco_urbano/painel/" class="gv-painel-footer-link" aria-label="Acessar o Painel de Controle Gravitas">
+          <svg class="gv-painel-footer-link__icon" viewBox="-4 -4 108 108" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+            <ellipse cx="50" cy="50" rx="54" ry="19" fill="none" stroke="#B9C1CC" stroke-width="3.5" transform="rotate(-24 50 50)"/>
+            <circle cx="50" cy="50" r="44" fill="#1A2D4F" stroke="#B9C1CC" stroke-width="2.5"/>
+            <path d="M 7.2 76.9 A 54 19 -24 0 1 92.8 23.1" fill="none" stroke="#B9C1CC" stroke-width="3.5" opacity="0.55"/>
+            <circle cx="92.8" cy="23.1" r="4.5" fill="#C9A227"/>
+            <path d="M 26.7 73.3 A 33 33 0 1 1 73.3 73.3" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+            <path d="M 50 50 L 67.4 29.3 L 55.5 53.5 Z" fill="#C9A227"/>
+            <circle cx="50" cy="50" r="6.5" fill="#C9A227"/>
+          </svg>
+          <span>Painel de Controle</span>
+        </a>
+      </div>
+      <div>
+        <h4>Empresa</h4>
+        <a href="#manifesto">Quem somos</a>
+        <a href="#provas">Provas e números</a>
+        <a href="#privacidade">Política de Privacidade</a>
+        <a href="#termos">Termos de Uso</a>
+      </div>
+      <div>
+        <h4>Contato</h4>
+        <a href="mailto:contato@gravitas.net.br">contato@gravitas.net.br</a>
+        <a href="https://wa.me/5551993311500" target="_blank" rel="noopener" aria-label="Falar pelo WhatsApp">
+          <span style="display:inline-flex;align-items:center;gap:8px">
+            <svg viewBox="0 0 24 24" fill="currentColor" style="width:16px;height:16px" aria-hidden="true"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+            Falar pelo WhatsApp
+          </span>
+        </a>
+      </div>
+    </div>
+    <div class="bottom">
+      <span>© 2026 Gravitas — Suporte Técnico e Administrativo para Contratos.</span>
+      <span>
+        <a href="#privacidade">Privacidade</a> ·
+        <a href="#termos">Termos</a>
+      </span>
+    </div>
+  </div>
+</footer>
+
+<!-- COOKIE BANNER (LGPD) -->
+<div class="cookie-banner" id="cookie-banner" role="dialog" aria-label="Aviso sobre cookies">
+  <p>Usamos cookies para entender como você navega no site e melhorar nossa comunicação. Ao continuar, você concorda com nossa <a href="#privacidade">Política de Privacidade</a>.</p>
+  <button id="cookie-accept">Entendi</button>
+</div>
+
+<!-- GTM placeholder — coloque aqui o snippet quando tiver o container ID -->
+<!-- Google Tag Manager (TODO: substituir GTM-XXXXXX)
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-XXXXXX');</script>
+-->
+
+<!-- LinkedIn Insight Tag placeholder — substituir PARTNER_ID -->
+<!--
+<script type="text/javascript">
+_linkedin_partner_id = "PARTNER_ID";
+window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+</script>
+-->
+
+<script>
+  // Reveal on scroll
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      }
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  } else {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+  }
+
+  // Burger menu (mobile)
+  const burger = document.getElementById('burger-btn');
+  const nav = document.getElementById('nav-primary');
+  if (burger && nav) {
+    burger.addEventListener('click', () => {
+      const open = nav.classList.toggle('open');
+      burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+      burger.textContent = open ? '×' : '☰';
+    });
+    // Fecha menu ao clicar em link
+    nav.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        nav.classList.remove('open');
+        burger.setAttribute('aria-expanded', 'false');
+        burger.textContent = '☰';
+      });
+    });
+  }
+
+  // Nav active highlight (data-current)
+  const links = document.querySelectorAll('nav.primary a');
+  const sectionIds = ['#servicos','#app','#pericias','#aditivos','#como'];
+  const sections = sectionIds.map(id => document.querySelector(id)).filter(Boolean);
+  function updateActive() {
+    const y = window.scrollY + 140;
+    let active = null;
+    for (const s of sections) {
+      if (s.offsetTop <= y) active = '#' + s.id;
+    }
+    links.forEach(a => {
+      if (a.getAttribute('href') === active) {
+        a.setAttribute('aria-current','page');
+      } else {
+        a.removeAttribute('aria-current');
+      }
+    });
+  }
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+
+  // Cookie banner (LGPD)
+  const COOKIE_KEY = 'gravitas_cookie_accept_v1';
+  const banner = document.getElementById('cookie-banner');
+  const acceptBtn = document.getElementById('cookie-accept');
+  if (banner && acceptBtn) {
+    try {
+      if (!localStorage.getItem(COOKIE_KEY)) {
+        setTimeout(() => banner.classList.add('show'), 1200);
+      }
+      acceptBtn.addEventListener('click', () => {
+        try { localStorage.setItem(COOKIE_KEY, '1'); } catch(e) {}
+        banner.classList.remove('show');
+      });
+    } catch(e) {
+      // localStorage não disponível — banner não atrapalha
+    }
+  }
+</script>
+
+</body>
+</html>
