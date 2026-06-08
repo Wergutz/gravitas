@@ -254,38 +254,32 @@ function svgIcon(string $path): string {
         <table class="tab">
           <tr>
             <th>Equipe</th><th>Trecho</th>
-            <th style="text-align:right">Planejado (m)</th>
-            <th style="text-align:right">Executado GPS (m)</th>
-            <th style="text-align:right">%</th>
+            <th style="text-align:right">Executado (m)</th>
+            <th style="text-align:right">GPS (evid.)</th>
           </tr>
           <?php
-          $totalPlan = 0;
+          $totalExec = 0; $totalGps = 0;
           foreach ($producaoPorEquipe as $p):
-              $plan = (float)($p['extensao_planejada'] ?? 0);
-              $exec = (float)($p['extensao_gps_m'] ?? 0);
-              $pct  = $plan > 0 ? min(999, round($exec / $plan * 100)) : null;
-              $totalPlan += $plan;
+              $exec = (float)($p['extensao_planejada'] ?? 0);
+              $gps  = (float)($p['extensao_gps_m'] ?? 0);
+              $totalExec += $exec;
+              $totalGps  += $gps;
           ?>
           <tr>
             <td><?= htmlspecialchars($p['equipe']) ?></td>
             <td><?= htmlspecialchars($p['pv_montante']) ?> → <?= htmlspecialchars($p['pv_jusante']) ?></td>
-            <td class="n" style="color:var(--muted)"><?= $plan > 0 ? fmtM1($plan) : '—' ?></td>
-            <td class="n"><?= $exec > 0 ? fmtM1($exec) : '—' ?></td>
-            <td class="n" style="color:<?= $pct !== null ? ($pct >= 90 ? '#1F7A6E' : ($pct >= 60 ? '#D97706' : '#DC2626')) : 'var(--muted)' ?>">
-              <?= $pct !== null ? $pct . '%' : '—' ?>
-            </td>
+            <td class="n"><b><?= $exec > 0 ? fmtM1($exec) : '—' ?></b></td>
+            <td class="n" style="color:var(--muted)"><?= $gps > 0 ? fmtM1($gps) : '—' ?></td>
           </tr>
           <?php endforeach; ?>
           <tr class="tot">
-            <td>Total</td><td></td>
-            <td class="n"><?= $totalPlan > 0 ? fmtM1($totalPlan) : '—' ?></td>
-            <td class="n"><?= fmtM1($metrosDia) ?></td>
-            <td class="n"><?= $totalPlan > 0 ? round($metrosDia / $totalPlan * 100) . '%' : '—' ?></td>
+            <td colspan="2">Total</td>
+            <td class="n"><?= fmtM1($totalExec) ?></td>
+            <td class="n" style="color:#ccc"><?= fmtM1($totalGps) ?></td>
           </tr>
         </table>
         <p style="font-size:11px;color:var(--muted);margin-top:6px;">
-          * Planejado = extensão do trecho no projeto. Executado GPS = medição em campo.<br>
-          Régua oficial de faturamento: a combinar com o contratante (GPS ou planejado).
+          * Executado = extensão do projeto (as-built). GPS = evidência de campo (referência).
         </p>
         <?php endif; ?>
       </div>
@@ -497,12 +491,10 @@ function svgIcon(string $path): string {
       $base_url = MASTER_BASE . '/relatorio/';
       $periodo_qs = "?inicio={$inicio}&fim={$fim}";
       $rels = [
-        ['boletim',      'ic-gold',  'Boletim de Medição do Período',    'rede + ramais — base de faturamento',  'PDF · CSV'],
-        ['avanco',       'ic-navy',  'Relatório de Avanço Físico',        '% concluído, curva e projeção',         'PDF'],
-        ['interferencias','ic-info', 'Relatório de Interferências',       'por tipo, com foto e GPS — aditivos',   'PDF · CSV'],
-        ['produtividade','ic-aviso', 'Relatório de Produtividade',        'm por equipe-dia e ranking',            'PDF · CSV'],
-        ['materiais',    'ic-ok',    'Relatório de Materiais',            'estoque atual × reservado',             'PDF · CSV'],
-        ['resumo',       'ic-gold',  'Resumo Gerencial (1 página)',       'visão do dono: produção e marcos',      'PDF'],
+        ['boletim',      'ic-gold',  'Boletim de Medição',               'rede as-built + ramais + interferências', 'PDF · CSV'],
+        ['produtividade','ic-aviso', 'Relatório de Produtividade',        'm/dia, meta, m/homem-dia, ranking',     'PDF · CSV'],
+        ['materiais',    'ic-ok',    'Relatório de Materiais',            'físico × reservado × disponível',       'PDF · CSV'],
+        ['resumo',       'ic-gold',  'Resumo Gerencial (1 página)',       'consolidado executivo — 1 folha',       'PDF'],
       ];
       foreach ($rels as [$tipo, $cls, $titulo, $desc, $fmts]):
       ?>
