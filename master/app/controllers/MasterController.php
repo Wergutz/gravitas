@@ -17,9 +17,18 @@ class MasterController {
         auth_required_master();
 
         $modo   = in_array($_GET['modo'] ?? '', ['rt','dia','periodo']) ? $_GET['modo'] : 'rt';
-        $data   = $this->validarData($_GET['data']   ?? '') ?: date('Y-m-d');
         $inicio = $this->validarData($_GET['inicio'] ?? '') ?: date('Y-m-d', strtotime('-30 days'));
         $fim    = $this->validarData($_GET['fim']    ?? '') ?: date('Y-m-d');
+
+        // M1: default "dia" to last date with diary data (not today which may be empty)
+        if ($modo === 'dia' && empty($_GET['data'])) {
+            $ultimaData = $this->db->query(
+                "SELECT MAX(data) FROM diarios_execucao WHERE status IN ('enviado','aprovado')"
+            )->fetchColumn();
+            $data = $this->validarData($ultimaData ?: '') ?: date('Y-m-d');
+        } else {
+            $data = $this->validarData($_GET['data'] ?? '') ?: date('Y-m-d');
+        }
 
         $dados = match($modo) {
             'dia'     => $this->dadosDia($data),
@@ -148,7 +157,8 @@ class MasterController {
 
     private function dadosDia(string $data): array {
         $stmt = $this->db->prepare("
-            SELECT e.nome AS equipe, de.extensao_gps_m, t.pv_montante, t.pv_jusante, t.bacia
+            SELECT e.nome AS equipe, de.extensao_gps_m, t.extensao AS extensao_planejada,
+                   t.pv_montante, t.pv_jusante, t.bacia
             FROM diarios_execucao de
             JOIN equipes e ON e.id=de.equipe_id
             JOIN trechos t ON t.id=de.trecho_id
@@ -263,10 +273,27 @@ class MasterController {
         ");
         $stmt->execute([$inicio, $fim]); $produtividade = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // M5: Repavimentação no período
+        $repavPeriodo = null;
+        try {
+            $stmtR = $this->db->prepare("
+                SELECT COALESCE(SUM(dr.area_total_m2), 0) AS area_total,
+                       COALESCE(SUM(dr.volume_asf_m3), 0) AS volume_total,
+                       COUNT(DISTINCT dr.trecho_id)        AS trechos_medidos
+                FROM diarios_repav dr
+                WHERE dr.data BETWEEN ? AND ? AND dr.status IN ('enviado','aprovado')
+            ");
+            $stmtR->execute([$inicio, $fim]);
+            $row = $stmtR->fetch(PDO::FETCH_ASSOC);
+            $stmtFila = $this->db->query("SELECT COUNT(*) FROM trechos WHERE status_repav IS NOT NULL AND status_repav != 'medido'");
+            $row['fila_pendente'] = (int)$stmtFila->fetchColumn();
+            $repavPeriodo = $row;
+        } catch (\PDOException $e) {}
+
         return compact(
             'inicio','fim','metrosTotal','curvaProd','diasTrabalhados','mediaDiaria',
             'porBaciaEquipe','previsto','executadoTotal','pctAvanco','projecao',
-            'ramaisTotal','interfsTotal','totalInterfs','produtividade'
+            'ramaisTotal','interfsTotal','totalInterfs','produtividade','repavPeriodo'
         );
     }
 

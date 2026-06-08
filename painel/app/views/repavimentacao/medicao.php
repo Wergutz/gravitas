@@ -149,7 +149,9 @@ ob_start();
                     'calcada'                  => 'Calçada',
                 ];
                 ?>
-                <?php foreach ($pavimentos as $pav): ?>
+                <?php
+                $area_total_med = 0; $vol_total_med = 0;
+                foreach ($pavimentos as $pav): ?>
                     <?php
                     $tipo_leg = $tipos_legenda[$pav['tipo_pavimento']] ?? $pav['tipo_pavimento'];
                     $area = 0;
@@ -159,14 +161,24 @@ ob_start();
                             $area += (float)$c * (float)$l;
                         }
                     }
+                    $esp_m = (float)($pav['espessura_cm'] ?? 0) / 100;
+                    $vol   = ($pav['tipo_pavimento'] === 'asfalto' && $esp_m > 0) ? $area * $esp_m : null;
+                    $area_total_med += $area;
+                    if ($vol !== null) $vol_total_med += $vol;
                     ?>
                     <div style="border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px;">
-                        <div class="flex-between" style="margin-bottom:6px;">
+                        <div class="flex-between" style="margin-bottom:4px;">
                             <b style="font-size:13px;"><?= htmlspecialchars($tipo_leg) ?></b>
-                            <span style="color:var(--muted);font-size:12px;">Área: <?= number_format($area, 2, ',', '.') ?> m²</span>
+                            <span style="color:var(--muted);font-size:12px;">Área: <b><?= number_format($area, 2, ',', '.') ?> m²</b></span>
                         </div>
                         <?php if ($pav['espessura_cm']): ?>
-                            <span style="font-size:11.5px;color:var(--muted);">Espessura: <?= number_format((float)$pav['espessura_cm'], 1, ',', '.') ?> cm &nbsp;</span>
+                            <span style="font-size:11.5px;color:var(--muted);">Espessura: <?= number_format((float)$pav['espessura_cm'], 1, ',', '.') ?> cm</span>
+                        <?php endif; ?>
+                        <?php if ($vol !== null): ?>
+                            &nbsp;<span style="font-size:12px;color:#1F7A6E;font-weight:700;">
+                                Volume: <?= number_format($vol, 3, ',', '.') ?> m³
+                            </span>
+                            <span style="font-size:11px;color:var(--muted);"> ≈ <?= number_format($vol * 2.4, 2, ',', '.') ?> t</span>
                         <?php endif; ?>
                         <?php if ($pav['linhas_raw']): ?>
                             <div style="font-size:11.5px;color:var(--muted);margin-top:4px;">
@@ -178,6 +190,20 @@ ob_start();
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
+
+                <?php if (count($pavimentos) > 1 || $vol_total_med > 0): ?>
+                <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:8px;padding:10px 14px;font-size:13px;">
+                    <div style="display:flex;justify-content:space-between;font-weight:700;">
+                        <span>Total do trecho</span>
+                        <span><?= number_format($area_total_med, 2, ',', '.') ?> m²
+                            <?php if ($vol_total_med > 0): ?>
+                            · <span style="color:#1F7A6E;"><?= number_format($vol_total_med, 3, ',', '.') ?> m³ asfalto</span>
+                            <span style="font-weight:400;color:var(--muted);font-size:11px;"> ≈ <?= number_format($vol_total_med * 2.4, 2, ',', '.') ?> t</span>
+                            <?php endif; ?>
+                        </span>
+                    </div>
+                </div>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
 

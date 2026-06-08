@@ -2,6 +2,7 @@
 $usuario    = $_SESSION['user'] ?? null;
 $iniciais   = strtoupper(substr($usuario['nome'] ?? 'M', 0, 1));
 $hoje_fmt   = date('d/m/Y');
+$repavPeriodo = $repavPeriodo ?? null;
 
 function seloStatus(string $camStatus, ?string $diarioStatus): string {
     if ($diarioStatus === 'enviado')  return '<span class="selo s-conc">enviado</span>';
@@ -251,16 +252,41 @@ function svgIcon(string $path): string {
         <p style="color:var(--muted);font-size:13px">Nenhum diário enviado nesta data.</p>
         <?php else: ?>
         <table class="tab">
-          <tr><th>Equipe</th><th>Trecho</th><th style="text-align:right">Rede (m)</th></tr>
-          <?php foreach ($producaoPorEquipe as $p): ?>
+          <tr>
+            <th>Equipe</th><th>Trecho</th>
+            <th style="text-align:right">Planejado (m)</th>
+            <th style="text-align:right">Executado GPS (m)</th>
+            <th style="text-align:right">%</th>
+          </tr>
+          <?php
+          $totalPlan = 0;
+          foreach ($producaoPorEquipe as $p):
+              $plan = (float)($p['extensao_planejada'] ?? 0);
+              $exec = (float)($p['extensao_gps_m'] ?? 0);
+              $pct  = $plan > 0 ? min(999, round($exec / $plan * 100)) : null;
+              $totalPlan += $plan;
+          ?>
           <tr>
             <td><?= htmlspecialchars($p['equipe']) ?></td>
             <td><?= htmlspecialchars($p['pv_montante']) ?> → <?= htmlspecialchars($p['pv_jusante']) ?></td>
-            <td class="n"><?= $p['extensao_gps_m'] ? fmtM1((float)$p['extensao_gps_m']) : '—' ?></td>
+            <td class="n" style="color:var(--muted)"><?= $plan > 0 ? fmtM1($plan) : '—' ?></td>
+            <td class="n"><?= $exec > 0 ? fmtM1($exec) : '—' ?></td>
+            <td class="n" style="color:<?= $pct !== null ? ($pct >= 90 ? '#1F7A6E' : ($pct >= 60 ? '#D97706' : '#DC2626')) : 'var(--muted)' ?>">
+              <?= $pct !== null ? $pct . '%' : '—' ?>
+            </td>
           </tr>
           <?php endforeach; ?>
-          <tr class="tot"><td>Total</td><td></td><td class="n"><?= fmtM1($metrosDia) ?></td></tr>
+          <tr class="tot">
+            <td>Total</td><td></td>
+            <td class="n"><?= $totalPlan > 0 ? fmtM1($totalPlan) : '—' ?></td>
+            <td class="n"><?= fmtM1($metrosDia) ?></td>
+            <td class="n"><?= $totalPlan > 0 ? round($metrosDia / $totalPlan * 100) . '%' : '—' ?></td>
+          </tr>
         </table>
+        <p style="font-size:11px;color:var(--muted);margin-top:6px;">
+          * Planejado = extensão do trecho no projeto. Executado GPS = medição em campo.<br>
+          Régua oficial de faturamento: a combinar com o contratante (GPS ou planejado).
+        </p>
         <?php endif; ?>
       </div>
 
@@ -434,6 +460,32 @@ function svgIcon(string $path): string {
         </table>
         <?php endif; ?>
       </div>
+
+      <?php if (!empty($repavPeriodo)): ?>
+      <div class="card">
+        <p class="label">Repavimentação no período</p>
+        <div class="eqrow" style="padding:8px 0">
+          <span style="flex:1;font-size:13px">Área repavimentada</span>
+          <b><?= number_format((float)$repavPeriodo['area_total'], 2, ',', '.') ?> m²</b>
+        </div>
+        <?php if ((float)$repavPeriodo['volume_total'] > 0): ?>
+        <div class="eqrow" style="padding:8px 0">
+          <span style="flex:1;font-size:13px">Volume de asfalto</span>
+          <b style="color:#1F7A6E"><?= number_format((float)$repavPeriodo['volume_total'], 3, ',', '.') ?> m³
+          <small style="font-weight:400;color:var(--muted)">≈ <?= number_format((float)$repavPeriodo['volume_total'] * 2.4, 2, ',', '.') ?> t</small></b>
+        </div>
+        <?php endif; ?>
+        <div class="eqrow" style="padding:8px 0">
+          <span style="flex:1;font-size:13px">Trechos medidos</span>
+          <b><?= (int)$repavPeriodo['trechos_medidos'] ?></b>
+        </div>
+        <?php if ((int)$repavPeriodo['fila_pendente'] > 0): ?>
+        <div class="alerta a-aviso" style="margin-top:8px">
+          ⏳ <?= $repavPeriodo['fila_pendente'] ?> trecho(s) ainda aguardando repavimentação
+        </div>
+        <?php endif; ?>
+      </div>
+      <?php endif; ?>
     </div>
   </div>
 

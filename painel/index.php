@@ -427,6 +427,39 @@ if ($uri === '/materiais/movimento') {
 }
 
 /* ==========================
+   FRENTES DE REPAVIMENTAÇÃO
+========================== */
+if ($uri === '/repavimentacao/frentes') {
+    require_once __DIR__ . '/app/controllers/FrenteRepavController.php';
+    (new FrenteRepavController())->index();
+    exit;
+}
+
+if ($uri === '/repavimentacao/frentes/cadastrar') {
+    require_once __DIR__ . '/app/controllers/FrenteRepavController.php';
+    (new FrenteRepavController())->create();
+    exit;
+}
+
+if ($uri === '/repavimentacao/frentes/salvar') {
+    require_once __DIR__ . '/app/controllers/FrenteRepavController.php';
+    (new FrenteRepavController())->store();
+    exit;
+}
+
+if ($uri === '/repavimentacao/frentes/publicar') {
+    require_once __DIR__ . '/app/controllers/FrenteRepavController.php';
+    (new FrenteRepavController())->publicar();
+    exit;
+}
+
+if ($uri === '/repavimentacao/frentes/excluir') {
+    require_once __DIR__ . '/app/controllers/FrenteRepavController.php';
+    (new FrenteRepavController())->excluir();
+    exit;
+}
+
+/* ==========================
    REPAVIMENTAÇÃO
 ========================== */
 if ($uri === '/repavimentacao') {

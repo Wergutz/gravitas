@@ -2,6 +2,7 @@
 $empresa  = defined('APP_CLIENT') ? APP_CLIENT : 'GRAVITAS';
 $periodoFmt = date('d/m/Y', strtotime($inicio)) . ' a ' . date('d/m/Y', strtotime($fim));
 $total = 0; foreach ($porBaciaEquipe as $r) $total += (float)$r['metros'];
+$repavPeriodo = $repavPeriodo ?? null;
 ?><!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -69,7 +70,7 @@ tfoot td.n{text-align:right}
 <div class="resumo-kpi">
   <div class="kp"><b><?= number_format($total, 1, ',', '.') ?> m</b><span>Rede executada</span></div>
   <div class="kp"><b><?= (int)($ramaisTotal['qtd'] ?? 0) ?></b><span>Ramais domiciliares</span></div>
-  <div class="kp"><b><?= number_format(($ramaisTotal['m_pista'] ?? 0) + ($ramaisTotal['m_calcada'] ?? 0), 1, ',', '.') ?> m</b><span>Extensão repav.</span></div>
+  <div class="kp"><b><?= number_format((float)($repavPeriodo['area_total'] ?? 0), 1, ',', '.') ?> m²</b><span>Área repavimentada</span></div>
   <div class="kp"><b><?= number_format($mediaDiaria, 1, ',', '.') ?> m</b><span>Média diária</span></div>
 </div>
 
@@ -117,6 +118,29 @@ if ($baciaAtual !== null): ?>
     </tr>
   </tfoot>
 </table>
+
+<?php if (!empty($repavPeriodo) && ((float)$repavPeriodo['area_total'] > 0 || (int)$repavPeriodo['trechos_medidos'] > 0)): ?>
+<p class="secao">Repavimentação no Período</p>
+<table>
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th style="text-align:right">Valor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Área repavimentada total</td><td class="n"><?= number_format((float)$repavPeriodo['area_total'], 2, ',', '.') ?> m²</td></tr>
+    <?php if ((float)$repavPeriodo['volume_total'] > 0): ?>
+    <tr><td>Volume de asfalto (CBUQ)</td><td class="n"><?= number_format((float)$repavPeriodo['volume_total'], 3, ',', '.') ?> m³</td></tr>
+    <tr><td>Massa estimada (× 2,4 t/m³)</td><td class="n">≈ <?= number_format((float)$repavPeriodo['volume_total'] * 2.4, 2, ',', '.') ?> t</td></tr>
+    <?php endif; ?>
+    <tr><td>Trechos medidos</td><td class="n"><?= (int)$repavPeriodo['trechos_medidos'] ?></td></tr>
+    <?php if ((int)$repavPeriodo['fila_pendente'] > 0): ?>
+    <tr><td>Aguardando repavimentação (fila)</td><td class="n"><?= $repavPeriodo['fila_pendente'] ?></td></tr>
+    <?php endif; ?>
+  </tbody>
+</table>
+<?php endif; ?>
 
 <?php if (!empty($interfsTotal)): ?>
 <p class="secao">Interferências no Período</p>

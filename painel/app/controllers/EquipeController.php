@@ -36,10 +36,10 @@ class EquipeController
         global $pdo;
 
         $executores = $pdo->query("
-            SELECT id, nome
+            SELECT id, nome, tipo_usuario
             FROM usuarios
-            WHERE tipo_usuario = 5 AND ativo = 1
-            ORDER BY nome
+            WHERE tipo_usuario IN (5, 7) AND ativo = 1
+            ORDER BY tipo_usuario, nome
         ")->fetchAll(PDO::FETCH_ASSOC);
 
         $funcionarios = $pdo->query("
@@ -167,10 +167,10 @@ public function edit()
        EXECUTORES
     ========================== */
     $executores = $pdo->query("
-        SELECT id, nome
+        SELECT id, nome, tipo_usuario
         FROM usuarios
-        WHERE tipo_usuario = 5 AND ativo = 1
-        ORDER BY nome
+        WHERE tipo_usuario IN (5, 7) AND ativo = 1
+        ORDER BY tipo_usuario, nome
     ")->fetchAll(PDO::FETCH_ASSOC);
 
     /* =========================
