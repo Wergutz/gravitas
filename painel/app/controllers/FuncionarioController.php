@@ -279,13 +279,14 @@ class FuncionarioController
                 INSERT INTO funcionarios (nome, cpf, empresa, funcao, salario,
                     aso, nr06, nr10, nr11, nr12, nr18, nr20, nr23, nr33, nr35,
                     integracao_corsan, sertras, ativo)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,1)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,1)
             ");
             $stmtUpd = $pdo->prepare("
                 UPDATE funcionarios SET
                     nome=?, empresa=?, funcao=?, salario=?,
                     aso=?, nr06=?, nr10=?, nr11=?, nr12=?,
-                    nr18=?, nr20=?, nr23=?, nr33=?, nr35=?
+                    nr18=?, nr20=?, nr23=?, nr33=?, nr35=?,
+                    integracao_corsan=?, sertras=?
                 WHERE cpf=?
             ");
             $stmtDoc = $pdo->prepare("
@@ -305,12 +306,14 @@ class FuncionarioController
                             $r['nome'], $r['cpf'], $r['empresa'], $r['funcao'], $r['salario'],
                             $r['aso'], $r['nr06'], $r['nr10'], $r['nr11'], $r['nr12'],
                             $r['nr18'], $r['nr20'], $r['nr23'], $r['nr33'], $r['nr35'],
+                            $r['integracao_corsan'], $r['sertras'],
                         ]);
                     } else {
                         $stmtUpd->execute([
                             $r['nome'], $r['empresa'], $r['funcao'], $r['salario'],
                             $r['aso'], $r['nr06'], $r['nr10'], $r['nr11'], $r['nr12'],
                             $r['nr18'], $r['nr20'], $r['nr23'], $r['nr33'], $r['nr35'],
+                            $r['integracao_corsan'], $r['sertras'],
                             $r['cpf'],
                         ]);
                     }
@@ -328,6 +331,8 @@ class FuncionarioController
                             'nr23' => [$r['nr23'],  $r['val_nr23']],
                             'nr33' => [$r['nr33'],  $r['val_nr33']],
                             'nr35' => [$r['nr35'],  $r['val_nr35']],
+                            'integracao_corsan' => [$r['integracao_corsan'], null],
+                            'sertras'           => [$r['sertras'],           null],
                         ];
                         foreach ($docMap as $tipo => [$status, $validade]) {
                             $stmtDoc->execute([$func_id, $tipo, $status, $validade]);
@@ -373,7 +378,8 @@ class FuncionarioController
                         'nome'=>'','cpf'=>$cpf,'empresa'=>'','funcao'=>'','salario'=>0,
                         'aso'=>0,'val_aso'=>null,'nr06'=>0,'val_nr06'=>null,'nr10'=>0,'val_nr10'=>null,
                         'nr11'=>0,'val_nr11'=>null,'nr12'=>0,'val_nr12'=>null,'nr18'=>0,'val_nr18'=>null,
-                        'nr20'=>0,'val_nr20'=>null,'nr23'=>0,'val_nr23'=>null,'nr33'=>0,'val_nr33'=>null,'nr35'=>0,'val_nr35'=>null];
+                        'nr20'=>0,'val_nr20'=>null,'nr23'=>0,'val_nr23'=>null,'nr33'=>0,'val_nr33'=>null,'nr35'=>0,'val_nr35'=>null,
+                        'integracao_corsan'=>0,'sertras'=>0];
                     continue;
                 }
                 if (strlen($cpf) !== 11) {
@@ -382,7 +388,8 @@ class FuncionarioController
                         'nome'=>$nome,'cpf'=>$cpf,'empresa'=>'','funcao'=>'','salario'=>0,
                         'aso'=>0,'val_aso'=>null,'nr06'=>0,'val_nr06'=>null,'nr10'=>0,'val_nr10'=>null,
                         'nr11'=>0,'val_nr11'=>null,'nr12'=>0,'val_nr12'=>null,'nr18'=>0,'val_nr18'=>null,
-                        'nr20'=>0,'val_nr20'=>null,'nr23'=>0,'val_nr23'=>null,'nr33'=>0,'val_nr33'=>null,'nr35'=>0,'val_nr35'=>null];
+                        'nr20'=>0,'val_nr20'=>null,'nr23'=>0,'val_nr23'=>null,'nr33'=>0,'val_nr33'=>null,'nr35'=>0,'val_nr35'=>null,
+                        'integracao_corsan'=>0,'sertras'=>0];
                     continue;
                 }
 
@@ -418,6 +425,8 @@ class FuncionarioController
                     'val_nr33' => import_parse_date($linha[22] ?? null),
                     'nr35'     => import_doc_status((string)($linha[23] ?? '')),
                     'val_nr35' => import_parse_date($linha[24] ?? null),
+                    'integracao_corsan' => import_doc_status((string)($linha[25] ?? '')),
+                    'sertras'           => import_doc_status((string)($linha[26] ?? '')),
                 ];
             }
 

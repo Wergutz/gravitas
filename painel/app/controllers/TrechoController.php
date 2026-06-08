@@ -486,7 +486,7 @@ class TrechoController
                     $preview_rows[] = [
                         '_linha'=>$i+1,'_status'=>'erro','_msg'=>"'PV Montante' obrigatório",
                         'pv_montante'=>'','pv_jusante'=>$pv_jus,'bacia'=>trim((string)($linha[2]??'')),
-                        'tipo_pi_montante'=>'','extensao'=>null,'profundidade'=>null,'dn'=>'',
+                        'tipo_pi_montante'=>'','extensao'=>null,'profundidade'=>null,'dn'=>null,
                         'ramais'=>0,'rua'=>'','cidade'=>'','contrato'=>$contrato,
                     ];
                     continue;
@@ -507,7 +507,7 @@ class TrechoController
                     'tipo_pi_montante'=> trim((string)($linha[3] ?? '')),
                     'extensao'       => is_numeric($ext) ? (float)$ext : null,
                     'profundidade'   => is_numeric($prof) ? (float)$prof : null,
-                    'dn'             => trim((string)($linha[6] ?? '')),
+                    'dn'             => ($linha[6] !== null && $linha[6] !== '') ? (string)(int)$linha[6] : null,
                     'ramais'         => (int)($linha[7] ?? 0),
                     'rua'            => trim((string)($linha[8] ?? '')),
                     'cidade'         => trim((string)($linha[9] ?? '')),

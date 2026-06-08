@@ -31,7 +31,11 @@ function import_parse_date($val): ?string
 
 function import_doc_status(string $val): int
 {
-    return strtolower(trim($val)) === 'apto' ? 1 : 0;
+    $v = strtolower(trim($val));
+    if ($v === 'apto')                                    return 1;
+    if ($v === 'inapto')                                  return 2;
+    if ($v === 'não se aplica' || $v === 'nao se aplica' || $v === 'n/a') return 3;
+    return 0;
 }
 
 function import_preview_totals(array $rows): array
