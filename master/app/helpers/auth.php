@@ -3,12 +3,12 @@ function auth_required_master(): void {
     if (session_status() === PHP_SESSION_NONE) session_start();
 
     if (!isset($_SESSION['usuario_id'])) {
-        header('Location: /principal/painel/login.php');
+        header('Location: /login/');
         exit;
     }
 
     if ((int)($_SESSION['nivel'] ?? 0) !== 6) {
-        header('Location: /principal/painel/login.php?msg=acesso');
+        header('Location: /login/');
         exit;
     }
 }

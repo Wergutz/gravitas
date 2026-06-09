@@ -12,7 +12,7 @@ header('X-Robots-Tag: noindex, nofollow');
 if (isset($_GET['sair'])) {
     session_unset();
     session_destroy();
-    header('Location: ' . EXECUTOR_BASE . '/login.php');
+    header('Location: /login/');
     exit;
 }
 
