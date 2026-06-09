@@ -105,9 +105,10 @@ if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
                         session_write_close();
 
                         // Inicia sessão do sistema alvo (cookie path / para o redirect funcionar)
+                        $cookiePath = ($cfg['id'] === 'marco_urbano') ? '/marco_urbano/' : '/principal/';
                         session_name($cfg['session']);
                         session_set_cookie_params([
-                            'path'     => '/',
+                            'path'     => $cookiePath,
                             'samesite' => 'Lax',
                             'httponly' => true,
                         ]);
