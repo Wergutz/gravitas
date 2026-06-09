@@ -5,15 +5,16 @@
 
 $sistemas = [
     [
-        'id'            => 'gravitas',
-        'db'            => 'u278289683_vh_planeja',
-        'user'          => 'u278289683_visionhub_2',
-        'pass'          => 'geb91/RS',
-        'session'       => 'PHPSESSID',
-        'cookie_path'   => '/principal/',
-        'label'         => 'GRAVITAS',
-        'sub'           => 'Plataforma Principal',
-        'destinos'      => [
+        'id'          => 'gravitas',
+        'db'          => 'u278289683_vh_planeja',
+        'user'        => 'u278289683_visionhub_2',
+        'pass'        => 'geb91/RS',
+        'session'     => 'PHPSESSID',
+        'cookie_path' => '/principal/',
+        'label'       => 'GRAVITAS',
+        'sub'         => 'Plataforma Principal',
+        'alterar_senha' => '/principal/painel/alterar-senha.php',
+        'destinos'    => [
             1 => '/principal/painel/',
             3 => '/principal/painel/',
             4 => '/principal/painel/',
@@ -21,18 +22,24 @@ $sistemas = [
             6 => '/principal/master/',
             7 => '/principal/executor-repav/',
         ],
-        'alterar_senha' => '/principal/painel/alterar-senha.php',
+        'apps'        => [
+            ['dest' => '/principal/painel/',        'label' => 'Planejador',              'sub' => 'Gestão, relatórios e diários'],
+            ['dest' => '/principal/master/',         'label' => 'Visão Executiva',         'sub' => 'Dashboard do cliente master'],
+            ['dest' => '/principal/executor/',       'label' => 'App do Executor',         'sub' => 'Frente de serviço em campo'],
+            ['dest' => '/principal/executor-repav/', 'label' => 'Executor Repavimentação', 'sub' => 'Medição e controle de pavimento'],
+        ],
     ],
     [
-        'id'            => 'marco_urbano',
-        'db'            => 'u278289683_marco_urbano',
-        'user'          => 'u278289683_marco_urbano',
-        'pass'          => 'geb91/RS',
-        'session'       => 'MU_PAINEL',
-        'cookie_path'   => '/marco_urbano/',
-        'label'         => 'MARCO URBANO',
-        'sub'           => 'Urbanizadora',
-        'destinos'      => [
+        'id'          => 'marco_urbano',
+        'db'          => 'u278289683_marco_urbano',
+        'user'        => 'u278289683_marco_urbano',
+        'pass'        => 'geb91/RS',
+        'session'     => 'MU_PAINEL',
+        'cookie_path' => '/marco_urbano/',
+        'label'       => 'MARCO URBANO',
+        'sub'         => 'Urbanizadora',
+        'alterar_senha' => '/marco_urbano/painel/alterar-senha.php',
+        'destinos'    => [
             1 => '/marco_urbano/painel/',
             3 => '/marco_urbano/painel/',
             4 => '/marco_urbano/painel/',
@@ -40,7 +47,12 @@ $sistemas = [
             6 => '/marco_urbano/master/',
             7 => '/marco_urbano/executor-repav/',
         ],
-        'alterar_senha' => '/marco_urbano/painel/alterar-senha.php',
+        'apps'        => [
+            ['dest' => '/marco_urbano/painel/',        'label' => 'Planejador',              'sub' => 'Gestão, relatórios e diários'],
+            ['dest' => '/marco_urbano/master/',         'label' => 'Visão Executiva',         'sub' => 'Dashboard do cliente master'],
+            ['dest' => '/marco_urbano/executor/',       'label' => 'App do Executor',         'sub' => 'Frente de serviço em campo'],
+            ['dest' => '/marco_urbano/executor-repav/', 'label' => 'Executor Repavimentação', 'sub' => 'Medição e controle de pavimento'],
+        ],
     ],
 ];
 
@@ -60,42 +72,56 @@ if (isset($_GET['sair'])) {
     exit;
 }
 
-// ── Passo 2: superadmin escolhe o sistema ────────────────────────────────────
+// ── Passo 2: superadmin escolhe sistema + app ─────────────────────────────────
 if (!empty($_SESSION['sa_ok'])) {
     $sa_nome  = $_SESSION['sa_nome'] ?? 'Admin';
     $erro_sel = '';
 
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sistema'])) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['sistema'], $_POST['destino'])) {
         if (!hash_equals($_SESSION['csrf'] ?? '', $_POST['csrf'] ?? '')) {
             $erro_sel = 'Requisição inválida. Recarregue a página.';
         } else {
+            $sid  = $_POST['sistema'];
+            $dest = $_POST['destino'];
+            $cfg_sel = null;
             foreach ($sistemas as $cfg) {
-                if ($cfg['id'] === ($_POST['sistema'] ?? '')) {
-                    $uid  = (int)$_SESSION['sa_id'];
-                    $nome = $_SESSION['sa_nome'];
-                    unset($_SESSION['sa_ok'], $_SESSION['sa_id'], $_SESSION['sa_nome']);
-                    session_write_close();
-
-                    session_name($cfg['session']);
-                    session_set_cookie_params([
-                        'path'     => $cfg['cookie_path'],
-                        'samesite' => 'Lax',
-                        'httponly' => true,
-                    ]);
-                    session_start();
-                    session_regenerate_id(true);
-                    $_SESSION['usuario_id'] = $uid;
-                    $_SESSION['nome']       = $nome;
-                    $_SESSION['nivel']      = 1;
-                    session_write_close();
-
-                    header('Location: ' . $cfg['destinos'][1]);
-                    exit;
-                }
+                if ($cfg['id'] === $sid) { $cfg_sel = $cfg; break; }
             }
-            $erro_sel = 'Sistema inválido.';
+            // Valida destino contra lista de apps permitidos
+            $destinos_validos = array_column($cfg_sel['apps'] ?? [], 'dest');
+            if ($cfg_sel && in_array($dest, $destinos_validos, true)) {
+                $uid  = (int)$_SESSION['sa_id'];
+                $nome = $_SESSION['sa_nome'];
+                unset($_SESSION['sa_ok'], $_SESSION['sa_id'], $_SESSION['sa_nome']);
+                session_write_close();
+
+                session_name($cfg_sel['session']);
+                session_set_cookie_params([
+                    'path'     => $cfg_sel['cookie_path'],
+                    'samesite' => 'Lax',
+                    'httponly' => true,
+                ]);
+                session_start();
+                session_regenerate_id(true);
+                $_SESSION['usuario_id'] = $uid;
+                $_SESSION['nome']       = $nome;
+                $_SESSION['nivel']      = 1;
+                session_write_close();
+
+                header('Location: ' . $dest);
+                exit;
+            }
+            $erro_sel = 'Seleção inválida.';
         }
     }
+
+    // Ícones SVG por app (path interno do SVG, viewBox 0 0 24 24)
+    $app_icons = [
+        'Planejador'              => '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+        'Visão Executiva'         => '<line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="5"/><line x1="19" y1="20" x2="19" y2="9"/>',
+        'App do Executor'         => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+        'Executor Repavimentação' => '<rect x="2" y="14" width="20" height="6" rx="2"/><path d="M6 14v-4a6 6 0 0 1 12 0v4"/>',
+    ];
     ?><!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -110,50 +136,70 @@ if (!empty($_SESSION['sa_ok'])) {
   :root{
     --navy:#1A2D4F;--navy-900:#11203B;--navy-500:#3A578A;
     --ink:#1E2738;--muted:#6B7686;--line:#E4E8EF;--bg:#F4F6FA;
-    --gold:#E0A53D;--gold-600:#C68C28;
+    --gold:#E0A53D;--gold-600:#C68C28;--gold-bg:#e0a53d18;
     --erro:#B23A2C;--erro-bg:#C0392B12;--erro-bd:#C0392B33;
-    --green:#3CB86A;
     --font:"Inter",-apple-system,Segoe UI,Roboto,sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:var(--font);background:var(--bg);color:var(--ink);
        display:flex;align-items:center;justify-content:center;
-       min-height:100vh;-webkit-font-smoothing:antialiased}
+       min-height:100vh;padding:24px 16px;-webkit-font-smoothing:antialiased}
   svg{display:block}
-  .shell{width:100%;max-width:580px;padding:24px 16px}
-  .logo-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:32px}
-  .logo-icon{width:42px;height:42px}
-  .logo-name{font-size:20px;font-weight:800;letter-spacing:4px;color:var(--navy)}
-  .logo-sep{width:1px;height:28px;background:var(--line)}
-  .logo-sub{font-size:12px;color:var(--muted);letter-spacing:.4px}
+
+  .shell{width:100%;max-width:780px}
+
+  .logo-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:28px}
+  .logo-icon{width:38px;height:38px}
+  .logo-name{font-size:19px;font-weight:800;letter-spacing:4px;color:var(--navy)}
+  .logo-sep{width:1px;height:24px;background:var(--line)}
+  .logo-sub{font-size:11.5px;color:var(--muted);letter-spacing:.4px}
+
   .card{background:#fff;border:1px solid var(--line);border-radius:18px;
-        padding:32px 32px 28px;box-shadow:0 4px 24px #1a2d4f0a}
-  .card-head{margin-bottom:26px;text-align:center}
-  .badge{display:inline-flex;align-items:center;gap:6px;background:#e0a53d1a;color:var(--gold-600);
-         border-radius:999px;padding:4px 12px;font-size:11.5px;font-weight:700;
-         letter-spacing:.5px;margin-bottom:14px}
+        padding:28px 28px 24px;box-shadow:0 4px 24px #1a2d4f08}
+
+  .card-head{margin-bottom:22px}
+  .badge{display:inline-flex;align-items:center;gap:6px;background:var(--gold-bg);
+         color:var(--gold-600);border-radius:999px;padding:3px 11px;
+         font-size:11px;font-weight:800;letter-spacing:.8px;margin-bottom:12px}
   .badge-dot{width:6px;height:6px;background:var(--gold);border-radius:99px}
-  .card-head h1{font-size:21px;font-weight:800;letter-spacing:-.3px;margin-bottom:6px}
-  .card-head p{color:var(--muted);font-size:14px}
-  .alert{display:flex;gap:10px;align-items:flex-start;background:var(--erro-bg);
+  .card-head h1{font-size:20px;font-weight:800;letter-spacing:-.3px;margin-bottom:5px}
+  .card-head p{color:var(--muted);font-size:13.5px}
+
+  .alert{display:flex;gap:10px;align-items:center;background:var(--erro-bg);
          border:1px solid var(--erro-bd);color:var(--erro);border-radius:10px;
-         padding:11px 13px;font-size:13px;font-weight:600;margin-bottom:16px;line-height:1.4}
-  .sistemas{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  @media(max-width:500px){.sistemas{grid-template-columns:1fr}}
-  .sis-btn{border:2px solid var(--line);border-radius:14px;background:#fff;
-           padding:22px 20px 18px;cursor:pointer;text-align:left;
-           transition:border-color .15s,box-shadow .15s,transform .08s;
-           display:flex;flex-direction:column;gap:8px;width:100%;font-family:inherit}
-  .sis-btn:hover{border-color:var(--gold);box-shadow:0 6px 20px #e0a53d1e}
-  .sis-btn:active{transform:translateY(1px)}
-  .sis-icon{width:46px;height:46px;margin-bottom:4px}
-  .sis-name{font-size:14.5px;font-weight:800;color:var(--navy);letter-spacing:.5px}
-  .sis-sub{font-size:12px;color:var(--muted)}
-  .sis-arrow{font-size:12px;color:var(--gold-600);font-weight:700;margin-top:6px}
-  .actions{display:flex;justify-content:center;margin-top:20px}
+         padding:10px 13px;font-size:13px;font-weight:600;margin-bottom:16px}
+
+  .grade{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:580px){.grade{grid-template-columns:1fr}}
+
+  .sistema-col{}
+  .sistema-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;
+                  padding-bottom:10px;border-bottom:2px solid var(--line)}
+  .sistema-header svg{width:28px;height:28px}
+  .sistema-header-txt b{display:block;font-size:13px;font-weight:800;letter-spacing:1px;color:var(--navy)}
+  .sistema-header-txt small{font-size:11px;color:var(--muted);font-weight:500}
+
+  .apps{display:flex;flex-direction:column;gap:8px}
+
+  .app-btn{border:1.5px solid var(--line);border-radius:11px;background:#fff;
+           padding:12px 14px;cursor:pointer;text-align:left;width:100%;
+           font-family:inherit;display:flex;align-items:center;gap:11px;
+           transition:border-color .12s,background .12s,box-shadow .12s}
+  .app-btn:hover{border-color:var(--gold);background:var(--gold-bg);box-shadow:0 3px 10px #e0a53d14}
+  .app-btn:active{transform:translateY(1px)}
+
+  .app-ic{width:34px;height:34px;border-radius:8px;background:#1a2d4f0e;color:var(--navy);
+          display:grid;place-items:center;flex:0 0 auto}
+  .app-ic svg{width:16px;height:16px}
+  .app-txt b{display:block;font-size:13px;font-weight:700;color:var(--ink)}
+  .app-txt small{font-size:11px;color:var(--muted)}
+  .app-arrow{margin-left:auto;color:var(--muted);flex:0 0 auto}
+  .app-arrow svg{width:14px;height:14px}
+
+  .footer-row{display:flex;justify-content:center;margin-top:18px}
   .sair-link{font-size:12.5px;color:var(--muted);text-decoration:none;font-weight:600}
   .sair-link:hover{color:var(--navy)}
-  .footer{text-align:center;margin-top:18px;font-size:12px;color:#9AA3B2}
+  .page-footer{text-align:center;margin-top:14px;font-size:11.5px;color:#9AA3B2}
 </style>
 </head>
 <body>
@@ -185,57 +231,95 @@ if (!empty($_SESSION['sa_ok'])) {
   <div class="card">
     <div class="card-head">
       <div class="badge"><span class="badge-dot"></span>SUPER ADMIN</div>
-      <h1>Selecione o sistema</h1>
-      <p>Olá, <strong><?= htmlspecialchars($sa_nome, ENT_QUOTES, 'UTF-8') ?></strong>. Escolha o sistema que deseja acessar.</p>
+      <h1>Selecione o sistema e o app</h1>
+      <p>Olá, <strong><?= htmlspecialchars($sa_nome, ENT_QUOTES, 'UTF-8') ?></strong>. Escolha onde deseja entrar.</p>
     </div>
 
     <?php if ($erro_sel): ?>
     <div class="alert"><?= htmlspecialchars($erro_sel, ENT_QUOTES, 'UTF-8') ?></div>
     <?php endif; ?>
 
-    <form method="post" action="/login/">
-      <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'], ENT_QUOTES, 'UTF-8') ?>">
-      <div class="sistemas">
+    <form id="sel" method="post" action="/login/">
+      <input type="hidden" name="csrf"    value="<?= htmlspecialchars($_SESSION['csrf'], ENT_QUOTES, 'UTF-8') ?>">
+      <input type="hidden" name="sistema" id="in_sis">
+      <input type="hidden" name="destino" id="in_dest">
 
-        <button type="submit" name="sistema" value="gravitas" class="sis-btn">
-          <svg class="sis-icon" viewBox="-4 -4 108 108" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <ellipse cx="50" cy="50" rx="54" ry="19" fill="none" stroke="#B9C1CC" stroke-width="3.5" transform="rotate(-24 50 50)"/>
-            <circle cx="50" cy="50" r="44" fill="#1A2D4F" stroke="#B9C1CC" stroke-width="2.5"/>
-            <circle cx="92.8" cy="23.1" r="4.5" fill="#C9A227"/>
-            <path d="M 26.7 73.3 A 33 33 0 1 1 73.3 73.3" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
-            <path d="M 50 50 L 67.4 29.3 L 55.5 53.5 Z" fill="#C9A227"/>
-            <circle cx="50" cy="50" r="6.5" fill="#C9A227"/>
-          </svg>
-          <div class="sis-name">GRAVITAS</div>
-          <div class="sis-sub">Plataforma Principal</div>
-          <div class="sis-arrow">Acessar →</div>
-        </button>
+      <div class="grade">
+        <?php foreach ($sistemas as $cfg): ?>
+        <div class="sistema-col">
 
-        <button type="submit" name="sistema" value="marco_urbano" class="sis-btn">
-          <svg class="sis-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <rect x="4" y="4" width="92" height="92" rx="26" fill="none" stroke="#3CB86A" stroke-width="3"/>
-            <rect x="14" y="14" width="72" height="72" rx="19" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-            <circle cx="50" cy="33" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-            <circle cx="50" cy="67" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-            <circle cx="33" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-            <circle cx="67" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-            <circle cx="50" cy="50" r="5" fill="#3CB86A"/>
-          </svg>
-          <div class="sis-name">MARCO URBANO</div>
-          <div class="sis-sub">Urbanizadora</div>
-          <div class="sis-arrow">Acessar →</div>
-        </button>
+          <div class="sistema-header">
+            <?php if ($cfg['id'] === 'gravitas'): ?>
+            <svg viewBox="-4 -4 108 108" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <ellipse cx="50" cy="50" rx="54" ry="19" fill="none" stroke="#3A578A" stroke-width="3.5" transform="rotate(-24 50 50)"/>
+              <circle cx="50" cy="50" r="44" fill="#1A2D4F" stroke="#3A578A" stroke-width="2.5"/>
+              <circle cx="92.8" cy="23.1" r="4.5" fill="#C9A227"/>
+              <path d="M 26.7 73.3 A 33 33 0 1 1 73.3 73.3" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+              <path d="M 50 50 L 67.4 29.3 L 55.5 53.5 Z" fill="#C9A227"/>
+              <circle cx="50" cy="50" r="6" fill="#C9A227"/>
+            </svg>
+            <?php else: ?>
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <rect x="4" y="4" width="92" height="92" rx="26" fill="none" stroke="#3CB86A" stroke-width="3"/>
+              <rect x="14" y="14" width="72" height="72" rx="19" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
+              <circle cx="50" cy="33" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
+              <circle cx="50" cy="67" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
+              <circle cx="33" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
+              <circle cx="67" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
+              <circle cx="50" cy="50" r="5" fill="#3CB86A"/>
+            </svg>
+            <?php endif; ?>
+            <div class="sistema-header-txt">
+              <b><?= htmlspecialchars($cfg['label']) ?></b>
+              <small><?= htmlspecialchars($cfg['sub']) ?></small>
+            </div>
+          </div>
 
+          <div class="apps">
+            <?php foreach ($cfg['apps'] as $app): ?>
+            <button type="button" class="app-btn"
+                    data-sis="<?= htmlspecialchars($cfg['id']) ?>"
+                    data-dest="<?= htmlspecialchars($app['dest']) ?>">
+              <div class="app-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <?= $app_icons[$app['label']] ?? '' ?>
+                </svg>
+              </div>
+              <div class="app-txt">
+                <b><?= htmlspecialchars($app['label']) ?></b>
+                <small><?= htmlspecialchars($app['sub']) ?></small>
+              </div>
+              <div class="app-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="4" y1="12" x2="20" y2="12"/><polyline points="14 6 20 12 14 18"/>
+                </svg>
+              </div>
+            </button>
+            <?php endforeach; ?>
+          </div>
+
+        </div>
+        <?php endforeach; ?>
       </div>
     </form>
 
-    <div class="actions">
+    <div class="footer-row">
       <a href="/login/?sair=1" class="sair-link">← Fazer login com outra conta</a>
     </div>
   </div>
 
-  <p class="footer">Acesso restrito a usuários autorizados · © 2026 Gravitas</p>
+  <p class="page-footer">Acesso restrito a usuários autorizados · © 2026 Gravitas</p>
 </div>
+
+<script>
+  document.querySelectorAll('.app-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.getElementById('in_sis').value  = btn.dataset.sis;
+      document.getElementById('in_dest').value = btn.dataset.dest;
+      document.getElementById('sel').submit();
+    });
+  });
+</script>
 </body>
 </html>
 <?php
@@ -243,6 +327,7 @@ if (!empty($_SESSION['sa_ok'])) {
 }
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
+$bloqueado = false;
 if (!empty($_SESSION['tentativas']) && $_SESSION['tentativas'] >= 5) {
     $ate = $_SESSION['bloqueio_ate'] ?? 0;
     if (time() < $ate) {
@@ -255,6 +340,7 @@ if (!empty($_SESSION['tentativas']) && $_SESSION['tentativas'] >= 5) {
 }
 
 // ── Autenticação ──────────────────────────────────────────────────────────────
+$erro = $erro ?? '';
 if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!hash_equals($_SESSION['csrf'] ?? '', $_POST['csrf'] ?? '')) {
@@ -369,7 +455,6 @@ if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
   svg{display:block}
 
   .shell{width:100%;max-width:440px;padding:24px 16px}
-
   .logo-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:32px}
   .logo-icon{width:42px;height:42px}
   .logo-name{font-size:20px;font-weight:800;letter-spacing:4px;color:var(--navy)}
@@ -378,7 +463,6 @@ if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
   .card{background:#fff;border:1px solid var(--line);border-radius:18px;
         padding:36px 36px 32px;box-shadow:0 4px 24px #1a2d4f0a}
-
   .card-head{margin-bottom:24px}
   .card-head h1{font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:6px}
   .card-head p{color:var(--muted);font-size:14px;line-height:1.5}
@@ -412,10 +496,7 @@ if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
   .btn[disabled]{opacity:.6;cursor:wait}
 
   .footer{text-align:center;margin-top:20px;font-size:12px;color:#9AA3B2}
-
-  @media(max-width:480px){
-    .card{padding:28px 22px}
-  }
+  @media(max-width:480px){.card{padding:28px 22px}}
 </style>
 </head>
 <body>
