@@ -14,7 +14,7 @@ function seloStatus(string $camStatus, ?string $diarioStatus): string {
 function fmtM(float $v): string { return number_format($v, 0, ',', '.'); }
 function fmtM1(float $v): string { return number_format($v, 1, ',', '.'); }
 function svgIcon(string $path): string {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' . $path . '</svg>';
+    return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' . $path . '</svg>';
 }
 ?>
 <!DOCTYPE html>
