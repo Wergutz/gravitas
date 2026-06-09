@@ -15,12 +15,15 @@ require_once __DIR__ . '/app/config/app.php';
 // Se já estiver logado, redireciona para o app correto pelo papel
 if (isset($_SESSION['usuario_id'])) {
     $nivel = (int)($_SESSION['nivel'] ?? 0);
-    if ($nivel === 5)      $dest = EXECUTOR_BASE . '/';
-    elseif ($nivel === 6)  $dest = MASTER_BASE . '/';
-    elseif ($nivel === 7)  $dest = REPAV_BASE . '/';
-    else                   $dest = APP_BASE . '/';
-    header('Location: ' . $dest);
-    exit;
+    $destinos = [3 => APP_BASE . '/', 4 => APP_BASE . '/', 5 => EXECUTOR_BASE . '/', 6 => MASTER_BASE . '/', 7 => REPAV_BASE . '/'];
+    if (isset($destinos[$nivel])) {
+        header('Location: ' . $destinos[$nivel]);
+        exit;
+    }
+    // nivel inválido ou sessão de outro sistema — limpa e mostra o form
+    $_SESSION = [];
+    session_destroy();
+    session_start();
 }
 
 // ----- CSRF -----
