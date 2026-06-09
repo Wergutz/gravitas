@@ -1,8 +1,9 @@
--- Super Admin — nivel 1 — acesso total a todos os apps
+-- Super Admin Gravitas — nivel 1 — acesso total a TODOS os sistemas e apps
+-- Usuário exclusivo do banco Gravitas (u278289683_vh_planeja).
+-- Ao fazer login, aparece um seletor para escolher qual sistema acessar.
 -- Senha inicial: Super@2026  (force_password_change = 1)
--- Execute UMA VEZ em cada banco.
+-- Execute UMA VEZ.
 
--- ── Banco Gravitas (u278289683_vh_planeja) ──────────────────────────────────
 INSERT INTO usuarios (nome, email, senha, tipo_usuario, ativo, force_password_change)
 VALUES (
     'superadmin',
