@@ -10,5 +10,5 @@ if (ini_get('session.use_cookies')) {
     setcookie(session_name(), '', ['expires' => time()-86400,'path'=>'/','httponly'=>true,'samesite'=>'Lax']);
 }
 session_destroy();
-header('Location: ' . APP_BASE . '/login.php');
+header('Location: /login/');
 exit;
