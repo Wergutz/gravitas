@@ -24,3 +24,5 @@ jobs:
             echo '<?php header("Location: /principal/", true, 301); exit;' > /home/u278289683/domains/gravitas.net.br/public_html/index.php
             mkdir -p /home/u278289683/domains/gravitas.net.br/public_html/marco_urbano
             cp -rT /home/u278289683/domains/gravitas.net.br/public_html/principal/marco_urbano /home/u278289683/domains/gravitas.net.br/public_html/marco_urbano
+            mkdir -p /home/u278289683/domains/gravitas.net.br/public_html/login
+            cp -rT /home/u278289683/domains/gravitas.net.br/public_html/principal/login /home/u278289683/domains/gravitas.net.br/public_html/login
