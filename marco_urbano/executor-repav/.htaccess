@@ -5,7 +5,7 @@ Header always set X-Frame-Options "DENY"
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /principal/executor-repav/
+    RewriteBase /marco_urbano/executor-repav/
 
     RewriteCond %{REQUEST_FILENAME} -f
     RewriteRule ^ - [L]

@@ -1,5 +1,5 @@
 RewriteEngine On
-RewriteBase /principal/master/
+RewriteBase /marco_urbano/master/
 
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

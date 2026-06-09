@@ -5,7 +5,7 @@ Header always set X-Frame-Options "DENY"
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /principal/executor/
+    RewriteBase /marco_urbano/executor/
 
     # Serve assets diretamente
     RewriteCond %{REQUEST_FILENAME} -f
