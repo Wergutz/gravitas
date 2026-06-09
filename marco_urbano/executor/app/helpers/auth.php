@@ -9,7 +9,8 @@ function auth_required_executor(): void {
         exit;
     }
 
-    if ((int)($_SESSION['nivel'] ?? 0) !== 5) {
+    $nivel = (int)($_SESSION['nivel'] ?? 0);
+    if ($nivel !== 5 && $nivel !== 1) {
         header('Location: ' . EXECUTOR_BASE . '/login.php?msg=acesso');
         exit;
     }

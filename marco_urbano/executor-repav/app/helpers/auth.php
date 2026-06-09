@@ -9,7 +9,8 @@ function auth_required_repav(): void {
         exit;
     }
 
-    if ((int)($_SESSION['nivel'] ?? 0) !== 7) {
+    $nivel = (int)($_SESSION['nivel'] ?? 0);
+    if ($nivel !== 7 && $nivel !== 1) {
         header('Location: ' . REPAV_BASE . '/login.php?msg=acesso');
         exit;
     }

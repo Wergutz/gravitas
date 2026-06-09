@@ -7,7 +7,8 @@ function auth_required_master(): void {
         exit;
     }
 
-    if ((int)($_SESSION['nivel'] ?? 0) !== 6) {
+    $nivel = (int)($_SESSION['nivel'] ?? 0);
+    if ($nivel !== 6 && $nivel !== 1) {
         header('Location: /login/');
         exit;
     }
