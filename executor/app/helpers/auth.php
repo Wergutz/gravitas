@@ -5,13 +5,13 @@ function auth_required_executor(): void {
     if (session_status() === PHP_SESSION_NONE) session_start();
 
     if (!isset($_SESSION['usuario_id'])) {
-        header('Location: ' . EXECUTOR_BASE . '/login.php');
+        header('Location: /login/');
         exit;
     }
 
     $nivel = (int)($_SESSION['nivel'] ?? 0);
     if ($nivel !== 5 && $nivel !== 1) {
-        header('Location: ' . EXECUTOR_BASE . '/login.php?msg=acesso');
+        header('Location: /login/');
         exit;
     }
 }
