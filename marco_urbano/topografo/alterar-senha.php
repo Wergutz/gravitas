@@ -1,7 +1,7 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) {
-    session_name('PHPSESSID');
-    session_set_cookie_params(['path' => '/principal/', 'samesite' => 'Lax', 'httponly' => true]);
+    session_name('MU_PAINEL');
+    session_set_cookie_params(['path' => '/marco_urbano/', 'samesite' => 'Lax', 'httponly' => true]);
     session_start();
 }
 
