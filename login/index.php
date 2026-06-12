@@ -21,13 +21,14 @@ $sistemas = [
             5 => '/principal/executor/',
             6 => '/principal/master/',
             7 => '/principal/executor-repav/',
-            8 => '/principal/painel/',
+            8 => '/principal/topografo/',
         ],
         'apps'        => [
             ['dest' => '/principal/painel/',        'label' => 'Planejador',              'sub' => 'Gestão, relatórios e diários'],
             ['dest' => '/principal/master/',         'label' => 'Visão Executiva',         'sub' => 'Dashboard do cliente master'],
             ['dest' => '/principal/executor/',       'label' => 'App do Executor',         'sub' => 'Frente de serviço em campo'],
             ['dest' => '/principal/executor-repav/', 'label' => 'Executor Repavimentação', 'sub' => 'Medição e controle de pavimento'],
+            ['dest' => '/principal/topografo/',      'label' => 'Topógrafo',               'sub' => 'Importação e OS de topografia'],
         ],
     ],
     [
@@ -47,13 +48,14 @@ $sistemas = [
             5 => '/marco_urbano/executor/',
             6 => '/marco_urbano/master/',
             7 => '/marco_urbano/executor-repav/',
-            8 => '/marco_urbano/painel/',
+            8 => '/marco_urbano/topografo/',
         ],
         'apps'        => [
             ['dest' => '/marco_urbano/painel/',        'label' => 'Planejador',              'sub' => 'Gestão, relatórios e diários'],
             ['dest' => '/marco_urbano/master/',         'label' => 'Visão Executiva',         'sub' => 'Dashboard do cliente master'],
             ['dest' => '/marco_urbano/executor/',       'label' => 'App do Executor',         'sub' => 'Frente de serviço em campo'],
             ['dest' => '/marco_urbano/executor-repav/', 'label' => 'Executor Repavimentação', 'sub' => 'Medição e controle de pavimento'],
+            ['dest' => '/marco_urbano/topografo/',      'label' => 'Topógrafo',               'sub' => 'Importação e OS de topografia'],
         ],
     ],
 ];

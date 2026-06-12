@@ -68,7 +68,6 @@ function navAtivoExato(string $route, string $exact): string {
                 Dashboard
             </a>
 
-            <?php if ($nivelLayout !== 8): ?>
             <a href="<?= APP_BASE ?>/materiais" class="<?= navAtivo($currentRoute, '/materiais') ?>">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="8" y1="6" x2="21" y2="6"/>
@@ -105,7 +104,6 @@ function navAtivoExato(string $route, string $exact): string {
                 </svg>
                 Equip. Pesados
             </a>
-            <?php endif; ?>
 
             <a href="<?= APP_BASE ?>/trechos" class="<?= navAtivo($currentRoute, '/trechos') ?>">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -116,7 +114,7 @@ function navAtivoExato(string $route, string $exact): string {
                 Trechos &amp; OS
             </a>
 
-            <?php if ($nivelLayout === 4 || $nivelLayout === 8): ?>
+            <?php if ($nivelLayout === 4): ?>
             <a href="<?= APP_BASE ?>/topografia" class="<?= navAtivo($currentRoute, '/topografia') ?>">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/><line x1="12" y1="3" x2="12" y2="8"/>
@@ -125,7 +123,6 @@ function navAtivoExato(string $route, string $exact): string {
             </a>
             <?php endif; ?>
 
-            <?php if ($nivelLayout !== 8): ?>
             <a href="<?= APP_BASE ?>/equipes" class="<?= navAtivo($currentRoute, '/equipes') ?>">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -168,7 +165,6 @@ function navAtivoExato(string $route, string $exact): string {
                 </svg>
                 Frentes Repav.
             </a>
-            <?php endif; ?>
 
             <?php endif; ?>
 

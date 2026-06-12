@@ -25,8 +25,10 @@ jobs:
             git reset --hard origin/main
             echo '<?php header("Location: /principal/", true, 301); exit;' > $BASE/index.php
             mkdir -p $BASE/principal/painel/uploads/os/topo
+            mkdir -p $BASE/principal/topografo/uploads/os/topo
             mkdir -p $BASE/principal/marco_urbano/painel/uploads/os/topo
             mkdir -p $BASE/marco_urbano
             cp -rT $BASE/principal/marco_urbano $BASE/marco_urbano
+            mkdir -p $BASE/marco_urbano/topografo/uploads/os/topo
             mkdir -p $BASE/login
             cp -rT $BASE/principal/login $BASE/login

@@ -11,41 +11,20 @@ class TopografiaController
     ===================================================== */
     public function index()
     {
-        auth_required([3, 4, 8]);
+        auth_required([3, 4]);
         global $pdo;
 
-        $nivel = (int)($_SESSION['nivel'] ?? 0);
-        $uid   = (int)($_SESSION['usuario_id'] ?? 0);
-
-        if ($nivel === 8) {
-            // Topógrafo: vê apenas OS que ele importou
-            $stmt = $pdo->prepare("
-                SELECT ot.*,
-                       t.pv_montante, t.pv_jusante, t.bacia, t.extensao, t.dn, t.rua, t.cidade, t.contrato, t.ramais,
-                       u_imp.nome AS importado_nome,
-                       u_lib.nome AS liberado_nome
-                FROM os_topografia ot
-                JOIN trechos t ON t.id = ot.trecho_id
-                JOIN usuarios u_imp ON u_imp.id = ot.importado_por
-                LEFT JOIN usuarios u_lib ON u_lib.id = ot.liberado_por
-                WHERE ot.importado_por = ?
-                ORDER BY ot.importado_em DESC
-            ");
-            $stmt->execute([$uid]);
-        } else {
-            // Planejador / Admin: vê tudo
-            $stmt = $pdo->query("
-                SELECT ot.*,
-                       t.pv_montante, t.pv_jusante, t.bacia, t.extensao, t.dn, t.rua, t.cidade, t.contrato, t.ramais,
-                       u_imp.nome AS importado_nome,
-                       u_lib.nome AS liberado_nome
-                FROM os_topografia ot
-                JOIN trechos t ON t.id = ot.trecho_id
-                JOIN usuarios u_imp ON u_imp.id = ot.importado_por
-                LEFT JOIN usuarios u_lib ON u_lib.id = ot.liberado_por
-                ORDER BY ot.importado_em DESC
-            ");
-        }
+        $stmt = $pdo->query("
+            SELECT ot.*,
+                   t.pv_montante, t.pv_jusante, t.bacia, t.extensao, t.dn, t.rua, t.cidade, t.contrato, t.ramais,
+                   u_imp.nome AS importado_nome,
+                   u_lib.nome AS liberado_nome
+            FROM os_topografia ot
+            JOIN trechos t ON t.id = ot.trecho_id
+            JOIN usuarios u_imp ON u_imp.id = ot.importado_por
+            LEFT JOIN usuarios u_lib ON u_lib.id = ot.liberado_por
+            ORDER BY ot.importado_em DESC
+        ");
         $lista = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         require __DIR__ . '/../views/topografia/index.php';
@@ -56,7 +35,7 @@ class TopografiaController
     ===================================================== */
     public function importar()
     {
-        auth_required([3, 4, 8]);
+        auth_required([3, 4]);
         global $pdo;
 
         require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
@@ -433,11 +412,10 @@ class TopografiaController
     ===================================================== */
     public function editarDeclividade(int $id)
     {
-        auth_required([3, 4, 8]);
+        auth_required([3, 4]);
         global $pdo;
 
-        $nivel = (int)($_SESSION['nivel'] ?? 0);
-        $uid   = (int)($_SESSION['usuario_id'] ?? 0);
+        $uid = (int)($_SESSION['usuario_id'] ?? 0);
 
         $stmt = $pdo->prepare("
             SELECT ot.*,
@@ -453,13 +431,6 @@ class TopografiaController
 
         if (!$os) {
             $_SESSION['flash_erro'] = 'OS não encontrada.';
-            header('Location: ' . APP_BASE . '/topografia');
-            exit;
-        }
-
-        // Nível 8 só pode editar as suas próprias OS
-        if ($nivel === 8 && (int)$os['importado_por'] !== $uid) {
-            $_SESSION['flash_erro'] = 'Acesso negado.';
             header('Location: ' . APP_BASE . '/topografia');
             exit;
         }
@@ -612,11 +583,8 @@ class TopografiaController
     ===================================================== */
     public function verOS(int $id)
     {
-        auth_required([3, 4, 8]);
+        auth_required([3, 4]);
         global $pdo;
-
-        $nivel = (int)($_SESSION['nivel'] ?? 0);
-        $uid   = (int)($_SESSION['usuario_id'] ?? 0);
 
         $stmt = $pdo->prepare("SELECT * FROM os_topografia WHERE id = ?");
         $stmt->execute([$id]);
@@ -625,12 +593,6 @@ class TopografiaController
         if (!$os) {
             http_response_code(404);
             echo 'OS não encontrada.';
-            exit;
-        }
-
-        if ($nivel === 8 && (int)$os['importado_por'] !== $uid) {
-            http_response_code(403);
-            echo 'Acesso negado.';
             exit;
         }
 
