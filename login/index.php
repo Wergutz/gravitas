@@ -21,6 +21,7 @@ $sistemas = [
             5 => '/principal/executor/',
             6 => '/principal/master/',
             7 => '/principal/executor-repav/',
+            8 => '/principal/painel/',
         ],
         'apps'        => [
             ['dest' => '/principal/painel/',        'label' => 'Planejador',              'sub' => 'Gestão, relatórios e diários'],
@@ -46,6 +47,7 @@ $sistemas = [
             5 => '/marco_urbano/executor/',
             6 => '/marco_urbano/master/',
             7 => '/marco_urbano/executor-repav/',
+            8 => '/marco_urbano/painel/',
         ],
         'apps'        => [
             ['dest' => '/marco_urbano/painel/',        'label' => 'Planejador',              'sub' => 'Gestão, relatórios e diários'],

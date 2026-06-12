@@ -11,7 +11,7 @@ require_once __DIR__ . '/app/config/app.php';
    AUTENTICAÇÃO
 ========================== */
 require_once __DIR__ . '/app/helpers/auth.php';
-auth_required([3, 4]); // 3=Master Gravitas (admin), 4=Planejador
+auth_required([3, 4, 8]); // 3=Master Gravitas (admin), 4=Planejador, 8=Topógrafo
 
 /* ==========================
    ROTEAMENTO BÁSICO
@@ -34,6 +34,11 @@ if ($uri === '' || $uri === '/') {
     // Master Gravitas vai direto para gestão de usuários
     if ((int)($_SESSION['nivel'] ?? 0) === 3) {
         header('Location: ' . APP_BASE . '/admin/usuarios');
+        exit;
+    }
+    // Topógrafo vai direto para topografia
+    if ((int)($_SESSION['nivel'] ?? 0) === 8) {
+        header('Location: ' . APP_BASE . '/topografia');
         exit;
     }
     require_once __DIR__ . '/app/controllers/PlanejadorController.php';
@@ -528,6 +533,35 @@ if ($uri === '/diarios/resolver-alerta') {
 if ($uri === '/diarios/resolver-manutencao') {
     require_once __DIR__ . '/app/controllers/DiarioExecucaoController.php';
     (new DiarioExecucaoController())->resolverManutencao();
+    exit;
+}
+
+/* ==========================
+   TOPOGRAFIA
+========================== */
+if ($uri === '/topografia') {
+    require_once __DIR__ . '/app/controllers/TopografiaController.php';
+    (new TopografiaController())->index();
+    exit;
+}
+if ($uri === '/topografia/importar') {
+    require_once __DIR__ . '/app/controllers/TopografiaController.php';
+    (new TopografiaController())->importar();
+    exit;
+}
+if (preg_match('#^/topografia/(\d+)/liberar$#', $uri, $m)) {
+    require_once __DIR__ . '/app/controllers/TopografiaController.php';
+    (new TopografiaController())->liberar((int)$m[1]);
+    exit;
+}
+if (preg_match('#^/topografia/(\d+)/declividade$#', $uri, $m)) {
+    require_once __DIR__ . '/app/controllers/TopografiaController.php';
+    (new TopografiaController())->editarDeclividade((int)$m[1]);
+    exit;
+}
+if (preg_match('#^/topografia/(\d+)/ver$#', $uri, $m)) {
+    require_once __DIR__ . '/app/controllers/TopografiaController.php';
+    (new TopografiaController())->verOS((int)$m[1]);
     exit;
 }
 
