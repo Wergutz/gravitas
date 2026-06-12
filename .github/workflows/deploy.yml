@@ -18,11 +18,15 @@ jobs:
           password: ${{ secrets.SSH_PASS }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            cd /home/u278289683/domains/gravitas.net.br/public_html/principal
+            BASE=/home/u278289683/domains/gravitas.net.br/public_html
+            cd $BASE/principal
             git remote set-url origin https://${{ secrets.GH_TOKEN }}@github.com/Wergutz/gravitas.git
-            git pull origin ${{ github.ref_name }}
-            echo '<?php header("Location: /principal/", true, 301); exit;' > /home/u278289683/domains/gravitas.net.br/public_html/index.php
-            mkdir -p /home/u278289683/domains/gravitas.net.br/public_html/marco_urbano
-            cp -rT /home/u278289683/domains/gravitas.net.br/public_html/principal/marco_urbano /home/u278289683/domains/gravitas.net.br/public_html/marco_urbano
-            mkdir -p /home/u278289683/domains/gravitas.net.br/public_html/login
-            cp -rT /home/u278289683/domains/gravitas.net.br/public_html/principal/login /home/u278289683/domains/gravitas.net.br/public_html/login
+            git fetch origin main
+            git reset --hard origin/main
+            echo '<?php header("Location: /principal/", true, 301); exit;' > $BASE/index.php
+            mkdir -p $BASE/principal/painel/uploads/os/topo
+            mkdir -p $BASE/principal/marco_urbano/painel/uploads/os/topo
+            mkdir -p $BASE/marco_urbano
+            cp -rT $BASE/principal/marco_urbano $BASE/marco_urbano
+            mkdir -p $BASE/login
+            cp -rT $BASE/principal/login $BASE/login
