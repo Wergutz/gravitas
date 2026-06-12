@@ -13,7 +13,7 @@ function auth_required($niveis = []) {
     mu_session_start();
 
     if (!isset($_SESSION['usuario_id'])) {
-        header('Location: ' . APP_BASE . '/login.php');
+        header('Location: /login/');
         exit;
     }
 
@@ -24,7 +24,7 @@ function auth_required($niveis = []) {
     if (!in_array($nivel, $niveis, true)) {
         $_SESSION['flash_aviso'] = 'Acesso restrito. Você não tem permissão para esta área.';
         $destinos = [5 => EXECUTOR_BASE . '/', 6 => MASTER_BASE . '/', 7 => REPAV_BASE . '/'];
-        $destino = $destinos[$nivel] ?? (APP_BASE . '/login.php?msg=acesso');
+        $destino = $destinos[$nivel] ?? '/login/';
         header('Location: ' . $destino);
         exit;
     }

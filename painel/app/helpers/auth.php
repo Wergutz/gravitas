@@ -5,7 +5,7 @@ function auth_required($niveis = []) {
     if (session_status() === PHP_SESSION_NONE) session_start();
 
     if (!isset($_SESSION['usuario_id'])) {
-        header('Location: ' . APP_BASE . '/login.php');
+        header('Location: /login/');
         exit;
     }
 
