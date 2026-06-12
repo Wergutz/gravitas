@@ -61,7 +61,7 @@ class TopografiaController
         auth_required_topografo();
         global $pdo;
 
-        require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
+        require_once dirname(__DIR__, 3) . '/painel/vendor/autoload.php';
         require_once dirname(__DIR__) . '/helpers/import_excel.php';
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['fase'] ?? '') === 'cancelar') {
