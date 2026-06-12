@@ -1,0 +1,7 @@
+# Bloqueia o acesso direto pelo navegador ao arquivo de configuração
+<Files "config.php">
+  Require all denied
+</Files>
+<Files "protege.php">
+  Require all denied
+</Files>

@@ -9,7 +9,7 @@ header('X-Robots-Tag: noindex, nofollow');
 if (isset($_GET['sair'])) {
     session_unset();
     session_destroy();
-    header('Location: ' . REPAV_BASE . '/login.php');
+    header('Location: /login/');
     exit;
 }
 
@@ -178,7 +178,7 @@ if (!$bloqueado && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <p class="nota">Ambiente seguro · acesso restrito ao perfil Executor de Repavimentação.</p>
   <p class="nota" style="margin-bottom:28px">
-    <a href="/painel/login.php" style="color:#9FB4D6;font-weight:700;text-decoration:none">
+    <a href="/principal/painel/login.php" style="color:#9FB4D6;font-weight:700;text-decoration:none">
       ← Voltar ao menu principal
     </a>
   </p>

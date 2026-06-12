@@ -16,55 +16,86 @@ class DiarioExecucaoController {
         $filtroData  = $_GET['data']   ?? date('Y-m-d');
         $filtroEq    = (int)($_GET['equipe_id'] ?? 0);
 
-        $sql = "
-            SELECT de.id, de.data, de.status, de.step_atual, de.versao,
-                   de.extensao_gps_m, de.step3_estoque_ok, de.step3_materiais_faltando,
-                   e.nome AS equipe_nome,
-                   t.pv_montante, t.pv_jusante, t.extensao AS extensao_planejada, t.rua,
-                   u.nome AS autor_nome
-            FROM diarios_execucao de
-            JOIN equipes e ON e.id = de.equipe_id
-            JOIN trechos t ON t.id = de.trecho_id
-            JOIN usuarios u ON u.id = de.autor_id
-            WHERE de.data = ?
-        ";
-        $params = [$filtroData];
-
-        if ($filtroEq) {
-            $sql .= " AND de.equipe_id = ?";
-            $params[] = $filtroEq;
+        // Tenta query completa; se colunas PA5 não existirem, usa query básica
+        try {
+            $sql = "
+                SELECT de.id, de.data, de.status, de.step_atual, de.versao,
+                       de.extensao_gps_m, de.step3_estoque_ok, de.step3_materiais_faltando,
+                       e.nome AS equipe_nome,
+                       t.pv_montante, t.pv_jusante, t.extensao AS extensao_planejada, t.rua,
+                       u.nome AS autor_nome
+                FROM diarios_execucao de
+                JOIN equipes e ON e.id = de.equipe_id
+                JOIN trechos t ON t.id = de.trecho_id
+                JOIN usuarios u ON u.id = de.autor_id
+                WHERE de.data = ?
+            ";
+            $params = [$filtroData];
+            if ($filtroEq) { $sql .= " AND de.equipe_id = ?"; $params[] = $filtroEq; }
+            $sql .= " ORDER BY e.nome, de.id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $diarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            // Fallback sem colunas opcionais
+            try {
+                $sql = "
+                    SELECT de.id, de.data, de.status, de.step_atual, de.versao,
+                           NULL AS extensao_gps_m, NULL AS step3_estoque_ok, NULL AS step3_materiais_faltando,
+                           e.nome AS equipe_nome,
+                           t.pv_montante, t.pv_jusante, t.extensao AS extensao_planejada, t.rua,
+                           u.nome AS autor_nome
+                    FROM diarios_execucao de
+                    JOIN equipes e ON e.id = de.equipe_id
+                    JOIN trechos t ON t.id = de.trecho_id
+                    JOIN usuarios u ON u.id = de.autor_id
+                    WHERE de.data = ?
+                ";
+                $params = [$filtroData];
+                if ($filtroEq) { $sql .= " AND de.equipe_id = ?"; $params[] = $filtroEq; }
+                $sql .= " ORDER BY e.nome, de.id";
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute($params);
+                $diarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } catch (\Exception $e2) {
+                $diarios = [];
+            }
         }
 
-        $sql .= " ORDER BY e.nome, de.id";
+        try {
+            $equipes = $pdo->query("SELECT id, nome FROM equipes WHERE ativo = 1 ORDER BY nome")
+                           ->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            $equipes = [];
+        }
 
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute($params);
-        $diarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $alertasMat = $pdo->query("
+                SELECT af.*, e.nome AS equipe_nome, t.pv_montante, t.pv_jusante
+                FROM alertas_falta_material af
+                JOIN equipes e ON e.id = af.equipe_id
+                JOIN trechos t ON t.id = af.trecho_id
+                WHERE af.resolvido = 0
+                ORDER BY af.data DESC
+            ")->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            $alertasMat = [];
+        }
 
-        $equipes = $pdo->query("SELECT id, nome FROM equipes WHERE ativo = 1 ORDER BY nome")
-                       ->fetchAll(PDO::FETCH_ASSOC);
-
-        // Alertas de falta de material não resolvidos
-        $alertasMat = $pdo->query("
-            SELECT af.*, e.nome AS equipe_nome, t.pv_montante, t.pv_jusante
-            FROM alertas_falta_material af
-            JOIN equipes e ON e.id = af.equipe_id
-            JOIN trechos t ON t.id = af.trecho_id
-            WHERE af.resolvido = 0
-            ORDER BY af.data DESC
-        ")->fetchAll(PDO::FETCH_ASSOC);
-
-        // Equipamentos em manutenção
-        $equipsManut = array_merge(
-            $pdo->query("
-                SELECT id, tipo, modelo, placa, obs_manutencao, 'pesado' AS categoria
-                FROM equipamentos_pesados WHERE status_manutencao = 'manutencao' AND ativo = 1
-            ")->fetchAll(PDO::FETCH_ASSOC),
-            $pdo->query("
-                SELECT id, tipo, modelo, NULL AS placa, obs_manutencao, 'leve' AS categoria
-                FROM equipamentos_leves WHERE status_manutencao = 'manutencao' AND ativo = 1
-            ")->fetchAll(PDO::FETCH_ASSOC)
-        );
+        try {
+            $equipsManut = array_merge(
+                $pdo->query("
+                    SELECT id, tipo, modelo, placa, obs_manutencao, 'pesado' AS categoria
+                    FROM equipamentos_pesados WHERE status_manutencao = 'manutencao' AND ativo = 1
+                ")->fetchAll(PDO::FETCH_ASSOC),
+                $pdo->query("
+                    SELECT id, tipo, modelo, NULL AS placa, obs_manutencao, 'leve' AS categoria
+                    FROM equipamentos_leves WHERE status_manutencao = 'manutencao' AND ativo = 1
+                ")->fetchAll(PDO::FETCH_ASSOC)
+            );
+        } catch (\Exception $e) {
+            $equipsManut = [];
+        }
 
         require __DIR__ . '/../views/diarios/index.php';
     }

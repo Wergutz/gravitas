@@ -1,0 +1,19 @@
+Options -Indexes
+Header always set X-Robots-Tag "noindex, nofollow"
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /marco_urbano/executor/
+
+    # Serve assets diretamente
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Exclui login.php do rewrite
+    RewriteRule ^login\.php$ - [L]
+
+    # Tudo o mais vai para index.php
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>

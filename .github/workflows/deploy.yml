@@ -2,7 +2,7 @@ name: Deploy → gravitas.net.br
 
 on:
   push:
-    branches: [main]
+    branches: [main, claude/loving-clarke-3K1Tq]
 
 jobs:
   deploy:
@@ -20,6 +20,9 @@ jobs:
           script: |
             cd /home/u278289683/domains/gravitas.net.br/public_html/principal
             git remote set-url origin https://${{ secrets.GH_TOKEN }}@github.com/Wergutz/gravitas.git
-            git pull origin main
+            git pull origin ${{ github.ref_name }}
             echo '<?php header("Location: /principal/", true, 301); exit;' > /home/u278289683/domains/gravitas.net.br/public_html/index.php
-            ln -sf /home/u278289683/domains/gravitas.net.br/public_html/principal/painel /home/u278289683/domains/gravitas.net.br/public_html/painel 2>/dev/null || true
+            mkdir -p /home/u278289683/domains/gravitas.net.br/public_html/marco_urbano
+            cp -rT /home/u278289683/domains/gravitas.net.br/public_html/principal/marco_urbano /home/u278289683/domains/gravitas.net.br/public_html/marco_urbano
+            mkdir -p /home/u278289683/domains/gravitas.net.br/public_html/login
+            cp -rT /home/u278289683/domains/gravitas.net.br/public_html/principal/login /home/u278289683/domains/gravitas.net.br/public_html/login

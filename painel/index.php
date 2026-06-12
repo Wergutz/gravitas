@@ -7,7 +7,7 @@ require_once __DIR__ . '/app/config/app.php';
    AUTENTICAÇÃO
 ========================== */
 require_once __DIR__ . '/app/helpers/auth.php';
-auth_required([3, 4]); // 3=Master Gravitas (admin), 4=Planejador
+auth_required([3, 4, 8]); // 3=Master Gravitas (admin), 4=Planejador, 8=Topógrafo
 
 /* ==========================
    ROTEAMENTO BÁSICO
@@ -30,6 +30,11 @@ if ($uri === '' || $uri === '/') {
     // Master Gravitas vai direto para gestão de usuários
     if ((int)($_SESSION['nivel'] ?? 0) === 3) {
         header('Location: ' . APP_BASE . '/admin/usuarios');
+        exit;
+    }
+    // Topógrafo vai direto para topografia
+    if ((int)($_SESSION['nivel'] ?? 0) === 8) {
+        header('Location: ' . APP_BASE . '/topografia');
         exit;
     }
     require_once __DIR__ . '/app/controllers/PlanejadorController.php';
@@ -320,6 +325,51 @@ if ($uri === '/trechos/material-remove') {
     (new TrechoController())->removeMaterial();
     exit;
 }
+if ($uri === '/trechos/importar') {
+    require_once __DIR__ . '/app/controllers/TrechoController.php';
+    (new TrechoController())->importar();
+    exit;
+}
+
+/* ==========================
+   TOPOGRAFIA
+========================== */
+if ($uri === '/topografia') {
+    require_once __DIR__ . '/app/controllers/TopografiaController.php';
+    (new TopografiaController())->index();
+    exit;
+}
+if ($uri === '/topografia/importar') {
+    require_once __DIR__ . '/app/controllers/TopografiaController.php';
+    (new TopografiaController())->importar();
+    exit;
+}
+if (preg_match('#^/topografia/(\d+)/liberar$#', $uri, $m)) {
+    require_once __DIR__ . '/app/controllers/TopografiaController.php';
+    (new TopografiaController())->liberar((int)$m[1]);
+    exit;
+}
+if (preg_match('#^/topografia/(\d+)/declividade$#', $uri, $m)) {
+    require_once __DIR__ . '/app/controllers/TopografiaController.php';
+    (new TopografiaController())->editarDeclividade((int)$m[1]);
+    exit;
+}
+if (preg_match('#^/topografia/(\d+)/ver$#', $uri, $m)) {
+    require_once __DIR__ . '/app/controllers/TopografiaController.php';
+    (new TopografiaController())->verOS((int)$m[1]);
+    exit;
+}
+
+if ($uri === '/materiais/importar') {
+    require_once __DIR__ . '/app/controllers/MaterialController.php';
+    (new MaterialController())->importar();
+    exit;
+}
+if ($uri === '/materiais/importar-estoque') {
+    require_once __DIR__ . '/app/controllers/MaterialController.php';
+    (new MaterialController())->importarEstoque();
+    exit;
+}
 
 /* ==========================
    CAMINHAMENTOS
@@ -372,6 +422,18 @@ if ($uri === '/caminhamentos/relatorio-medicao') {
     exit;
 }
 
+if ($uri === '/caminhamentos/excluir') {
+    require_once __DIR__ . '/app/controllers/CaminhamentoController.php';
+    (new CaminhamentoController())->excluir();
+    exit;
+}
+
+if ($uri === '/caminhamentos/adicionar-trechos') {
+    require_once __DIR__ . '/app/controllers/CaminhamentoController.php';
+    (new CaminhamentoController())->adicionarTrechos();
+    exit;
+}
+
 /* ==========================
    MATERIAIS
 ========================== */
@@ -396,6 +458,39 @@ if ($uri === '/materiais/salvar') {
 if ($uri === '/materiais/movimento') {
     require_once __DIR__ . '/app/controllers/MaterialController.php';
     (new MaterialController())->movimento();
+    exit;
+}
+
+/* ==========================
+   FRENTES DE REPAVIMENTAÇÃO
+========================== */
+if ($uri === '/repavimentacao/frentes') {
+    require_once __DIR__ . '/app/controllers/FrenteRepavController.php';
+    (new FrenteRepavController())->index();
+    exit;
+}
+
+if ($uri === '/repavimentacao/frentes/cadastrar') {
+    require_once __DIR__ . '/app/controllers/FrenteRepavController.php';
+    (new FrenteRepavController())->create();
+    exit;
+}
+
+if ($uri === '/repavimentacao/frentes/salvar') {
+    require_once __DIR__ . '/app/controllers/FrenteRepavController.php';
+    (new FrenteRepavController())->store();
+    exit;
+}
+
+if ($uri === '/repavimentacao/frentes/publicar') {
+    require_once __DIR__ . '/app/controllers/FrenteRepavController.php';
+    (new FrenteRepavController())->publicar();
+    exit;
+}
+
+if ($uri === '/repavimentacao/frentes/excluir') {
+    require_once __DIR__ . '/app/controllers/FrenteRepavController.php';
+    (new FrenteRepavController())->excluir();
     exit;
 }
 

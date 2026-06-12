@@ -330,18 +330,22 @@ foreach ($obraSteps as $sn => [$titulo, $desc]):
     <?php if (!$bloqueado): ?>
     <form id="form-step-11" onsubmit="return false">
       <div id="lista-interf">
-        <?php foreach ($interferencias as $ii => $interf): ?>
+        <?php foreach ($interferencias as $idx => $interf): ?>
         <div class="card-mini">
-          <select name="interf_tipo[<?= $ii ?>]">
+          <select name="interf_tipo[<?= $idx ?>]">
             <?php foreach (['pedra','agua_na_vala','ramal_de_agua','rede_de_agua','rede_pluvial','rompimento_de_rede','rede_cloacal_existente','rede_logica','rede_eletrica','outros'] as $opt): ?>
             <option value="<?= $opt ?>" <?= $interf['tipo'] === $opt ? 'selected' : '' ?>><?= str_replace('_', ' ', ucfirst($opt)) ?></option>
             <?php endforeach; ?>
           </select>
-          <input type="text" name="interf_esp[<?= $ii ?>]" value="<?= htmlspecialchars($interf['especificacao'] ?? '') ?>" placeholder="Especificação" style="margin-top:6px">
-          <div class="gps-chip aguardando" id="gps-interf-<?= $ii ?>">📍 GPS não capturado</div>
-          <input type="hidden" name="interf_lat[<?= $ii ?>]" id="lat-interf-<?= $ii ?>" value="<?= htmlspecialchars($interf['lat'] ?? '') ?>">
-          <input type="hidden" name="interf_lng[<?= $ii ?>]" id="lng-interf-<?= $ii ?>" value="<?= htmlspecialchars($interf['lng'] ?? '') ?>">
-          <button type="button" onclick="capturarGPS(document.getElementById('lat-interf-<?= $ii ?>'), document.getElementById('lng-interf-<?= $ii ?>'), document.getElementById('gps-interf-<?= $ii ?>'))" style="margin-top:6px;width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px;font-size:12px;font-weight:700">📍 Capturar GPS</button>
+          <input type="text" name="interf_esp[<?= $idx ?>]" value="<?= htmlspecialchars($interf['especificacao'] ?? '') ?>" placeholder="Especificação" style="margin-top:6px">
+          <input type="hidden" name="interf_lat[<?= $idx ?>]" id="lat-interf-<?= $idx ?>" value="<?= htmlspecialchars($interf['lat'] ?? '') ?>">
+          <input type="hidden" name="interf_lng[<?= $idx ?>]" id="lng-interf-<?= $idx ?>" value="<?= htmlspecialchars($interf['lng'] ?? '') ?>">
+          <div class="gps-chip <?= $interf['lat'] ? 'ok' : 'aguardando' ?>" id="gps-interf-<?= $idx ?>">
+            <?= $interf['lat'] ? '📍 ' . round((float)$interf['lat'], 4) . ', ' . round((float)$interf['lng'], 4) : '📍 GPS não capturado' ?>
+          </div>
+          <?php if (!$interf['lat']): ?>
+          <button type="button" onclick="capturarGPS(document.getElementById('lat-interf-<?= $idx ?>'),document.getElementById('lng-interf-<?= $idx ?>'),document.getElementById('gps-interf-<?= $idx ?>'))" style="margin-top:4px;width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px;font-size:12px;font-weight:700">📍 Capturar GPS</button>
+          <?php endif; ?>
         </div>
         <?php endforeach; ?>
       </div>
@@ -625,10 +629,13 @@ foreach ($finSteps as $sn => [$titulo, $desc]):
     <span id="conn-badge">🟢 Online</span>
   </div>
   <?php if (!$bloqueado): ?>
-  <form method="post" action="<?= EXECUTOR_BASE ?>/diario/<?= $diarioId ?>/encerrar" style="margin-left:auto" onsubmit="return confirm('Encerrar e enviar o diário? Esta ação não pode ser desfeita.')">
-    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
-    <button type="submit" class="btn-encerrar" id="btn-encerrar" disabled>Encerrar & enviar 🚀</button>
-  </form>
+  <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+    <form method="post" action="<?= EXECUTOR_BASE ?>/diario/<?= $diarioId ?>/encerrar" id="form-encerrar" onsubmit="return confirmarEnvio()">
+      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
+      <button type="submit" class="btn-encerrar" id="btn-encerrar" disabled>Encerrar & enviar 🚀</button>
+    </form>
+    <span id="hint-encerrar" style="font-size:10.5px;color:#9FB4D6;text-align:right">Confirme o passo 21 para habilitar o envio</span>
+  </div>
   <?php else: ?>
   <a href="<?= EXECUTOR_BASE ?>/" class="btn-sair" style="margin-left:auto">← Início</a>
   <?php endif; ?>
@@ -640,13 +647,30 @@ foreach ($finSteps as $sn => [$titulo, $desc]):
 <script>
 const DIARIO_ID = <?= $diarioId ?>;
 
-// Habilita "Encerrar" quando passo 21 estiver marcado
 function verificarEncerramento() {
   const ok = document.querySelector('[data-step="21"].feito');
-  const btn = document.getElementById('btn-encerrar');
-  if (btn) btn.disabled = !ok;
+  const btn  = document.getElementById('btn-encerrar');
+  const hint = document.getElementById('hint-encerrar');
+  if (!btn) return;
+  btn.disabled = !ok;
+  if (hint) hint.style.display = ok ? 'none' : 'block';
 }
 document.addEventListener('DOMContentLoaded', verificarEncerramento);
+
+function confirmarEnvio() {
+  const total = 21;
+  const feitos = document.querySelectorAll('[data-step].feito').length;
+  if (feitos >= total) return confirm('Encerrar e enviar o diário? Esta ação não pode ser desfeita.');
+  const faltam = total - feitos;
+  const passosFaltando = [];
+  for (let s = 1; s <= total; s++) {
+    if (!document.querySelector('[data-step="'+s+'"].feito')) passosFaltando.push(s);
+  }
+  return confirm(
+    'Atenção: ' + faltam + ' passo(s) não foram confirmados: ' + passosFaltando.join(', ') + '.\n\n' +
+    'Enviar mesmo assim? O Planejador verá o diário como incompleto.'
+  );
+}
 
 // Override de marcarStepFeito para verificar encerramento
 const _marcarOrig = window.marcarStepFeito;
@@ -655,23 +679,9 @@ window.marcarStepFeito = function(step) {
   verificarEncerramento();
 };
 
-// Salvar presença do passo 1
+// Salvar presença do passo 1 — envia presenca[ID]=status direto (backend lê $_POST['presenca'])
 async function salvarPresencasStep1(diarioId) {
-  const form = document.getElementById('form-step-1');
-  const fd = new FormData(form);
-  // Converte para arrays compatíveis com o backend
-  const presentes = [], ausentes = [];
-  for (const [k, v] of fd.entries()) {
-    const m = k.match(/^presenca\[(\d+)\]$/);
-    if (m) {
-      if (v === 'presente') presentes.push(m[1]);
-      else { ausentes.push(m[1]); fd.set('obs_' + m[1], ''); }
-    }
-  }
-  presentes.forEach(id => fd.append('presentes[]', id));
-  ausentes.forEach(id => fd.append('ausentes[]', id));
-  fd.set('diario_id', diarioId); fd.set('step', 1);
-  await salvarStep(form, diarioId, 1);
+  await salvarStep(document.getElementById('form-step-1'), diarioId, 1);
 }
 
 async function salvarStepSimples(diarioId, step, formId) {

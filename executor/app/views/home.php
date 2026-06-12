@@ -274,7 +274,7 @@ unset($m);
       <?= htmlspecialchars($_SESSION['nome']) ?><br>
       <span id="conn-badge">🟢 Online</span>
     </div>
-    <a href="/painel/alterar-senha.php" class="btn-sair" style="margin-right:6px">🔑 Senha</a>
+    <a href="/principal/painel/alterar-senha.php" class="btn-sair" style="margin-right:6px">🔑 Senha</a>
     <a href="<?= EXECUTOR_BASE ?>/login.php?sair=1" class="btn-sair">Sair</a>
   </div>
 

@@ -67,14 +67,17 @@ function navAtivoExato(string $route, string $exact): string {
                 Dashboard
             </a>
 
-            <a href="<?= APP_BASE ?>/equipes" class="<?= navAtivo($currentRoute, '/equipes') ?>">
+            <?php if ($nivelLayout !== 8): ?>
+            <a href="<?= APP_BASE ?>/materiais" class="<?= navAtivo($currentRoute, '/materiais') ?>">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    <line x1="8" y1="6" x2="21" y2="6"/>
+                    <line x1="8" y1="12" x2="21" y2="12"/>
+                    <line x1="8" y1="18" x2="21" y2="18"/>
+                    <line x1="3" y1="6" x2="3.01" y2="6"/>
+                    <line x1="3" y1="12" x2="3.01" y2="12"/>
+                    <line x1="3" y1="18" x2="3.01" y2="18"/>
                 </svg>
-                Equipes
+                Materiais
             </a>
 
             <a href="<?= APP_BASE ?>/funcionarios" class="<?= navAtivo($currentRoute, '/funcionarios') ?>">
@@ -89,7 +92,7 @@ function navAtivoExato(string $route, string $exact): string {
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
                 </svg>
-                Equipamentos Leves
+                Equip. Leves
             </a>
 
             <a href="<?= APP_BASE ?>/equipamentos-pesados" class="<?= navAtivo($currentRoute, '/equipamentos-pesados') ?>">
@@ -99,8 +102,9 @@ function navAtivoExato(string $route, string $exact): string {
                     <circle cx="5.5" cy="18.5" r="2.5"/>
                     <circle cx="18.5" cy="18.5" r="2.5"/>
                 </svg>
-                Equipamentos Pesados
+                Equip. Pesados
             </a>
+            <?php endif; ?>
 
             <a href="<?= APP_BASE ?>/trechos" class="<?= navAtivo($currentRoute, '/trechos') ?>">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -111,16 +115,24 @@ function navAtivoExato(string $route, string $exact): string {
                 Trechos &amp; OS
             </a>
 
-            <a href="<?= APP_BASE ?>/materiais" class="<?= navAtivo($currentRoute, '/materiais') ?>">
+            <?php if ($nivelLayout === 4 || $nivelLayout === 8): ?>
+            <a href="<?= APP_BASE ?>/topografia" class="<?= navAtivo($currentRoute, '/topografia') ?>">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="8" y1="6" x2="21" y2="6"/>
-                    <line x1="8" y1="12" x2="21" y2="12"/>
-                    <line x1="8" y1="18" x2="21" y2="18"/>
-                    <line x1="3" y1="6" x2="3.01" y2="6"/>
-                    <line x1="3" y1="12" x2="3.01" y2="12"/>
-                    <line x1="3" y1="18" x2="3.01" y2="18"/>
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/><line x1="12" y1="3" x2="12" y2="8"/>
                 </svg>
-                Materiais
+                Topografia
+            </a>
+            <?php endif; ?>
+
+            <?php if ($nivelLayout !== 8): ?>
+            <a href="<?= APP_BASE ?>/equipes" class="<?= navAtivo($currentRoute, '/equipes') ?>">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                Equipes
             </a>
 
             <a href="<?= APP_BASE ?>/caminhamentos" class="<?= navAtivo($currentRoute, '/caminhamentos') ?>">
@@ -128,13 +140,6 @@ function navAtivoExato(string $route, string $exact): string {
                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
                 </svg>
                 Caminhamentos
-            </a>
-
-            <a href="<?= APP_BASE ?>/repavimentacao" class="<?= navAtivo($currentRoute, '/repavimentacao') ?>">
-                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-                </svg>
-                Repavimentação
             </a>
 
             <a href="<?= APP_BASE ?>/diarios" class="<?= navAtivo($currentRoute, '/diarios') ?>">
@@ -147,6 +152,22 @@ function navAtivoExato(string $route, string $exact): string {
                 </svg>
                 Diários
             </a>
+
+            <a href="<?= APP_BASE ?>/repavimentacao" class="<?= navAtivo($currentRoute, '/repavimentacao') ?>">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                </svg>
+                Repavimentação
+            </a>
+
+            <a href="<?= APP_BASE ?>/repavimentacao/frentes" class="<?= navAtivo($currentRoute, '/repavimentacao/frentes') ?>">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                </svg>
+                Frentes Repav.
+            </a>
+            <?php endif; ?>
 
             <?php endif; ?>
 
@@ -180,13 +201,13 @@ function navAtivoExato(string $route, string $exact): string {
                 <?php endif; ?>
             </div>
             <?php
-            $usuario = $_SESSION['user'] ?? null;
-            if ($usuario):
-                $iniciais = strtoupper(substr($usuario['nome'] ?? 'U', 0, 1));
+            $nomeLogado = $_SESSION['nome'] ?? null;
+            if ($nomeLogado):
+                $iniciais = strtoupper(substr($nomeLogado, 0, 1));
             ?>
             <div class="perfil">
                 <div class="avatar"><?= htmlspecialchars($iniciais) ?></div>
-                <span><?= htmlspecialchars($usuario['nome'] ?? '') ?></span>
+                <span><?= htmlspecialchars($nomeLogado) ?></span>
             </div>
             <?php endif; ?>
         </div>

@@ -2,6 +2,7 @@
 $usuario    = $_SESSION['user'] ?? null;
 $iniciais   = strtoupper(substr($usuario['nome'] ?? 'M', 0, 1));
 $hoje_fmt   = date('d/m/Y');
+$repavPeriodo = $repavPeriodo ?? null;
 
 function seloStatus(string $camStatus, ?string $diarioStatus): string {
     if ($diarioStatus === 'enviado')  return '<span class="selo s-conc">enviado</span>';
@@ -13,7 +14,7 @@ function seloStatus(string $camStatus, ?string $diarioStatus): string {
 function fmtM(float $v): string { return number_format($v, 0, ',', '.'); }
 function fmtM1(float $v): string { return number_format($v, 1, ',', '.'); }
 function svgIcon(string $path): string {
-    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' . $path . '</svg>';
+    return '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' . $path . '</svg>';
 }
 ?>
 <!DOCTYPE html>
@@ -60,11 +61,11 @@ function svgIcon(string $path): string {
       <?= svgIcon('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>') ?>
       Relatórios
     </a>
-    <a href="/painel/alterar-senha.php">
+    <a href="/principal/painel/alterar-senha.php">
       <?= svgIcon('<circle cx="8" cy="14" r="4.5"/><path d="M11.5 10.5 20 2m-3.5 1.5 3 3M14 8l2.5 2.5"/>') ?>
       Alterar Senha
     </a>
-    <a href="/painel/logout.php" class="sair">
+    <a href="/principal/painel/logout.php" class="sair">
       <?= svgIcon('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>') ?>
       Sair
     </a>
@@ -251,16 +252,35 @@ function svgIcon(string $path): string {
         <p style="color:var(--muted);font-size:13px">Nenhum diário enviado nesta data.</p>
         <?php else: ?>
         <table class="tab">
-          <tr><th>Equipe</th><th>Trecho</th><th style="text-align:right">Rede (m)</th></tr>
-          <?php foreach ($producaoPorEquipe as $p): ?>
+          <tr>
+            <th>Equipe</th><th>Trecho</th>
+            <th style="text-align:right">Executado (m)</th>
+            <th style="text-align:right">GPS (evid.)</th>
+          </tr>
+          <?php
+          $totalExec = 0; $totalGps = 0;
+          foreach ($producaoPorEquipe as $p):
+              $exec = (float)($p['extensao_planejada'] ?? 0);
+              $gps  = (float)($p['extensao_gps_m'] ?? 0);
+              $totalExec += $exec;
+              $totalGps  += $gps;
+          ?>
           <tr>
             <td><?= htmlspecialchars($p['equipe']) ?></td>
             <td><?= htmlspecialchars($p['pv_montante']) ?> → <?= htmlspecialchars($p['pv_jusante']) ?></td>
-            <td class="n"><?= $p['extensao_gps_m'] ? fmtM1((float)$p['extensao_gps_m']) : '—' ?></td>
+            <td class="n"><b><?= $exec > 0 ? fmtM1($exec) : '—' ?></b></td>
+            <td class="n" style="color:var(--muted)"><?= $gps > 0 ? fmtM1($gps) : '—' ?></td>
           </tr>
           <?php endforeach; ?>
-          <tr class="tot"><td>Total</td><td></td><td class="n"><?= fmtM1($metrosDia) ?></td></tr>
+          <tr class="tot">
+            <td colspan="2">Total</td>
+            <td class="n"><?= fmtM1($totalExec) ?></td>
+            <td class="n" style="color:#ccc"><?= fmtM1($totalGps) ?></td>
+          </tr>
         </table>
+        <p style="font-size:11px;color:var(--muted);margin-top:6px;">
+          * Executado = extensão do projeto (as-built). GPS = evidência de campo (referência).
+        </p>
         <?php endif; ?>
       </div>
 
@@ -434,6 +454,32 @@ function svgIcon(string $path): string {
         </table>
         <?php endif; ?>
       </div>
+
+      <?php if (!empty($repavPeriodo)): ?>
+      <div class="card">
+        <p class="label">Repavimentação no período</p>
+        <div class="eqrow" style="padding:8px 0">
+          <span style="flex:1;font-size:13px">Área repavimentada</span>
+          <b><?= number_format((float)$repavPeriodo['area_total'], 2, ',', '.') ?> m²</b>
+        </div>
+        <?php if ((float)$repavPeriodo['volume_total'] > 0): ?>
+        <div class="eqrow" style="padding:8px 0">
+          <span style="flex:1;font-size:13px">Volume de asfalto</span>
+          <b style="color:#1F7A6E"><?= number_format((float)$repavPeriodo['volume_total'], 3, ',', '.') ?> m³
+          <small style="font-weight:400;color:var(--muted)">≈ <?= number_format((float)$repavPeriodo['volume_total'] * 2.4, 2, ',', '.') ?> t</small></b>
+        </div>
+        <?php endif; ?>
+        <div class="eqrow" style="padding:8px 0">
+          <span style="flex:1;font-size:13px">Trechos medidos</span>
+          <b><?= (int)$repavPeriodo['trechos_medidos'] ?></b>
+        </div>
+        <?php if ((int)$repavPeriodo['fila_pendente'] > 0): ?>
+        <div class="alerta a-aviso" style="margin-top:8px">
+          ⏳ <?= $repavPeriodo['fila_pendente'] ?> trecho(s) ainda aguardando repavimentação
+        </div>
+        <?php endif; ?>
+      </div>
+      <?php endif; ?>
     </div>
   </div>
 
@@ -445,12 +491,10 @@ function svgIcon(string $path): string {
       $base_url = MASTER_BASE . '/relatorio/';
       $periodo_qs = "?inicio={$inicio}&fim={$fim}";
       $rels = [
-        ['boletim',      'ic-gold',  'Boletim de Medição do Período',    'rede + ramais — base de faturamento',  'PDF · CSV'],
-        ['avanco',       'ic-navy',  'Relatório de Avanço Físico',        '% concluído, curva e projeção',         'PDF'],
-        ['interferencias','ic-info', 'Relatório de Interferências',       'por tipo, com foto e GPS — aditivos',   'PDF · CSV'],
-        ['produtividade','ic-aviso', 'Relatório de Produtividade',        'm por equipe-dia e ranking',            'PDF · CSV'],
-        ['materiais',    'ic-ok',    'Relatório de Materiais',            'estoque atual × reservado',             'PDF · CSV'],
-        ['resumo',       'ic-gold',  'Resumo Gerencial (1 página)',       'visão do dono: produção e marcos',      'PDF'],
+        ['boletim',      'ic-gold',  'Boletim de Medição',               'rede as-built + ramais + interferências', 'PDF · CSV'],
+        ['produtividade','ic-aviso', 'Relatório de Produtividade',        'm/dia, meta, m/homem-dia, ranking',     'PDF · CSV'],
+        ['materiais',    'ic-ok',    'Relatório de Materiais',            'físico × reservado × disponível',       'PDF · CSV'],
+        ['resumo',       'ic-gold',  'Resumo Gerencial (1 página)',       'consolidado executivo — 1 folha',       'PDF'],
       ];
       foreach ($rels as [$tipo, $cls, $titulo, $desc, $fmts]):
       ?>

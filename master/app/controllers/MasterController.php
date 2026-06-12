@@ -17,9 +17,18 @@ class MasterController {
         auth_required_master();
 
         $modo   = in_array($_GET['modo'] ?? '', ['rt','dia','periodo']) ? $_GET['modo'] : 'rt';
-        $data   = $this->validarData($_GET['data']   ?? '') ?: date('Y-m-d');
         $inicio = $this->validarData($_GET['inicio'] ?? '') ?: date('Y-m-d', strtotime('-30 days'));
         $fim    = $this->validarData($_GET['fim']    ?? '') ?: date('Y-m-d');
+
+        // M1: default "dia" to last date with diary data (not today which may be empty)
+        if ($modo === 'dia' && empty($_GET['data'])) {
+            $ultimaData = $this->db->query(
+                "SELECT MAX(data) FROM diarios_execucao WHERE status IN ('enviado','aprovado')"
+            )->fetchColumn();
+            $data = $this->validarData($ultimaData ?: '') ?: date('Y-m-d');
+        } else {
+            $data = $this->validarData($_GET['data'] ?? '') ?: date('Y-m-d');
+        }
 
         $dados = match($modo) {
             'dia'     => $this->dadosDia($data),
@@ -36,7 +45,7 @@ class MasterController {
     public function relatorio(string $tipo): void {
         auth_required_master();
 
-        $tipos_validos = ['boletim','rdo','interferencias','avanco','produtividade','materiais','resumo','fotos'];
+        $tipos_validos = ['boletim','rdo','produtividade','materiais','resumo','fotos'];
         if (!in_array($tipo, $tipos_validos)) {
             http_response_code(404); echo 'Relatório não encontrado.'; return;
         }
@@ -148,14 +157,16 @@ class MasterController {
 
     private function dadosDia(string $data): array {
         $stmt = $this->db->prepare("
-            SELECT e.nome AS equipe, de.extensao_gps_m, t.pv_montante, t.pv_jusante, t.bacia
+            SELECT e.nome AS equipe, de.extensao_gps_m, t.extensao AS extensao_planejada,
+                   t.pv_montante, t.pv_jusante, t.bacia
             FROM diarios_execucao de
             JOIN equipes e ON e.id=de.equipe_id
             JOIN trechos t ON t.id=de.trecho_id
             WHERE de.data=? ORDER BY e.nome
         ");
         $stmt->execute([$data]); $producaoPorEquipe = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $metrosDia = (float)array_sum(array_column($producaoPorEquipe, 'extensao_gps_m'));
+        // R-MED: official metric = t.extensao (as-built), GPS = evidence
+        $metrosDia = (float)array_sum(array_column($producaoPorEquipe, 'extensao_planejada'));
 
         $stmt = $this->db->prepare("
             SELECT COUNT(*) AS qtd, COALESCE(SUM(dr.ext_pista),0) AS m_pista, COALESCE(SUM(dr.ext_calcada),0) AS m_calcada
@@ -200,29 +211,57 @@ class MasterController {
         ");
         $stmt->execute([$data]); $fotosGaleria = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return compact('data','metrosDia','producaoPorEquipe','ramais','cargas','pontoes','presentes','ausentes','interfs','fotosGaleria');
+        // Equipamentos mobilizados (table may not exist yet — PA13)
+        $equipamentosDia = [];
+        try {
+            $stmt = $this->db->prepare("
+                SELECT de2.eq_nome AS nome, SUM(de2.horas) AS horas
+                FROM diario_equipamentos de2
+                JOIN diarios_execucao de ON de.id=de2.diario_id
+                WHERE de.data=? GROUP BY de2.eq_nome ORDER BY de2.eq_nome
+            ");
+            $stmt->execute([$data]); $equipamentosDia = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {}
+
+        // Materiais aplicados (table may not exist yet — PA13)
+        $materiaisAplicadosDia = [];
+        try {
+            $stmt = $this->db->prepare("
+                SELECT mc.nome, dma.unidade, SUM(dma.quantidade) AS qtd
+                FROM diario_materiais_aplicados dma
+                JOIN diarios_execucao de ON de.id=dma.diario_id
+                JOIN materiais_catalogo mc ON mc.id=dma.material_id
+                WHERE de.data=? GROUP BY mc.id ORDER BY mc.nome
+            ");
+            $stmt->execute([$data]); $materiaisAplicadosDia = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {}
+
+        return compact('data','metrosDia','producaoPorEquipe','ramais','cargas','pontoes','presentes','ausentes','interfs','fotosGaleria','equipamentosDia','materiaisAplicadosDia');
     }
 
     // ─── Modo: Acumulado por Período ──────────────────────────────────
 
     private function dadosPeriodo(string $inicio, string $fim): array {
+        // R-MED: official metric = t.extensao (as-built), GPS kept as evidence only
         $stmt = $this->db->prepare("
-            SELECT COALESCE(SUM(extensao_gps_m),0) FROM diarios_execucao
-            WHERE data BETWEEN ? AND ? AND status IN ('enviado','aprovado')
+            SELECT COALESCE(SUM(t.extensao),0) FROM diarios_execucao de
+            JOIN trechos t ON t.id=de.trecho_id
+            WHERE de.data BETWEEN ? AND ? AND de.status IN ('enviado','aprovado')
         ");
         $stmt->execute([$inicio, $fim]); $metrosTotal = (float)$stmt->fetchColumn();
 
         $stmt = $this->db->prepare("
-            SELECT data, COALESCE(SUM(extensao_gps_m),0) AS metros FROM diarios_execucao
-            WHERE data BETWEEN ? AND ? AND status IN ('enviado','aprovado')
-            GROUP BY data ORDER BY data
+            SELECT de.data, COALESCE(SUM(t.extensao),0) AS metros FROM diarios_execucao de
+            JOIN trechos t ON t.id=de.trecho_id
+            WHERE de.data BETWEEN ? AND ? AND de.status IN ('enviado','aprovado')
+            GROUP BY de.data ORDER BY de.data
         ");
         $stmt->execute([$inicio, $fim]); $curvaProd = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $diasTrabalhados = count($curvaProd);
         $mediaDiaria = $diasTrabalhados > 0 ? round($metrosTotal / $diasTrabalhados, 1) : 0;
 
         $stmt = $this->db->prepare("
-            SELECT t.bacia, e.nome AS equipe, COALESCE(SUM(de.extensao_gps_m),0) AS metros
+            SELECT t.bacia, e.nome AS equipe, COALESCE(SUM(t.extensao),0) AS metros
             FROM diarios_execucao de
             JOIN equipes e ON e.id=de.equipe_id JOIN trechos t ON t.id=de.trecho_id
             WHERE de.data BETWEEN ? AND ? AND de.status IN ('enviado','aprovado')
@@ -230,8 +269,28 @@ class MasterController {
         ");
         $stmt->execute([$inicio, $fim]); $porBaciaEquipe = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // Per-trecho data for Boletim: Planejado × Executado (as-built) × GPS (evidence)
+        $stmt = $this->db->prepare("
+            SELECT t.pv_montante, t.pv_jusante, t.dn, t.profundidade_media, t.bacia, t.contrato,
+                   MAX(t.extensao) AS extensao_planejada,
+                   MAX(t.extensao) AS extensao_executada,
+                   COALESCE(SUM(de.extensao_gps_m),0) AS extensao_gps,
+                   e.nome AS equipe
+            FROM diarios_execucao de
+            JOIN trechos t ON t.id=de.trecho_id
+            JOIN equipes e ON e.id=de.equipe_id
+            WHERE de.data BETWEEN ? AND ? AND de.status IN ('enviado','aprovado')
+            GROUP BY t.id, e.id
+            ORDER BY t.pv_montante
+        ");
+        $stmt->execute([$inicio, $fim]); $trechosBoletim = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         $previsto = (float)$this->db->query("SELECT COALESCE(SUM(extensao),0) FROM trechos")->fetchColumn();
-        $executadoTotal = (float)$this->db->query("SELECT COALESCE(SUM(extensao_gps_m),0) FROM diarios_execucao WHERE status IN ('enviado','aprovado')")->fetchColumn();
+        // R-MED: executadoTotal = sum of t.extensao per distinct trecho (dedup)
+        $executadoTotal = (float)$this->db->query("
+            SELECT COALESCE(SUM(t.extensao),0) FROM trechos t
+            WHERE t.id IN (SELECT DISTINCT trecho_id FROM diarios_execucao WHERE status IN ('enviado','aprovado'))
+        ")->fetchColumn();
         $pctAvanco = $previsto > 0 ? min(100, round($executadoTotal / $previsto * 100, 1)) : 0;
         $projecao = null;
         if ($mediaDiaria > 0 && $previsto > $executadoTotal) {
@@ -255,34 +314,74 @@ class MasterController {
 
         $stmt = $this->db->prepare("
             SELECT e.nome AS equipe, COUNT(DISTINCT de.data) AS dias,
-                COALESCE(SUM(de.extensao_gps_m),0) AS metros,
-                ROUND(COALESCE(SUM(de.extensao_gps_m),0)/NULLIF(COUNT(DISTINCT de.data),0),1) AS m_por_dia
-            FROM diarios_execucao de JOIN equipes e ON e.id=de.equipe_id
+                COALESCE(SUM(t.extensao),0) AS metros,
+                ROUND(COALESCE(SUM(t.extensao),0)/NULLIF(COUNT(DISTINCT de.data),0),1) AS m_por_dia,
+                COALESCE(SUM(pres.presentes),0) AS total_presentes,
+                ROUND(COALESCE(SUM(t.extensao),0)/NULLIF(SUM(pres.presentes),0),1) AS m_homem
+            FROM diarios_execucao de
+            JOIN equipes e ON e.id=de.equipe_id
+            JOIN trechos t ON t.id=de.trecho_id
+            LEFT JOIN (
+                SELECT diario_id, COUNT(*) AS presentes FROM diario_presencas WHERE status='presente' GROUP BY diario_id
+            ) pres ON pres.diario_id=de.id
             WHERE de.data BETWEEN ? AND ? AND de.status IN ('enviado','aprovado')
             GROUP BY e.id ORDER BY m_por_dia DESC
         ");
         $stmt->execute([$inicio, $fim]); $produtividade = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $meta_m_dia = 40.0;
+        $totalPresentes = array_sum(array_column($produtividade, 'total_presentes'));
+        $mHomemDia = $totalPresentes > 0 ? round($metrosTotal / $totalPresentes, 1) : null;
+
+        // M5: Repavimentação no período
+        $repavPeriodo = null;
+        try {
+            $stmtR = $this->db->prepare("
+                SELECT COALESCE(SUM(dr.area_total_m2), 0) AS area_total,
+                       COALESCE(SUM(dr.volume_asf_m3), 0) AS volume_total,
+                       COUNT(DISTINCT dr.trecho_id)        AS trechos_medidos
+                FROM diarios_repav dr
+                WHERE dr.data BETWEEN ? AND ? AND dr.status IN ('enviado','aprovado')
+            ");
+            $stmtR->execute([$inicio, $fim]);
+            $row = $stmtR->fetch(PDO::FETCH_ASSOC);
+            $stmtFila = $this->db->query("SELECT COUNT(*) FROM trechos WHERE status_repav IS NOT NULL AND status_repav != 'medido'");
+            $row['fila_pendente'] = (int)$stmtFila->fetchColumn();
+            $repavPeriodo = $row;
+        } catch (\PDOException $e) {}
+
         return compact(
             'inicio','fim','metrosTotal','curvaProd','diasTrabalhados','mediaDiaria',
-            'porBaciaEquipe','previsto','executadoTotal','pctAvanco','projecao',
-            'ramaisTotal','interfsTotal','totalInterfs','produtividade'
+            'porBaciaEquipe','trechosBoletim','previsto','executadoTotal','pctAvanco','projecao',
+            'ramaisTotal','interfsTotal','totalInterfs','produtividade','repavPeriodo',
+            'meta_m_dia','mHomemDia'
         );
     }
 
     // ─── Materiais ────────────────────────────────────────────────────
 
     private function dadosMateriais(): array {
-        $stmt = $this->db->query("
-            SELECT mc.nome, mc.unidade,
-                COALESCE(me.quantidade_fisica,0) AS estoque_atual,
-                COALESCE(me.quantidade_reservada,0) AS reservado,
-                COALESCE(me.quantidade_minima,0) AS minimo
-            FROM materiais_catalogo mc
-            LEFT JOIN materiais_estoque me ON me.material_id=mc.id
-            ORDER BY mc.nome
-        ");
-        return ['materiais' => $stmt->fetchAll(PDO::FETCH_ASSOC), 'inicio' => '', 'fim' => ''];
+        $materiaisErro = false;
+        $materiais = [];
+        try {
+            $stmt = $this->db->query("
+                SELECT mc.codigo, mc.nome, mc.unidade,
+                    COALESCE(mc.estoque_minimo, 0) AS minimo,
+                    COALESCE(me.quantidade_fisica, 0) AS estoque_atual,
+                    COALESCE(me.quantidade_reservada, 0) AS reservado
+                FROM materiais_catalogo mc
+                LEFT JOIN materiais_estoque me ON me.material_id=mc.id
+                ORDER BY mc.nome
+            ");
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as $r) {
+                $r['disponivel'] = max(0, (float)$r['estoque_atual'] - (float)$r['reservado']);
+                $materiais[] = $r;
+            }
+        } catch (\PDOException $e) {
+            $materiaisErro = true;
+        }
+        return ['materiais' => $materiais, 'materiaisErro' => $materiaisErro, 'inicio' => '', 'fim' => ''];
     }
 
     private function dadosFotosRelatorio(string $data): array {

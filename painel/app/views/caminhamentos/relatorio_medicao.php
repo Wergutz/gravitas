@@ -27,7 +27,7 @@ $extensao_conc   = array_sum(array_map(
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Relatório de Medição da Rede · Caminhamento #<?= (int)$caminhamento['id'] ?></title>
+<title>Acompanhamento do Caminhamento · #<?= (int)$caminhamento['id'] ?></title>
 <meta name="robots" content="noindex,nofollow">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -91,7 +91,7 @@ table.mat tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1A2D
 <div class="toolbar">
     <a href="javascript:history.back()">← Voltar</a>
     <span style="flex:1"></span>
-    <span>Documento: <?= htmlspecialchars($num_doc) ?></span>
+    <span>Acompanhamento — <?= htmlspecialchars($num_doc) ?></span>
     <button onclick="window.print()">Imprimir / Salvar PDF</button>
 </div>
 
@@ -123,7 +123,7 @@ table.mat tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1A2D
 
     <!-- Título -->
     <div class="rpt-titulo">
-        <h1>Relatório de Medição da Rede</h1>
+        <h1>Acompanhamento do Caminhamento</h1>
         <p><?= htmlspecialchars($caminhamento['equipe_nome']) ?> · <?= date('d/m/Y', strtotime($caminhamento['data_execucao'])) ?>
         · <span style="color:<?= $cam_color ?>;font-weight:700;"><?= $cam_label ?></span></p>
     </div>
@@ -234,26 +234,14 @@ table.mat tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1A2D
     </div>
     <?php endif; ?>
 
-    <!-- Assinaturas -->
-    <div class="linha-data">
-        _______________, _____ de __________________ de ________
-    </div>
-    <div class="assinaturas">
-        <div class="assinatura">
-            <b>Responsável pelo Planejamento</b>
-            <?= htmlspecialchars($usuario['nome'] ?? '______________________') ?><br>
-            <span style="font-size:9px;">Gravitas — Planejamento</span>
-        </div>
-        <div class="assinatura">
-            <b>Visto / Aprovação</b>
-            <br>
-            <span style="font-size:9px;">______________________________</span>
-        </div>
+    <!-- Nota régua -->
+    <div class="obs-box" style="margin-top:16px;background:#fffbf0;border-color:#E0A53D;color:#7a5200;">
+        Régua única com o Boletim de Medição: extensão = projeto (as-built). Medição oficial no Boletim; este é o acompanhamento operacional — <b>sem assinatura</b>.
     </div>
 
     <!-- Rodapé -->
     <div class="rpt-footer">
-        <span>GRAVITAS · Relatório de Medição da Rede · <?= htmlspecialchars($num_doc) ?></span>
+        <span>GRAVITAS · Acompanhamento do Caminhamento · <?= htmlspecialchars($num_doc) ?></span>
         <span>Gerado em <?= $data_ger ?></span>
     </div>
 
