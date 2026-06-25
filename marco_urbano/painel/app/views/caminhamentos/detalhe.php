@@ -23,13 +23,13 @@ ob_start();
     <?php if ($caminhamento['status'] === 'rascunho'): ?>
         <form method="post" action="<?= APP_BASE ?>/caminhamentos/publicar"
               style="display:inline;"
-              data-confirmar="Publicar este caminhamento? Os materiais dos trechos serão reservados no estoque."
+              data-confirmar="Publicar este caminhamento?"
               data-cor="#1A6B3C">
             <?= csrf_input() ?>
             <input type="hidden" name="id" value="<?= (int)$caminhamento['id'] ?>">
             <button type="submit" class="btn btn-pri btn-sm">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="13 5 20 12 13 19"/></svg>
-                Publicar (reserva materiais)
+                Publicar
             </button>
         </form>
     <?php endif; ?>
@@ -127,15 +127,13 @@ ob_start();
                         <?php endif; ?>
                         <?php if ($tc['os_arquivo']): ?>
                             <span class="chip c-ok">OS v<?= (int)$tc['os_versao'] ?></span>
-                        <?php else: ?>
-                            <span class="chip c-erro">Sem OS</span>
                         <?php endif; ?>
                         <span class="chip <?= $tcStatus[1] ?>"><?= $tcStatus[0] ?></span>
 
                         <?php if ($tc['ct_status'] !== 'concluido' && in_array($caminhamento['status'], ['publicado', 'execucao'])): ?>
                             <form method="post" action="<?= APP_BASE ?>/caminhamentos/concluir-trecho"
                                   style="display:inline;"
-                                  data-confirmar="Marcar trecho como concluído? Materiais serão baixados do estoque e o trecho entrará na fila de repavimentação."
+                                  data-confirmar="Marcar trecho como concluído? O trecho entrará na fila de repavimentação."
                                   data-cor="#1A6B3C">
                                 <?= csrf_input() ?>
                                 <input type="hidden" name="caminhamento_id" value="<?= (int)$caminhamento['id'] ?>">
@@ -160,14 +158,10 @@ ob_start();
                     <div style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);">
                         <div style="font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:6px;">Materiais</div>
                         <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                            <?php foreach ($mats as $mat):
-                                $disp = (float)$mat['qtd_fisica'] - (float)$mat['qtd_reservada'];
-                                $falta = $disp < (float)$mat['quantidade'];
-                            ?>
-                                <span class="chip <?= $falta ? 'c-erro' : 'c-neutro' ?>" title="Disponível: <?= number_format($disp, 2) ?> <?= htmlspecialchars($mat['unidade']) ?>">
+                            <?php foreach ($mats as $mat): ?>
+                                <span class="chip c-neutro">
                                     <?= htmlspecialchars($mat['material_nome']) ?>
                                     <?= number_format((float)$mat['quantidade'], 2) ?> <?= htmlspecialchars($mat['unidade']) ?>
-                                    <?= $falta ? '⚠' : '' ?>
                                 </span>
                             <?php endforeach; ?>
                         </div>

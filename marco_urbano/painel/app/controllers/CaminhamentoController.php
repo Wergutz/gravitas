@@ -71,16 +71,13 @@ class CaminhamentoController
         $stmt->execute([$id]);
         $trechos_cam = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Materiais reservados por trecho
+        // Materiais alocados por trecho
         $materiais_por_trecho = [];
         foreach ($trechos_cam as $tc) {
             $stmt2 = $pdo->prepare("
-                SELECT tm.*, mc.nome AS material_nome, mc.unidade,
-                       COALESCE(me.quantidade_fisica, 0) AS qtd_fisica,
-                       COALESCE(me.quantidade_reservada, 0) AS qtd_reservada
+                SELECT tm.*, mc.nome AS material_nome, mc.unidade
                 FROM trecho_materiais tm
                 JOIN materiais_catalogo mc ON mc.id = tm.material_id
-                LEFT JOIN materiais_estoque me ON me.material_id = tm.material_id
                 WHERE tm.trecho_id = ?
             ");
             $stmt2->execute([$tc['trecho_id']]);
@@ -234,7 +231,7 @@ class CaminhamentoController
     }
 
     /* =====================================================
-       PUBLICAR — Regra 19: reserva materiais
+       PUBLICAR
     ===================================================== */
     public function publicar()
     {
@@ -277,37 +274,11 @@ class CaminhamentoController
             exit;
         }
 
-        // Buscar trechos do caminhamento
-        $stmt = $pdo->prepare("SELECT trecho_id FROM caminhamento_trechos WHERE caminhamento_id = ?");
-        $stmt->execute([$id]);
-        $trecho_ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
         $pdo->beginTransaction();
         try {
             // Mudar status para publicado
             $pdo->prepare("UPDATE caminhamentos SET status = 'publicado' WHERE id = ?")
                 ->execute([$id]);
-
-            // Regra 19: reservar materiais de cada trecho
-            $stmtMat = $pdo->prepare("SELECT material_id, quantidade FROM trecho_materiais WHERE trecho_id = ?");
-            $stmtMov = $pdo->prepare("
-                INSERT INTO materiais_movimentos
-                    (material_id, tipo, quantidade, referencia_tipo, referencia_id, observacao, usuario_id)
-                VALUES (?, 'reserva', ?, 'caminhamento', ?, 'Reserva automática — publicação caminhamento', ?)
-            ");
-            $stmtRes = $pdo->prepare("
-                UPDATE materiais_estoque
-                SET quantidade_reservada = quantidade_reservada + ?
-                WHERE material_id = ?
-            ");
-
-            foreach ($trecho_ids as $tid) {
-                $stmtMat->execute([$tid]);
-                foreach ($stmtMat->fetchAll(PDO::FETCH_ASSOC) as $mat) {
-                    $stmtMov->execute([$mat['material_id'], $mat['quantidade'], $id, $_SESSION['usuario_id'] ?? 0]);
-                    $stmtRes->execute([$mat['quantidade'], $mat['material_id']]);
-                }
-            }
 
             $pdo->commit();
         } catch (Exception $e) {
@@ -317,13 +288,13 @@ class CaminhamentoController
             exit;
         }
 
-        $_SESSION['flash_ok'] = 'Caminhamento publicado. Materiais reservados no estoque.';
+        $_SESSION['flash_ok'] = 'Caminhamento publicado.';
         header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $id);
         exit;
     }
 
     /* =====================================================
-       CONCLUIR TRECHO — Regras 19 (baixa) + 20 (auto-repav)
+       CONCLUIR TRECHO — Regra 20 (auto-repav)
     ===================================================== */
     public function concluirTrecho()
     {
@@ -389,26 +360,7 @@ class CaminhamentoController
                 WHERE id = ?
             ")->execute([$trecho_id]);
 
-            // 4. Regra 19 (baixa): decrementar física e reservada
-            $stmtMat = $pdo->prepare("SELECT material_id, quantidade FROM trecho_materiais WHERE trecho_id = ?");
-            $stmtMat->execute([$trecho_id]);
-            $stmtMov = $pdo->prepare("
-                INSERT INTO materiais_movimentos
-                    (material_id, tipo, quantidade, referencia_tipo, referencia_id, observacao, usuario_id)
-                VALUES (?, 'baixa', ?, 'trecho', ?, 'Baixa automática — trecho concluído', ?)
-            ");
-            $stmtBaixa = $pdo->prepare("
-                UPDATE materiais_estoque
-                SET quantidade_fisica    = GREATEST(0, quantidade_fisica    - ?),
-                    quantidade_reservada = GREATEST(0, quantidade_reservada - ?)
-                WHERE material_id = ?
-            ");
-            foreach ($stmtMat->fetchAll(PDO::FETCH_ASSOC) as $mat) {
-                $stmtMov->execute([$mat['material_id'], $mat['quantidade'], $trecho_id, $_SESSION['usuario_id'] ?? 0]);
-                $stmtBaixa->execute([$mat['quantidade'], $mat['quantidade'], $mat['material_id']]);
-            }
-
-            // 5. Se todos os trechos do caminhamento estão concluídos → fechar caminhamento
+            // 4. Se todos os trechos do caminhamento estão concluídos → fechar caminhamento
             $stmt = $pdo->prepare("
                 SELECT COUNT(*) FROM caminhamento_trechos
                 WHERE caminhamento_id = ? AND status != 'concluido'
@@ -427,7 +379,7 @@ class CaminhamentoController
             exit;
         }
 
-        $_SESSION['flash_ok'] = 'Trecho concluído. Material baixado e trecho adicionado à fila de repavimentação.';
+        $_SESSION['flash_ok'] = 'Trecho concluído e adicionado à fila de repavimentação.';
         header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $caminhamento_id);
         exit;
     }
@@ -466,21 +418,6 @@ class CaminhamentoController
             $trechoIds = $stmtT->fetchAll(PDO::FETCH_COLUMN);
 
             if (!empty($trechoIds)) {
-                // Liberar materiais reservados se estava publicado
-                if ($cam['status'] === 'publicado') {
-                    foreach ($trechoIds as $tid) {
-                        $stmtMat = $pdo->prepare("SELECT material_id, quantidade FROM trecho_materiais WHERE trecho_id = ?");
-                        $stmtMat->execute([$tid]);
-                        $stmtLib = $pdo->prepare("
-                            UPDATE materiais_estoque
-                            SET quantidade_reservada = GREATEST(0, quantidade_reservada - ?)
-                            WHERE material_id = ?
-                        ");
-                        foreach ($stmtMat->fetchAll(PDO::FETCH_ASSOC) as $mat) {
-                            $stmtLib->execute([$mat['quantidade'], $mat['material_id']]);
-                        }
-                    }
-                }
                 // Voltar trechos para livre
                 $in = implode(',', array_fill(0, count($trechoIds), '?'));
                 $pdo->prepare("UPDATE trechos SET status_rede = 'livre' WHERE id IN ($in) AND status_rede = 'programado'")
@@ -546,22 +483,6 @@ class CaminhamentoController
                 $in = implode(',', array_fill(0, count($novos), '?'));
                 $pdo->prepare("UPDATE trechos SET status_rede = 'programado' WHERE id IN ($in)")
                     ->execute($novos);
-
-                // Se publicado, reservar materiais dos novos trechos
-                if ($cam['status'] === 'publicado') {
-                    $stmtMat = $pdo->prepare("SELECT material_id, quantidade FROM trecho_materiais WHERE trecho_id = ?");
-                    $stmtRes = $pdo->prepare("
-                        INSERT INTO materiais_estoque (material_id, quantidade_reservada)
-                        VALUES (?, ?)
-                        ON DUPLICATE KEY UPDATE quantidade_reservada = quantidade_reservada + VALUES(quantidade_reservada)
-                    ");
-                    foreach ($novos as $tid) {
-                        $stmtMat->execute([$tid]);
-                        foreach ($stmtMat->fetchAll(PDO::FETCH_ASSOC) as $mat) {
-                            $stmtRes->execute([$mat['material_id'], $mat['quantidade']]);
-                        }
-                    }
-                }
             }
 
             $pdo->commit();

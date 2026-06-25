@@ -4,14 +4,6 @@ $hoje = date('d/m/Y');
 $diaDaSemana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][date('w')];
 $stepAtual = $diarioHoje ? (int)$diarioHoje['step_atual'] : 0;
 $pct       = (int)round($stepAtual / 21 * 100);
-
-// Disponibilidade de cada material (estoque_fisico - estoque_reservado)
-foreach ($materiais as &$m) {
-    $disponivel = (float)$m['estoque_fisico'] - (float)$m['estoque_reservado'];
-    $m['disponivel'] = $disponivel;
-    $m['falta'] = $disponivel < (float)$m['quantidade'];
-}
-unset($m);
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -104,8 +96,6 @@ unset($m);
         <div style="margin-top:8px">
           <?php if ($osPdf): ?>
           <span class="badge b-ok">OS anexada</span>
-          <?php else: ?>
-          <span class="badge b-aviso">Sem OS</span>
           <?php endif; ?>
           <?php if ($trechoAtual['contrato']): ?>
           <span class="badge b-neutro"><?= htmlspecialchars($trechoAtual['contrato']) ?></span>
@@ -139,10 +129,10 @@ unset($m);
     <?php else: ?>
     <div class="info">
       <div class="info-h">
-        <span class="ic i-aviso" style="font-size:18px">📄</span>
+        <span class="ic i-info" style="font-size:18px">📄</span>
         <div>
           <b>Ordem de Serviço</b>
-          <span style="color:var(--aviso);font-weight:700">Nenhuma OS anexada a este trecho</span>
+          <span>Nenhuma OS anexada a este trecho</span>
         </div>
       </div>
     </div>
@@ -161,10 +151,7 @@ unset($m);
       <div style="margin-top:10px">
         <?php foreach ($materiais as $mat): ?>
         <div class="mat-li">
-          <?php if ($mat['falta']): ?>
-          <span style="font-size:14px;margin-right:4px">⚠️</span>
-          <?php endif; ?>
-          <span style="<?= $mat['falta'] ? 'color:var(--aviso);font-weight:700' : '' ?>">
+          <span>
             <?= htmlspecialchars($mat['nome']) ?>
           </span>
           <span class="q">
@@ -172,14 +159,6 @@ unset($m);
           </span>
         </div>
         <?php endforeach; ?>
-        <?php
-        $temFalta = array_filter($materiais, fn($m) => $m['falta']);
-        if ($temFalta):
-        ?>
-        <div style="font-size:11.5px;color:var(--aviso);font-weight:700;margin-top:8px;line-height:1.4">
-          ⚠️ <?= count($temFalta) ?> item(s) com estoque insuficiente — informe ao Planejador no passo 3.
-        </div>
-        <?php endif; ?>
       </div>
       <?php else: ?>
       <div style="margin-top:10px;font-size:13px;color:var(--muted)">Nenhum material alocado a este trecho.</div>

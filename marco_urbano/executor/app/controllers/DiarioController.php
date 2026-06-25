@@ -74,12 +74,9 @@ class DiarioController {
 
                     // Materiais alocados ao trecho
                     $stmtMat = $this->db->prepare("
-                        SELECT mc.nome, mc.unidade, tm.quantidade,
-                               COALESCE(me.quantidade_fisica, 0)    AS estoque_fisico,
-                               COALESCE(me.quantidade_reservada, 0) AS estoque_reservado
+                        SELECT mc.nome, mc.unidade, tm.quantidade
                         FROM trecho_materiais tm
                         JOIN materiais_catalogo mc ON mc.id = tm.material_id
-                        LEFT JOIN materiais_estoque me ON me.material_id = tm.material_id
                         WHERE tm.trecho_id = ?
                         ORDER BY mc.nome
                     ");
@@ -300,24 +297,6 @@ class DiarioController {
                 $tabela = $eq['tipo'] === 'pesado' ? 'equipamentos_pesados' : 'equipamentos_leves';
                 $this->db->prepare("UPDATE {$tabela} SET status_manutencao = 'manutencao', obs_manutencao = ? WHERE id = ?")
                          ->execute([substr($eq['obs'] ?? 'Reportado pelo Executor em ' . $diario['data'], 0, 255), (int)$eq['equipamento_id']]);
-            }
-
-            // 4. Falta de material → alertas_falta_material
-            $diarioFull = $this->carregarDiario($id);
-            if (isset($diarioFull['step3_estoque_ok']) && $diarioFull['step3_estoque_ok'] === '0') {
-                $faltando = trim($diarioFull['step3_materiais_faltando'] ?? '');
-                if ($faltando) {
-                    // Evita duplicata se reaberto
-                    $check = $this->db->prepare("SELECT COUNT(*) FROM alertas_falta_material WHERE diario_id = ?");
-                    $check->execute([$id]);
-                    if ((int)$check->fetchColumn() === 0) {
-                        $this->db->prepare("
-                            INSERT INTO alertas_falta_material
-                                (diario_id, equipe_id, trecho_id, data, materiais_faltando)
-                            VALUES (?, ?, ?, ?, ?)
-                        ")->execute([$id, $diario['equipe_id'], $diario['trecho_id'], $diario['data'], $faltando]);
-                    }
-                }
             }
 
             $this->db->commit();
