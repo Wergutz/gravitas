@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gravitas.net.br/seconheca/sitemap.xml

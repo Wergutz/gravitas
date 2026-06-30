@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qual é o seu arquétipo? — Se Conheça</title>
+<link rel="icon" href="img/favicon-seconheca.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --parchment:#EDE0C4; --parchment-2:#E2D2B0; --ink:#241A0F; --ink-soft:#4a4035;
+    --oxblood:#6E2B2B; --gold:#9c7a24; --line:#b6a47e; --couro-d:#281B0F; --ouro-c:#E3C77A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'EB Garamond',Georgia,serif;color:var(--ink);
+    background:radial-gradient(120% 90% at 50% -10%, #f1e8d2 0%, var(--parchment) 45%, var(--parchment-2) 100%);
+    min-height:100vh;-webkit-font-smoothing:antialiased;line-height:1.5}
+  .sitebar{background:var(--couro-d);border-bottom:2px solid var(--gold);text-align:center;padding:10px}
+  .sitebar a{display:inline-block}
+  .sitebar img{height:34px;vertical-align:middle}
+  .wrap{max-width:640px;margin:0 auto;padding:24px 20px 60px}
+  .rule{display:flex;align-items:center;gap:14px;color:var(--line);margin:18px 0}
+  .rule::before,.rule::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
+  .rule span{font-size:18px;letter-spacing:.3em}
+  header.t{text-align:center;padding-top:6px}
+  .eyebrow{font-family:'Cinzel',serif;letter-spacing:.28em;font-size:11px;color:var(--oxblood);text-transform:uppercase}
+  h1{font-family:'Cinzel',serif;font-weight:700;font-size:clamp(28px,8vw,42px);line-height:1.05;margin:10px 0 4px}
+  .sub{font-style:italic;color:var(--ink-soft);font-size:17px;max-width:46ch;margin:0 auto}
+  .disclaimer{margin:22px auto 0;font-size:13.5px;color:var(--ink-soft);border:1px solid var(--line);
+    background:rgba(255,255,255,.18);padding:11px 14px;border-radius:2px;text-align:center;font-style:italic}
+  .progress{margin:26px 0 8px}
+  .progress-top{display:flex;justify-content:space-between;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.18em;color:var(--ink-soft);margin-bottom:7px}
+  .bar{height:9px;border:1px solid var(--ink);background:rgba(255,255,255,.25);position:relative;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:repeating-linear-gradient(45deg,var(--oxblood),var(--oxblood) 6px,#8c382b 6px,#8c382b 12px);transition:width .45s cubic-bezier(.2,.7,.2,1)}
+  .card{margin-top:18px;opacity:0;transform:translateY(10px);animation:rise .5s ease forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  .qnum{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;color:var(--gold)}
+  .qtext{font-size:23px;font-weight:500;margin:6px 0 18px;line-height:1.25}
+  .opt{display:block;width:100%;text-align:left;cursor:pointer;font-family:'EB Garamond',serif;font-size:17.5px;color:var(--ink);
+    background:rgba(255,255,255,.32);border:1px solid var(--line);padding:15px 16px;margin-bottom:11px;border-radius:2px;
+    transition:transform .12s ease,border-color .15s ease,background .15s ease;line-height:1.35}
+  .opt:hover,.opt:focus-visible{border-color:var(--oxblood);background:rgba(255,255,255,.5);transform:translateX(3px);outline:none}
+  .opt:active{transform:scale(.99)}
+  .opt .mk{font-family:'Cinzel',serif;color:var(--oxblood);margin-right:10px;font-size:14px}
+  .back{margin-top:6px;background:none;border:none;color:var(--ink-soft);font-family:'EB Garamond',serif;font-style:italic;font-size:15px;cursor:pointer;text-decoration:underline;padding:6px 0}
+  .back:disabled{opacity:.3;cursor:default;text-decoration:none}
+  .result{text-align:center;animation:rise .6s ease forwards}
+  .crest{font-size:46px;line-height:1;margin:6px 0 2px;color:var(--gold)}
+  .rname{font-family:'Cinzel',serif;font-weight:700;font-size:clamp(34px,11vw,56px);color:var(--ink);letter-spacing:.02em;margin:2px 0}
+  .rtag{font-family:'Cinzel',serif;letter-spacing:.3em;font-size:13px;color:var(--oxblood);text-transform:uppercase}
+  .rbody{font-size:18px;color:var(--ink-soft);max-width:48ch;margin:18px auto;text-align:left}
+  .facet{text-align:left;max-width:48ch;margin:14px auto;border-left:3px solid var(--line);padding:2px 0 2px 16px}
+  .facet h4{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px}
+  .facet.light h4{color:var(--gold)}.facet.shadow h4{color:var(--oxblood)}
+  .second{font-size:16px;font-style:italic;color:var(--ink-soft);max-width:48ch;margin:18px auto 6px;text-align:left}
+  .scores{max-width:48ch;margin:14px auto;font-size:14px}
+  .srow{display:flex;align-items:center;gap:10px;margin:5px 0}
+  .slabel{flex:0 0 130px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.08em}
+  .strack{flex:1;height:7px;background:rgba(0,0,0,.08);border:1px solid var(--line)}
+  .sfill{height:100%;background:var(--oxblood);width:0;transition:width .8s ease}
+  .sval{flex:0 0 26px;text-align:right;font-size:12px;color:var(--ink-soft)}
+  .btn{font-family:'Cinzel',serif;font-weight:600;letter-spacing:.12em;font-size:14px;background:var(--ink);color:var(--parchment);
+    border:none;padding:14px 26px;border-radius:2px;cursor:pointer;margin-top:22px;transition:background .15s ease,transform .12s ease}
+  .btn:hover{background:var(--oxblood)}.btn:active{transform:scale(.98)}
+  /* Dona Sofia + ebook */
+  .sofia-note{display:flex;gap:14px;align-items:flex-start;text-align:left;max-width:48ch;margin:24px auto 6px;
+    background:rgba(255,255,255,.3);border:1px solid var(--line);border-radius:4px;padding:14px}
+  .sofia-note img{width:52px;height:52px;border-radius:50%;flex:0 0 52px}
+  .sofia-note .n{font-family:'Cinzel',serif;font-size:12px;letter-spacing:.12em;color:var(--oxblood)}
+  .sofia-note p{font-size:16px;color:var(--ink-soft);font-style:italic;margin-top:3px}
+  .ebook{max-width:48ch;margin:22px auto 0;background:var(--couro-d);color:var(--parchment);border-radius:4px;padding:22px;text-align:center;border:1px solid var(--gold)}
+  .ebook .ic{font-size:28px;color:var(--ouro-c)}
+  .ebook h4{font-family:'Cinzel',serif;font-size:17px;color:var(--ouro-c);margin:6px 0 6px}
+  .ebook p{font-size:15px;color:#d8caac;margin-bottom:6px}
+  .ebook .btn{background:var(--gold);color:var(--couro-d)}
+  .ebook .btn:hover{background:var(--ouro-c)}
+  .ebook .soon{font-size:12px;color:#b6a684;font-style:italic;margin-top:10px}
+  .foot{margin-top:30px;font-size:12.5px;color:var(--ink-soft);font-style:italic;text-align:center;max-width:50ch;margin-left:auto;margin-right:auto}
+  .home{display:block;text-align:center;margin-top:18px;font-family:'Cinzel',serif;font-size:12px;letter-spacing:.12em;color:var(--oxblood);text-decoration:none}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="sitebar"><a href="index.html"><img src="img/logo-seconheca-principal.svg" alt="Se Conheça"></a></div>
+<div class="wrap">
+  <header class="t">
+    <div class="eyebrow">Os Doze Arquétipos</div>
+    <h1>Qual é o seu arquétipo?</h1>
+    <div class="rule"><span>✦</span></div>
+    <p class="sub">Doze padrões antigos, segundo a tradição junguiana. Responda pelo instinto — não pela imagem que você gostaria de ter.</p>
+    <div class="disclaimer" id="disc">Isto é uma ferramenta de <b>autorreflexão</b>, não um diagnóstico. Não existe arquétipo "raro" ou superior — todos vivem em você; o teste só aponta qual está mais à frente hoje.</div>
+  </header>
+  <div id="app"></div>
+</div>
+
+<script>
+const ARCH = {
+  CUI:{nome:"Cuidador", tag:"acolhimento", crest:"♡",
+    desc:"Você sente o mundo pelos outros. Cria segurança, nutre, segura a barra de quem está caindo — muitas vezes antes de pedirem.",
+    luz:"Gera confiança e pertencimento. As pessoas se curam perto de você.",
+    sombra:"O mártir: cuida de todos e abandona a si mesmo; pode sufocar para se sentir necessário.",
+    sofia:"Que coração generoso o seu. Mas escuta a Dona Sofia: quem cuida também precisa ser cuidado — inclusive por você mesmo."},
+  BOB:{nome:"Bobo da Corte", tag:"alegria", crest:"☺",
+    desc:"Você desarma a tensão e diz a verdade rindo. Leveza é a sua forma de lucidez — o riso que o rei não pode dar, você dá.",
+    luz:"Traz presença, humor e honestidade onde todos ficaram sérios demais.",
+    sombra:"A fuga: a piada vira escudo contra a dor; dispersão e evitar o que é difícil de encarar.",
+    sofia:"Seu riso cura, meu bem. Só não deixe ele virar muro: às vezes a coisa mais corajosa é ficar sério e sentir."},
+  AMA:{nome:"Amante", tag:"paixão", crest:"❧",
+    desc:"Você vive pela intensidade — beleza, conexão, prazer, vínculo. Sentir a fundo não é fraqueza, é o seu eixo.",
+    luz:"Cria intimidade real e enxerga o que torna cada coisa e cada pessoa única.",
+    sombra:"A dependência: perder-se no outro, confundir paixão com identidade, medo do vazio.",
+    sofia:"Você ama com a alma inteira — isso é raro. Lembre só de guardar um cantinho desse amor para si."},
+  GUE:{nome:"Guerreiro", tag:"coragem", crest:"⚔",
+    desc:"Diante do problema, você age. Disciplina, peito aberto, defesa do que importa — você prefere a luta certa ao conforto.",
+    luz:"Coragem, foco e a força de proteger causas e pessoas quando ninguém mais avança.",
+    sombra:"A beligerância: tratar tudo como batalha, dureza desnecessária, agir antes de pensar.",
+    sofia:"Sua coragem abre caminhos. Mas nem todo dia é guerra — descansar a espada também é sabedoria."},
+  PAI:{nome:"Pai", tag:"proteção", crest:"⛨",
+    desc:"Você é referência. Dá estrutura, assume responsabilidade, é o ombro firme em que os outros se apoiam.",
+    luz:"Estabilidade, palavra que se cumpre, base segura para quem depende de você.",
+    sombra:"O controle: rigidez, autoritarismo, dificuldade de soltar e deixar o outro errar e crescer.",
+    sofia:"Você é o esteio de muita gente. Confie: às vezes amar é soltar a mão e deixar o outro tropeçar e aprender."},
+  MAG:{nome:"Mago", tag:"transformação", crest:"✶",
+    desc:"Você enxerga o padrão por trás das coisas e o usa para transformar realidades. Conecta pontos que os outros nem veem.",
+    luz:"Visão, capacidade de mudar sistemas e pessoas, de transformar caos em sentido.",
+    sombra:"A manipulação: usar a visão para iludir, viver na ideia e desconectar-se do chão real.",
+    sofia:"Você vê o que os outros não veem. Use esse dom para iluminar — nunca para enganar, nem a si mesmo."},
+  BUS:{nome:"Buscador", tag:"liberdade", crest:"➹",
+    desc:"Você precisa de horizonte. Autonomia, exploração e autenticidade valem mais do que qualquer conforto que prenda.",
+    luz:"Independência, coragem de trilhar o próprio caminho e descobrir o que ninguém mapeou.",
+    sombra:"A inquietude crônica: nunca pertencer, fugir do vínculo, buscar lá fora o que falta dentro.",
+    sofia:"Você nasceu para o horizonte. Só não esqueça: às vezes o que a gente procura tão longe estava aqui dentro."},
+  CRI:{nome:"Criador", tag:"inovação", crest:"✦",
+    desc:"Você não aceita o que existe — quer fazer o que ainda não há. Imaginação que vira obra é a sua marca.",
+    luz:"Originalidade, capacidade de dar forma ao novo e expressar algo que é só seu.",
+    sombra:"O perfeccionismo: nunca terminar, julgar tudo pela obra, ego que se confunde com o que cria.",
+    sofia:"Que mãos criadoras as suas. Mas ouça: o feito vale mais que o perfeito — termine, e deixe a obra respirar."},
+  SAB:{nome:"Sábio", tag:"sabedoria", crest:"☉",
+    desc:"Você quer entender. Antes de agir, compreender; a verdade vale mais que a vitória ou o conforto da resposta fácil.",
+    luz:"Discernimento, lucidez e a capacidade de orientar os outros sem se deixar levar pela maré.",
+    sombra:"A paralisia: analisar sem agir, frieza, arrogância intelectual que despreza quem sente.",
+    sofia:"Sua mente é um farol. Só não se esconda nela: a vida também se entende vivendo, não só pensando."},
+  REB:{nome:"Rebelde", tag:"ruptura", crest:"⚡",
+    desc:"Você não se curva ao que está podre só porque é a regra. Questiona, rompe, prefere o risco à mentira confortável.",
+    luz:"Coragem de divergir e de quebrar o que já não serve para abrir espaço ao que vem.",
+    sombra:"A destruição vazia: romper por romper, niilismo, derrubar sem construir nada no lugar.",
+    sofia:"Você tem a coragem de dizer não. Linda. Agora pergunte-se: depois de derrubar, o que você quer construir?"},
+  REI:{nome:"Rei", tag:"ordem", crest:"♔",
+    desc:"Você ordena o caos. Lidera, dá direção, sente responsabilidade pelo todo — não pelo poder, mas pelo reino funcionar.",
+    luz:"Liderança a serviço dos outros, visão de conjunto, capacidade de criar ordem com propósito.",
+    sombra:"A tirania: vaidade, ver pessoas como súditos, confundir controle com cuidado.",
+    sofia:"Você carrega o peso da coroa com responsabilidade. Reine servindo — o melhor rei é o que cuida do seu povo."},
+  INO:{nome:"Inocente", tag:"confiança", crest:"❀",
+    desc:"Você acredita que vale a pena. Esperança, fé no recomeço e na bondade possível — uma força silenciosa de não endurecer.",
+    luz:"Otimismo que cura, capacidade de recomeçar e de ver o melhor sem ser ingênuo por escolha.",
+    sombra:"A negação: ingenuidade, evitar a própria sombra, fingir que o problema não existe.",
+    sofia:"Sua fé é uma luz num mundo duro. Guarde-a — só não feche os olhos para a sombra: ela também tem o que ensinar."}
+};
+
+const Q = [
+  {q:"Numa crise séria no trabalho, seu instinto é:",
+   o:[["Assumir o comando e organizar todo mundo","REI"],["Acalmar e cuidar de quem entrou em pânico","CUI"],["Partir pra ação e resolver no braço","GUE"],["Achar a saída criativa que ninguém viu","CRI"]]},
+  {q:"Um domingo livre ideal é:",
+   o:[["Viajar sem destino certo","BUS"],["Construir ou criar algo — projeto, arte, código","CRI"],["Ler e entender algo a fundo","SAB"],["Estar presente com quem você ama","AMA"]]},
+  {q:"O que mais te irrita nos outros:",
+   o:[["Covardia — gente que não age","GUE"],["Hipocrisia e regras idiotas","REB"],["Recusa voluntária de pensar","SAB"],["Frieza e falta de cuidado","CUI"]]},
+  {q:"As pessoas te procuram quando precisam de:",
+   o:[["Conselho e clareza","SAB"],["Colo e acolhimento","CUI"],["Rir e aliviar o peso","BOB"],["Alguém que assuma a responsabilidade","PAI"]]},
+  {q:"Seu maior medo, no fundo:",
+   o:[["Ser controlado, perder a liberdade","BUS"],["O caos, perder o controle","REI"],["Ser comum, não deixar marca","CRI"],["Ficar sem vínculo, sozinho","AMA"]]},
+  {q:"Diante de uma regra que você acha injusta:",
+   o:[["Quebro e arco com as consequências","REB"],["Mudo o jogo por dentro, sem alarde","MAG"],["Enfrento de peito aberto","GUE"],["Acredito que dá pra resolver no diálogo","INO"]]},
+  {q:"O que te dá sentido de verdade:",
+   o:[["Transformar pessoas e situações","MAG"],["Proteger os meus","PAI"],["Liberdade de ser quem eu sou","BUS"],["Acreditar que tudo pode recomeçar melhor","INO"]]},
+  {q:"Numa festa, você costuma ser:",
+   o:[["Quem anima e faz todo mundo rir","BOB"],["Quem puxa a conversa profunda num canto","SAB"],["Quem cuida pra todos estarem bem","CUI"],["Quem seduz e cria o clima","AMA"]]},
+  {q:"Seu lema secreto seria:",
+   o:[["“Ordem e propósito.”","REI"],["“A vida é pra ser vivida.”","BOB"],["“Sempre há um jeito novo.”","CRI"],["“Confia no processo.”","INO"]]},
+  {q:"Sua sombra — o que te derruba quando você está mal:",
+   o:[["Viro controlador, quase um tirano","REI"],["Fujo da dor fazendo piada","BOB"],["Me perco completamente no outro","AMA"],["Destruo sem construir nada","REB"]]},
+  {q:"O mundo precisa de você principalmente para:",
+   o:[["Proteger e dar estrutura a quem depende de você","PAI"],["Transformar o que está estagnado","MAG"],["Lutar pelas causas certas","GUE"],["Questionar o que já está podre","REB"]]},
+  {q:"No fundo, você se vê como:",
+   o:[["Um protetor","PAI"],["Um catalisador de mudança","MAG"],["Um eterno explorador","BUS"],["Um otimista que recomeça sempre","INO"]]}
+];
+
+const TESTE="arquetipo";
+</script>
+<script src="engine.js"></script>
+</body>
+</html>

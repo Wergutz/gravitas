@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Que tipo de filho(a) você é? — Se Conheça</title>
+<link rel="icon" href="img/favicon-seconheca.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="teste.css">
+</head>
+<body>
+<div class="sitebar"><a href="index.html"><img src="img/logo-seconheca-principal.svg" alt="Se Conheça"></a></div>
+<div class="wrap">
+  <header class="t">
+    <div class="eyebrow">Laços de Família</div>
+    <h1>Que tipo de filho(a) você é?</h1>
+    <div class="rule"><span>❦</span></div>
+    <p class="sub">O papel que ocupamos na família de origem molda quem nos tornamos. Responda pensando em como você realmente é — não em como gostaria de ser.</p>
+    <div class="disclaimer" id="disc">Ferramenta de <b>autorreflexão</b>, não um diagnóstico. Nenhum papel é melhor que o outro — e a maioria de nós é uma mistura. O teste mostra qual fala mais alto em você.</div>
+  </header>
+  <div id="app"></div>
+</div>
+
+<script>
+const ARCH = {
+  CUI:{nome:"Cuidador", titulo:"O Cuidador", tag:"zelo", crest:"♡",
+    desc:"Desde cedo você assumiu o cuidado dos outros — pais, irmãos, a casa. Você amadureceu antes da hora e virou o porto seguro da família.",
+    luz:"Responsabilidade, ternura e a capacidade rara de segurar a barra quando tudo balança.",
+    sombra:"O esquecimento de si: cuidar tanto que some no meio; dizer 'sim' por culpa e 'não' nunca.",
+    sofia:"Que filho(a) dedicado você é. Mas escuta a Dona Sofia: cuidar dos seus não pode custar você. Você também merece colo."},
+  ORG:{nome:"Orgulho da Casa", titulo:"O Orgulho da Casa", tag:"conquista", crest:"☉",
+    desc:"Você queria — e quer — que seus pais tenham orgulho de você. Estudou, batalhou, venceu: cada conquista é também um presente para eles.",
+    luz:"Dedicação, esforço e a força de levar a família mais longe do que ela sonhou.",
+    sombra:"O amor condicionado: achar que só vale a pena se vencer; o medo de decepcionar que nunca descansa.",
+    sofia:"Seu esforço é lindo, meu bem. Mas você já é digno de amor sem precisar provar nada. O orgulho deles não é a sua prova — é presente."},
+  REB:{nome:"Rebelde", titulo:"O Rebelde", tag:"autenticidade", crest:"⚡",
+    desc:"Você nunca se moldou só para agradar. Questiona, confronta, diz o que ninguém tem coragem de dizer na mesa do jantar.",
+    luz:"Coragem de ser autêntico e de não engolir o que está errado só porque é a tradição.",
+    sombra:"O conflito por hábito: brigar até quando não precisa, romper pontes que dava para manter.",
+    sofia:"Sua verdade é preciosa — não a perca. Só lembre: dá para ser fiel a si mesmo sem transformar tudo em batalha."},
+  PAC:{nome:"Pacificador", titulo:"O Pacificador", tag:"harmonia", crest:"☮",
+    desc:"Você é o termômetro da casa. Sente a tensão no ar, entra no meio das brigas e faz o possível para todos ficarem bem.",
+    luz:"Sensibilidade ao clima, dom de unir e de acalmar — você costura a família.",
+    sombra:"A voz engolida: abrir mão do que pensa para manter a paz; evitar o conflito que precisava acontecer.",
+    sofia:"Você traz paz, e isso é um dom. Mas a sua voz também importa, viu? Paz de verdade não é silêncio seu."},
+  LIV:{nome:"Alma Livre", titulo:"A Alma Livre", tag:"autonomia", crest:"➹",
+    desc:"Você precisou voar cedo. Construiu a própria vida, o próprio caminho — às vezes longe, mas sempre fiel a quem você é.",
+    luz:"Independência, coragem de seguir o próprio rumo e não viver a vida que esperavam de você.",
+    sombra:"A distância que vira ausência: confundir liberdade com afastamento; deixar o vínculo esfriar.",
+    sofia:"Que bom que você tem asas. Só não esqueça do ninho: dá pra ser livre e perto ao mesmo tempo, meu bem."},
+  PRO:{nome:"Protetor", titulo:"O Protetor", tag:"lealdade", crest:"⛨",
+    desc:"Você se sente responsável pelos seus. É quem defende a família, quem assume, o ombro firme em que todos se apoiam.",
+    luz:"Lealdade, firmeza e a segurança de quem sabe que pode contar com você sempre.",
+    sombra:"O peso nas costas: controlar para proteger, carregar culpa pelo que não é seu, endurecer.",
+    sofia:"Você é o escudo da sua família, e isso é nobre. Mas pode descansar a guarda às vezes — você não precisa segurar tudo sozinho."},
+  SON:{nome:"Sonhador", titulo:"O Sonhador", tag:"sensibilidade", crest:"❧",
+    desc:"Você sempre teve um mundo só seu. Sensível, criativo, com a cabeça nas nuvens — sente as coisas mais fundo do que demonstra.",
+    luz:"Sensibilidade, imaginação e a beleza que você enxerga onde os outros só veem rotina.",
+    sombra:"A fuga para dentro: se esconder no mundo interno, ter dificuldade de demonstrar o que sente.",
+    sofia:"Seu mundo interior é um tesouro. Só não viva só lá dentro: deixe os seus enxergarem o que você sente — eles querem te alcançar."},
+  COM:{nome:"Companheiro", titulo:"O Companheiro", tag:"cumplicidade", crest:"♔",
+    desc:"Com você, a relação virou amizade. Seus pais te contam tudo, você é confidente, parceiro, presença constante.",
+    luz:"Vínculo afetivo profundo, diálogo aberto e uma cumplicidade que poucos têm com a família.",
+    sombra:"As fronteiras tênues: dificuldade de se separar, de impor limites, de viver a própria vida sem culpa.",
+    sofia:"Que vínculo bonito o seu. Só cuide de uma coisa: ser amigo dos pais não pode te impedir de também ser dono da sua própria vida."}
+};
+
+const Q = [
+  {q:"Quando havia um problema sério em casa, você costumava ser:",
+   o:[["Quem cuidava de todos e segurava a barra","CUI"],["Quem tentava apaziguar os ânimos","PAC"],["Quem dizia em voz alta o que ninguém dizia","REB"],["Quem se recolhia no próprio mundo","SON"]]},
+  {q:"O que você mais queria (ou quer) ouvir dos seus pais:",
+   o:[["“Tenho orgulho de você.”","ORG"],["“Você pode ser quem quiser.”","LIV"],["“Pode contar comigo, sempre.”","COM"],["“Obrigado por cuidar da gente.”","CUI"]]},
+  {q:"Na adolescência, seu jeito com as regras de casa era:",
+   o:[["Seguir para não decepcionar","ORG"],["Questionar e furar quando achava injusto","REB"],["Negociar e manter a paz","PAC"],["Cumprir, mas vivendo a minha própria vida","LIV"]]},
+  {q:"Hoje, na relação com seus pais, você é mais:",
+   o:[["O ombro firme em que eles se apoiam","PRO"],["O amigo com quem eles falam de tudo","COM"],["Quem está longe, vivendo o próprio caminho","LIV"],["Quem ainda busca a aprovação deles","ORG"]]},
+  {q:"Quando seus pais discutiam (ou discutem), você:",
+   o:[["Entra no meio para acalmar","PAC"],["Toma partido e defende um lado","PRO"],["Some de cena e evita o conflito","SON"],["Aponta o que está errado nos dois","REB"]]},
+  {q:"O que mais pesa em você como filho(a):",
+   o:[["Sinto que preciso retribuir tudo que fizeram","CUI"],["Sinto que preciso vencer para valer a pena","ORG"],["Sinto que preciso me afastar para ser eu mesmo","LIV"],["Sinto que preciso proteger meus pais","PRO"]]},
+  {q:"Seus pais te descreveriam como o filho(a):",
+   o:[["Responsável, o esteio da casa","PRO"],["Sonhador, de cabeça nas nuvens","SON"],["Que dá trabalho, mas é autêntico","REB"],["Companheiro, sempre presente","COM"]]},
+  {q:"Quando você conquista algo importante, seu primeiro impulso é:",
+   o:[["Contar para os meus pais na hora","ORG"],["Comemorar do meu jeito, à minha maneira","LIV"],["Pensar em como isso ajuda a família","CUI"],["Dividir como quem conta para um amigo","COM"]]},
+  {q:"Sua maior dificuldade na relação com a família:",
+   o:[["Dizer “não” sem sentir culpa","CUI"],["Me sentir aceito exatamente como sou","REB"],["Demonstrar o que eu realmente sinto","SON"],["Manter limites sem virar distância","COM"]]},
+  {q:"No fundo, o que você mais deseja com seus pais:",
+   o:[["Que eles tenham orgulho de mim","ORG"],["Paz e harmonia entre todos","PAC"],["Poder cuidar deles como cuidaram de mim","CUI"],["Liberdade de ser quem eu sou, sem cobrança","LIV"]]}
+];
+
+const TESTE="filho";
+</script>
+<script src="engine.js"></script>
+</body>
+</html>

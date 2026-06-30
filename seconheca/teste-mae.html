@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Que tipo de mãe você é? — Se Conheça</title>
+<link rel="icon" href="img/favicon-seconheca.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="teste.css">
+</head>
+<body>
+<div class="sitebar"><a href="index.html"><img src="img/logo-seconheca-principal.svg" alt="Se Conheça"></a></div>
+<div class="wrap">
+  <header class="t">
+    <div class="eyebrow">O Coração Materno</div>
+    <h1>Que tipo de mãe você é?</h1>
+    <div class="rule"><span>☉</span></div>
+    <p class="sub">Cada mãe ama de um jeito só seu. Responda pelo coração — pensando em como você é, não em como acha que deveria ser.</p>
+    <div class="disclaimer" id="disc">Ferramenta de <b>autorreflexão</b> e celebração, não um diagnóstico. Não existe mãe certa ou errada — só formas diferentes de amar. O teste mostra a sua.</div>
+  </header>
+  <div id="app"></div>
+</div>
+
+<script>
+const ARCH = {
+  LEO:{nome:"Leoa", titulo:"A Leoa", tag:"proteção", crest:"⛨",
+    desc:"O seu amor é guarda e instinto. Você sente, antes de qualquer um, quando algo ameaça o seu filho — e não há quem passe por você.",
+    luz:"Segurança absoluta. Seu filho sabe, no osso, que tem alguém que o defende do mundo.",
+    sombra:"A superproteção: não deixar ele cair, errar e aprender; viver em alerta e sufocar o crescimento.",
+    sofia:"Que amor valente o seu. Mas escuta a Dona Sofia: às vezes proteger é justamente deixar a cria experimentar o mundo — você por perto, mas de longe."},
+  ACO:{nome:"Acolhedora", titulo:"A Acolhedora", tag:"afeto", crest:"♡",
+    desc:"O seu colo é casa. Você materna pelo afeto: abraço, escuta, presença. Perto de você, seu filho se sente amado sem precisar merecer.",
+    luz:"Amor incondicional e um porto seguro emocional que cura e dá raiz.",
+    sombra:"A dificuldade com o limite: ceder demais para não ver sofrer; abraçar tanto que esquece de soltar.",
+    sofia:"Seu colo é um presente, meu bem. Só lembre: dizer 'não' também é amor — o limite é o abraço que ensina o mundo."},
+  AMI:{nome:"Amiga", titulo:"A Amiga", tag:"cumplicidade", crest:"☺",
+    desc:"Com você, a relação é aberta. Seu filho te conta tudo, ri com você, confia. Você é cúmplice, parceira, presença leve.",
+    luz:"Diálogo, confiança e uma intimidade que mantém as portas sempre abertas.",
+    sombra:"A autoridade diluída: ser amiga demais e perder o lugar de mãe quando ele mais precisa de um norte firme.",
+    sofia:"Que cumplicidade linda. Só não troque a coroa pela amizade: às vezes ele não precisa de uma amiga, precisa da mãe dizendo 'é por aqui'."},
+  MEN:{nome:"Mentora", titulo:"A Mentora", tag:"formação", crest:"☉",
+    desc:"Você materna preparando. Cada situação vira aprendizado; você forma um ser humano capaz, pensante, pronto para a vida.",
+    luz:"Você desenvolve autonomia, valores e discernimento — dá ferramentas, não só respostas.",
+    sombra:"A exigência: transformar todo momento em lição, cobrar demais, esquecer que ele também só quer ser criança e ser amado.",
+    sofia:"Você prepara seu filho para voar, e isso é sabedoria. Só não esqueça do colo entre uma lição e outra — ele aprende amor sendo amado."},
+  PRV:{nome:"Provedora", titulo:"A Provedora", tag:"entrega", crest:"⚔",
+    desc:"Você batalha. Trabalha, abre mão, faz o que for preciso para não faltar nada ao seu filho. Seu amor se prova em sacrifício.",
+    luz:"Garante o futuro e ensina, pelo exemplo, o valor do esforço e da dignidade.",
+    sombra:"O esgotamento e a culpa: a ausência pela jornada, dar tudo e esquecer de si, carregar um peso sem descanso.",
+    sofia:"Quanta garra a sua. Mas ouça com carinho: seu filho precisa de você presente mais do que de tudo que você provê. E você merece descanso."},
+  EST:{nome:"Estruturada", titulo:"A Estruturada", tag:"firmeza", crest:"♔",
+    desc:"Você dá chão firme. Rotina, limites, palavra que se cumpre. Na sua casa, seu filho sabe o que esperar — e isso o acalma.",
+    luz:"Previsibilidade e segurança: a base sólida sobre a qual uma criança floresce tranquila.",
+    sombra:"A rigidez: controlar demais, deixar pouco espaço para o espontâneo, confundir ordem com afeto.",
+    sofia:"Sua firmeza é um presente raro num mundo bagunçado. Só deixe entrar um pouco de bagunça boa — o riso fora da hora também educa."},
+  SER:{nome:"Serena", titulo:"A Serena", tag:"paciência", crest:"❀",
+    desc:"Você materna com calma. Não se abala fácil, escuta antes de reagir, traz paz para a casa. Seu equilíbrio é o porto da família.",
+    luz:"Paciência, escuta e uma presença tranquila que ensina o filho a se regular pelo seu exemplo.",
+    sombra:"A passividade: evitar o conflito necessário, demorar a agir, deixar passar o que pedia firmeza.",
+    sofia:"Sua calma acalma a casa toda, meu bem. Só não confunda paz com silêncio: às vezes amar é incomodar-se e agir."},
+  INS:{nome:"Inspiradora", titulo:"A Inspiradora", tag:"exemplo", crest:"✦",
+    desc:"Você materna pelo exemplo. Vive a sua própria luz, persegue seus sonhos, e mostra ao filho — vivendo — que ele também pode voar.",
+    luz:"Encoraja a independência e a coragem; seu filho cresce vendo que é possível ser inteiro.",
+    sombra:"A distância involuntária: parecer ocupada demais com a própria luz, ou cobrar autonomia antes da hora.",
+    sofia:"Que exemplo bonito você é. Só lembre: às vezes seu filho não precisa de inspiração — precisa de você quietinha, ali, só com ele."}
+};
+
+const Q = [
+  {q:"Quando seu filho chora ou sofre, seu primeiro impulso é:",
+   o:[["Abraçar e acolher","ACO"],["Proteger e resolver de quem o feriu","LEO"],["Conversar e ajudar a entender o que houve","MEN"],["Acalmar com serenidade, sem dramatizar","SER"]]},
+  {q:"O mais importante que você quer dar ao seu filho:",
+   o:[["Segurança e proteção","LEO"],["Amor e afeto","ACO"],["Preparo e autonomia para a vida","MEN"],["Exemplo e inspiração","INS"]]},
+  {q:"Na rotina da casa, você é:",
+   o:[["Quem mantém horários e limites","EST"],["Quem deixa fluir e se adapta","SER"],["Quem corre atrás de prover tudo","PRV"],["Quem transforma o dia em aventura","INS"]]},
+  {q:"Seu maior medo como mãe:",
+   o:[["Que algo de mal aconteça com ele","LEO"],["Que falte alguma coisa a ele","PRV"],["Que ele não saiba se virar sozinho","MEN"],["Que ele não se sinta amado","ACO"]]},
+  {q:"Seu filho te procura primeiro para:",
+   o:[["Um abraço quando está triste","ACO"],["Contar um segredo, como a uma amiga","AMI"],["Pedir um conselho ou orientação","MEN"],["Resolver um problema prático","PRV"]]},
+  {q:"Quando ele erra, você costuma:",
+   o:[["Aplicar a consequência combinada","EST"],["Conversar como amiga, sem julgar","AMI"],["Usar como uma lição de vida","MEN"],["Acolher primeiro, corrigir depois","ACO"]]},
+  {q:"Sua maior força como mãe é:",
+   o:[["Minha entrega e meu sacrifício","PRV"],["Minha calma e paciência","SER"],["Minha firmeza e organização","EST"],["Minha garra para defendê-lo","LEO"]]},
+  {q:"O que você mais quer que seu filho aprenda com você:",
+   o:[["A voar com as próprias asas","INS"],["A ter valores e ser firme","EST"],["A confiar e se abrir","AMI"],["A batalhar e nunca desistir","PRV"]]},
+  {q:"Seu ponto de atenção, no fundo, é:",
+   o:[["Proteger tanto que ele não cresce","LEO"],["Dar tanto que esqueço de mim","PRV"],["Ser amiga demais e perder a autoridade","AMI"],["Cobrar demais, exigir muito","MEN"]]},
+  {q:"Se te descrevessem em uma palavra como mãe, seria:",
+   o:[["Acolhedora","ACO"],["Firme","EST"],["Serena","SER"],["Inspiradora","INS"]]}
+];
+
+const TESTE="mae";
+</script>
+<script src="engine.js"></script>
+</body>
+</html>
