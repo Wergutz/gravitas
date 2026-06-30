@@ -20,7 +20,8 @@ jobs:
           script: |
             cd /home/u278289683/domains/gravitas.net.br/public_html/principal
             git remote set-url origin https://${{ secrets.GH_TOKEN }}@github.com/Wergutz/gravitas.git
-            git pull origin ${{ github.ref_name }}
+            git fetch origin ${{ github.ref_name }}
+            git reset --hard origin/${{ github.ref_name }}
             echo '<?php header("Location: /principal/", true, 301); exit;' > /home/u278289683/domains/gravitas.net.br/public_html/index.php
             mkdir -p /home/u278289683/domains/gravitas.net.br/public_html/marco_urbano
             cp -rT /home/u278289683/domains/gravitas.net.br/public_html/principal/marco_urbano /home/u278289683/domains/gravitas.net.br/public_html/marco_urbano
