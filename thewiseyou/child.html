@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What kind of son or daughter are you? — The Wise You</title>
+<meta name="description" content="The role you hold in your family of origin shapes who you become. A free self-knowledge test, read by Miss Sophia.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="teste.css">
+</head>
+<body>
+<div class="sitebar"><a href="index.html"><img src="img/logo-thewiseyou-branco.svg" alt="The Wise You"></a></div>
+<div class="wrap">
+  <header class="t">
+    <div class="eyebrow">Family Ties</div>
+    <h1>What kind of son or daughter are you?</h1>
+    <div class="rule"><span>❦</span></div>
+    <p class="sub">The role we hold in our family of origin shapes who we become. Answer thinking of how you really are — not how you'd like to be.</p>
+    <div class="disclaimer" id="disc">A tool for <b>self-reflection</b>, not a diagnosis. No role is better than another — and most of us are a blend. The test shows which one speaks loudest in you.</div>
+  </header>
+  <div id="app"></div>
+</div>
+
+<script>
+const ARCH = {
+  CUI:{nome:"Caregiver", titulo:"The Caregiver", tag:"devotion", crest:"♡",
+    desc:"Early on you took on the care of others — parents, siblings, the home. You grew up ahead of time and became the family's safe harbor.",
+    luz:"Responsibility, tenderness, and the rare gift of holding things up when everything shakes.",
+    sombra:"Forgetting yourself: caring so much you vanish in the middle; saying 'yes' out of guilt and 'no' never.",
+    sofia:"What a devoted child you are. But listen to Miss Sophia: caring for your own can't cost you yourself. You deserve a shoulder too."},
+  ORG:{nome:"Family's Pride", titulo:"The Family's Pride", tag:"achievement", crest:"☉",
+    desc:"You wanted — and still want — your parents to be proud of you. You studied, you worked, you won: each achievement is also a gift to them.",
+    luz:"Dedication, effort, and the strength to take the family further than it dreamed.",
+    sombra:"Conditional love: thinking it only counts if you win; the fear of disappointing that never rests.",
+    sofia:"Your effort is beautiful, sweetheart. But you're already worthy of love without proving a thing. Their pride isn't your proof — it's a gift."},
+  REB:{nome:"Rebel", titulo:"The Rebel", tag:"authenticity", crest:"⚡",
+    desc:"You never shaped yourself just to please. You question, confront, and say what no one else dares to say at the dinner table.",
+    luz:"The courage to be authentic and not swallow what's wrong just because it's tradition.",
+    sombra:"Conflict by habit: fighting even when you don't need to, burning bridges you could have kept.",
+    sofia:"Your truth is precious — don't lose it. Just remember: you can be true to yourself without turning everything into a battle."},
+  PAC:{nome:"Peacemaker", titulo:"The Peacemaker", tag:"harmony", crest:"☮",
+    desc:"You're the home's thermometer. You feel the tension in the air, step between the fights, and do all you can to keep everyone okay.",
+    luz:"Sensitivity to the mood, a gift for uniting and soothing — you stitch the family together.",
+    sombra:"The swallowed voice: giving up what you think to keep the peace; avoiding the conflict that needed to happen.",
+    sofia:"You bring peace, and that's a gift. But your voice matters too, you hear? Real peace isn't your silence."},
+  LIV:{nome:"Free Spirit", titulo:"The Free Spirit", tag:"autonomy", crest:"➹",
+    desc:"You had to fly early. You built your own life, your own path — sometimes far away, but always true to who you are.",
+    luz:"Independence, the courage to follow your own course and not live the life they expected of you.",
+    sombra:"Distance that turns into absence: mistaking freedom for withdrawal; letting the bond grow cold.",
+    sofia:"How good that you have wings. Just don't forget the nest: you can be free and close at the same time, sweetheart."},
+  PRO:{nome:"Protector", titulo:"The Protector", tag:"loyalty", crest:"⛨",
+    desc:"You feel responsible for your own. You're the one who defends the family, who steps up, the firm shoulder everyone leans on.",
+    luz:"Loyalty, firmness, and the security of knowing they can always count on you.",
+    sombra:"The weight on your back: controlling to protect, carrying guilt that isn't yours, hardening.",
+    sofia:"You're your family's shield, and that's noble. But you can lower your guard sometimes — you don't have to hold it all alone."},
+  SON:{nome:"Dreamer", titulo:"The Dreamer", tag:"sensitivity", crest:"❧",
+    desc:"You always had a world of your own. Sensitive, creative, head in the clouds — you feel things more deeply than you show.",
+    luz:"Sensitivity, imagination, and the beauty you see where others see only routine.",
+    sombra:"Escaping inward: hiding in your inner world, struggling to show what you feel.",
+    sofia:"Your inner world is a treasure. Just don't live only in there: let your people see what you feel — they want to reach you."},
+  COM:{nome:"Companion", titulo:"The Companion", tag:"closeness", crest:"♔",
+    desc:"With you, the relationship became friendship. Your parents tell you everything; you're a confidant, a partner, a constant presence.",
+    luz:"A deep emotional bond, open dialogue, and a closeness few have with their family.",
+    sombra:"Thin boundaries: trouble separating, setting limits, living your own life without guilt.",
+    sofia:"What a beautiful bond. Just mind one thing: being your parents' friend can't stop you from also owning your own life."}
+};
+
+const Q = [
+  {q:"When there was a serious problem at home, you tended to be:",
+   o:[["The one who cared for everyone and held things up","CUI"],["The one trying to calm the tempers","PAC"],["The one who said out loud what no one else would","REB"],["The one who withdrew into their own world","SON"]]},
+  {q:"What you most wanted (or want) to hear from your parents:",
+   o:[["“I'm proud of you.”","ORG"],["“You can be whoever you want.”","LIV"],["“You can always count on me.”","COM"],["“Thank you for taking care of us.”","CUI"]]},
+  {q:"As a teen, your way with the house rules was:",
+   o:[["Follow them so as not to disappoint","ORG"],["Question and break them when I found them unfair","REB"],["Negotiate and keep the peace","PAC"],["Comply, but live my own life","LIV"]]},
+  {q:"Today, in the relationship with your parents, you're more:",
+   o:[["The firm shoulder they lean on","PRO"],["The friend they tell everything to","COM"],["The one who's far off, living their own path","LIV"],["The one still seeking their approval","ORG"]]},
+  {q:"When your parents argued (or argue), you:",
+   o:[["Step in to calm things down","PAC"],["Take a side and defend it","PRO"],["Disappear and avoid the conflict","SON"],["Point out what's wrong with both","REB"]]},
+  {q:"What weighs most on you as a child:",
+   o:[["I feel I must repay all they did","CUI"],["I feel I must succeed to be worth it","ORG"],["I feel I must pull away to be myself","LIV"],["I feel I must protect my parents","PRO"]]},
+  {q:"Your parents would describe you as the child who's:",
+   o:[["Responsible, the pillar of the home","PRO"],["A dreamer, head in the clouds","SON"],["A handful, but authentic","REB"],["A companion, always present","COM"]]},
+  {q:"When you achieve something important, your first impulse is to:",
+   o:[["Tell my parents right away","ORG"],["Celebrate my own way","LIV"],["Think of how it helps the family","CUI"],["Share it like telling a friend","COM"]]},
+  {q:"Your hardest thing in the relationship with family:",
+   o:[["Saying “no” without feeling guilty","CUI"],["Feeling accepted exactly as I am","REB"],["Showing what I really feel","SON"],["Keeping limits without it turning into distance","COM"]]},
+  {q:"Deep down, what you most wish for with your parents:",
+   o:[["That they be proud of me","ORG"],["Peace and harmony among everyone","PAC"],["To care for them as they cared for me","CUI"],["The freedom to be who I am, without demands","LIV"]]}
+];
+
+const TESTE="child";
+</script>
+<script src="engine.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What kind of mother are you? — The Wise You</title>
+<meta name="description" content="Every mother loves in her own way. Discover your way of mothering — a free test, read by Miss Sophia.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="teste.css">
+</head>
+<body>
+<div class="sitebar"><a href="index.html"><img src="img/logo-thewiseyou-branco.svg" alt="The Wise You"></a></div>
+<div class="wrap">
+  <header class="t">
+    <div class="eyebrow">The Mother's Heart</div>
+    <h1>What kind of mother are you?</h1>
+    <div class="rule"><span>☉</span></div>
+    <p class="sub">Every mother loves in a way all her own. Answer from the heart — thinking of how you are, not how you think you should be.</p>
+    <div class="disclaimer" id="disc">A tool for <b>self-reflection</b> and celebration, not a diagnosis. There's no right or wrong mother — only different ways of loving. The test shows yours.</div>
+  </header>
+  <div id="app"></div>
+</div>
+
+<script>
+const ARCH = {
+  LEO:{nome:"Lioness", titulo:"The Lioness", tag:"protection", crest:"⛨",
+    desc:"Your love is guard and instinct. Before anyone else, you feel when something threatens your child — and no one gets past you.",
+    luz:"Absolute security. Your child knows, in their bones, that someone defends them from the world.",
+    sombra:"Overprotection: not letting them fall, err, and learn; living on alert and smothering their growth.",
+    sofia:"What a brave love yours is. But listen to Miss Sophia: sometimes protecting is exactly letting your young one taste the world — you near, but at a distance."},
+  ACO:{nome:"Nurturer", titulo:"The Nurturer", tag:"affection", crest:"♡",
+    desc:"Your lap is home. You mother through affection: a hug, a listening ear, presence. Near you, your child feels loved without having to earn it.",
+    luz:"Unconditional love and an emotional safe harbor that heals and gives roots.",
+    sombra:"Trouble with limits: giving in too much to spare them pain; holding on so tight you forget to let go.",
+    sofia:"Your lap is a gift, sweetheart. Just remember: saying 'no' is also love — a limit is the hug that teaches the world."},
+  AMI:{nome:"Friend", titulo:"The Friend", tag:"closeness", crest:"☺",
+    desc:"With you, the relationship is open. Your child tells you everything, laughs with you, trusts you. You're an ally, a partner, a light presence.",
+    luz:"Dialogue, trust, and an intimacy that keeps the doors always open.",
+    sombra:"Diluted authority: being too much a friend and losing the place of mother when they most need a firm north.",
+    sofia:"What a lovely closeness. Just don't trade the crown for friendship: sometimes they don't need a friend — they need their mother saying 'this way'."},
+  MEN:{nome:"Mentor", titulo:"The Mentor", tag:"guidance", crest:"☉",
+    desc:"You mother by preparing. Every situation becomes a lesson; you raise a capable, thinking human being, ready for life.",
+    luz:"You build autonomy, values, and discernment — you give tools, not just answers.",
+    sombra:"The demand: turning every moment into a lesson, expecting too much, forgetting they also just want to be a child and be loved.",
+    sofia:"You prepare your child to fly, and that's wisdom. Just don't forget the lap between one lesson and the next — they learn love by being loved."},
+  PRV:{nome:"Provider", titulo:"The Provider", tag:"devotion", crest:"⚔",
+    desc:"You fight. You work, you give things up, you do whatever it takes so your child lacks nothing. Your love proves itself in sacrifice.",
+    luz:"You secure the future and teach, by example, the value of effort and dignity.",
+    sombra:"Burnout and guilt: absence from the grind, giving everything and forgetting yourself, carrying a weight without rest.",
+    sofia:"What grit you have. But hear this with love: your child needs you present more than all you provide. And you deserve rest."},
+  EST:{nome:"Anchor", titulo:"The Anchor", tag:"firmness", crest:"♔",
+    desc:"You give firm ground. Routine, limits, a word that's kept. In your home, your child knows what to expect — and that calms them.",
+    luz:"Predictability and safety: the solid base on which a child blossoms at ease.",
+    sombra:"Rigidity: controlling too much, leaving little room for the spontaneous, mistaking order for affection.",
+    sofia:"Your firmness is a rare gift in a messy world. Just let a little good mess in — laughter at the wrong moment teaches too."},
+  SER:{nome:"Serene", titulo:"The Serene", tag:"patience", crest:"❀",
+    desc:"You mother with calm. Not easily shaken, you listen before reacting, you bring peace to the home. Your balance is the family's harbor.",
+    luz:"Patience, listening, and a quiet presence that teaches your child to self-regulate by your example.",
+    sombra:"Passivity: avoiding the needed conflict, being slow to act, letting slide what called for firmness.",
+    sofia:"Your calm calms the whole house, sweetheart. Just don't mistake peace for silence: sometimes love is to be troubled and to act."},
+  INS:{nome:"Inspirer", titulo:"The Inspirer", tag:"example", crest:"✦",
+    desc:"You mother by example. You live your own light, chase your dreams, and show your child — by living — that they too can fly.",
+    luz:"You encourage independence and courage; your child grows up seeing that it's possible to be whole.",
+    sombra:"Unintended distance: seeming too busy with your own light, or asking for autonomy before its time.",
+    sofia:"What a beautiful example you are. Just remember: sometimes your child doesn't need inspiration — they need you quietly there, just with them."}
+};
+
+const Q = [
+  {q:"When your child cries or suffers, your first impulse is to:",
+   o:[["Hug and comfort","ACO"],["Protect and deal with whoever hurt them","LEO"],["Talk and help them understand what happened","MEN"],["Soothe with serenity, without dramatizing","SER"]]},
+  {q:"The most important thing you want to give your child:",
+   o:[["Safety and protection","LEO"],["Love and affection","ACO"],["Readiness and autonomy for life","MEN"],["Example and inspiration","INS"]]},
+  {q:"In the home's routine, you're:",
+   o:[["The one who keeps schedules and limits","EST"],["The one who lets it flow and adapts","SER"],["The one hustling to provide it all","PRV"],["The one who turns the day into an adventure","INS"]]},
+  {q:"Your greatest fear as a mother:",
+   o:[["That something bad happens to them","LEO"],["That they lack for something","PRV"],["That they can't manage on their own","MEN"],["That they don't feel loved","ACO"]]},
+  {q:"Your child comes to you first to:",
+   o:[["Get a hug when they're sad","ACO"],["Share a secret, like with a friend","AMI"],["Ask for advice or guidance","MEN"],["Solve a practical problem","PRV"]]},
+  {q:"When they make a mistake, you usually:",
+   o:[["Apply the agreed consequence","EST"],["Talk like a friend, without judging","AMI"],["Use it as a life lesson","MEN"],["Comfort first, correct after","ACO"]]},
+  {q:"Your greatest strength as a mother is:",
+   o:[["My devotion and sacrifice","PRV"],["My calm and patience","SER"],["My firmness and organization","EST"],["My grit to defend them","LEO"]]},
+  {q:"What you most want your child to learn from you:",
+   o:[["To fly on their own wings","INS"],["To have values and stand firm","EST"],["To trust and open up","AMI"],["To work hard and never give up","PRV"]]},
+  {q:"Your place that asks for care, deep down, is:",
+   o:[["Protecting so much they don't grow","LEO"],["Giving so much I forget myself","PRV"],["Being too much a friend and losing authority","AMI"],["Demanding too much, expecting a lot","MEN"]]},
+  {q:"If they described you in one word as a mother, it would be:",
+   o:[["Nurturing","ACO"],["Firm","EST"],["Serene","SER"],["Inspiring","INS"]]}
+];
+
+const TESTE="mother";
+</script>
+<script src="engine.js"></script>
+</body>
+</html>
