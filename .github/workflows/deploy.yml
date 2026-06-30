@@ -2,7 +2,7 @@ name: Deploy → gravitas.net.br
 
 on:
   push:
-    branches: [main, claude/loving-clarke-3K1Tq]
+    branches: [main, claude/loving-clarke-3K1Tq, claude/new-project-5ivoah]
 
 jobs:
   deploy:
@@ -26,3 +26,5 @@ jobs:
             cp -rT /home/u278289683/domains/gravitas.net.br/public_html/principal/marco_urbano /home/u278289683/domains/gravitas.net.br/public_html/marco_urbano
             mkdir -p /home/u278289683/domains/gravitas.net.br/public_html/login
             cp -rT /home/u278289683/domains/gravitas.net.br/public_html/principal/login /home/u278289683/domains/gravitas.net.br/public_html/login
+            mkdir -p /home/u278289683/domains/gravitas.net.br/public_html/seconheca
+            cp -rT /home/u278289683/domains/gravitas.net.br/public_html/principal/seconheca /home/u278289683/domains/gravitas.net.br/public_html/seconheca
