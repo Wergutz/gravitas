@@ -18,7 +18,7 @@
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:'EB Garamond',Georgia,serif;color:var(--tinta);background:var(--perg);
-    line-height:1.6;-webkit-font-smoothing:antialiased}
+    line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
   .cinzel,h1,h2,h3,.nav a,.btn{font-family:'Cinzel',Georgia,serif;}
   a{color:inherit;text-decoration:none}
   .wrap{max-width:1040px;margin:0 auto;padding:0 24px}
@@ -92,7 +92,26 @@
   footer .links{display:flex;gap:24px;justify-content:center;margin:12px 0;flex-wrap:wrap}
   footer a{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.14em;color:var(--ouro-c)}
   footer .disc{font-size:13px;color:#8a7a5c;font-style:italic;max-width:64ch;margin:14px auto 0}
-  @media(max-width:780px){.cards{grid-template-columns:1fr}.sofia .grid{grid-template-columns:1fr}.steps{grid-template-columns:1fr}.nav{display:none}}
+  @media(max-width:780px){
+    .cards{grid-template-columns:1fr}
+    .sofia .grid{grid-template-columns:1fr}
+    .sofia .grid img{max-width:260px;margin:0 auto}
+    .steps{grid-template-columns:1fr}
+    .nav{display:none}
+  }
+  @media(max-width:480px){
+    .hero{padding:40px 16px 48px}
+    .hero .emblem{height:90px}
+    .hero p{font-size:16px}
+    .topbar{padding:10px 16px}
+    .topbar img{height:34px}
+    section{padding:36px 0}
+    h2{font-size:24px}
+    .lead{font-size:16px}
+    .wrap{padding:0 16px}
+    .btn{padding:13px 22px;font-size:13px}
+    footer{padding:30px 16px}
+  }
 </style>
 </head>
 <body>
