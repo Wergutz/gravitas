@@ -1,5 +1,5 @@
 ---
-name: dev-completo
+name: programador-gravitas
 description: Agente de desenvolvimento com acesso a todas as ferramentas disponíveis (leitura, escrita, execução de comandos, pesquisa web, subagentes). Use para tarefas que exijam mais autonomia do que os agentes restritos permitem — ex. investigar algo na web, rodar scripts exploratórios, ou orquestrar múltiplas etapas de uma vez.
 model: inherit
 ---
