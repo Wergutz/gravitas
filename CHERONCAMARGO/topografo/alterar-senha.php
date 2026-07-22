@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
-<title>Alterar Senha · Topografia · GRAVITAS</title>
+<title>Alterar Senha · Topografia · <?= htmlspecialchars(APP_CLIENT) ?></title>
 <link rel="stylesheet" href="<?= PAINEL_ASSETS ?>/css/pa4.css">
 <style>
 body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:#F4F6FA}

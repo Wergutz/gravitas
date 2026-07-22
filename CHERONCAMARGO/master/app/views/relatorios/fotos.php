@@ -1,5 +1,5 @@
 <?php
-$empresa = defined('APP_CLIENT') ? APP_CLIENT : 'GRAVITAS';
+$empresa = defined('APP_CLIENT') ? APP_CLIENT : 'Cheron & Camargo';
 $uploadsBase = defined('EXECUTOR_UPLOADS') ? EXECUTOR_UPLOADS : '/CHERONCAMARGO/executor/uploads';
 $dataFmt = date('d/m/Y', strtotime($data));
 $stepLabels = [

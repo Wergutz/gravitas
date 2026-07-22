@@ -1,5 +1,5 @@
 <?php
-$empresa    = defined('APP_CLIENT') ? APP_CLIENT : 'GRAVITAS';
+$empresa    = defined('APP_CLIENT') ? APP_CLIENT : 'Cheron & Camargo';
 $periodoFmt = date('d/m/Y', strtotime($inicio)) . ' a ' . date('d/m/Y', strtotime($fim));
 $resto      = max(0, $previsto - $executadoTotal);
 $naoInic    = max(0, $previsto - $executadoTotal);

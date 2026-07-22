@@ -1,5 +1,5 @@
 <?php
-$empresa = defined('APP_CLIENT') ? APP_CLIENT : 'GRAVITAS';
+$empresa = defined('APP_CLIENT') ? APP_CLIENT : 'Cheron & Camargo';
 $criticos = array_filter($materiais, fn($m) => (float)$m['estoque_atual'] <= (float)$m['minimo'] && (float)$m['minimo'] > 0);
 ?><!DOCTYPE html>
 <html lang="pt-BR">

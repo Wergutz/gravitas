@@ -1,5 +1,5 @@
 <?php
-$empresa    = defined('APP_CLIENT') ? APP_CLIENT : 'GRAVITAS';
+$empresa    = defined('APP_CLIENT') ? APP_CLIENT : 'Cheron & Camargo';
 $periodoFmt = date('d/m/Y', strtotime($inicio)) . ' a ' . date('d/m/Y', strtotime($fim));
 $r = 44; $cx = 50; $cy = 50; $circ = 2 * M_PI * $r;
 $dashExec = $pctAvanco / 100 * $circ;
