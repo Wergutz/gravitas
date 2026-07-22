@@ -1,12 +1,10 @@
 <?php
 if (!defined('MASTER_BASE')) require_once __DIR__ . '/app.php';
 
-// TODO: banco/usuário/senha assumidos por convenção (mesmo padrão do marco_urbano).
-// Confirmar o nome real do banco no cPanel e definir a senha real antes do deploy.
 $host = 'localhost';
 $db   = 'u278289683_CHERONCAMARGO';
 $user = 'u278289683_CHERONCAMARGO';
-$pass = 'TROCAR_SENHA_REAL_DO_BANCO';
+$pass = 'geb91/RS';
 
 try {
     $pdo = new PDO(

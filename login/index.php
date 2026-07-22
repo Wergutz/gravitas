@@ -59,12 +59,10 @@ $sistemas = [
         ],
     ],
     [
-        // TODO: entrada nova (Cheron Camargo) — confirmar credenciais reais do banco
-        // (mesmo padrão do bloco marco_urbano acima) antes do deploy em produção.
         'id'          => 'cheron_camargo',
         'db'          => 'u278289683_CHERONCAMARGO',
         'user'        => 'u278289683_CHERONCAMARGO',
-        'pass'        => 'TROCAR_SENHA_REAL_DO_BANCO',
+        'pass'        => 'geb91/RS',
         'session'     => 'CC_PAINEL',
         'cookie_path' => '/CHERONCAMARGO/',
         'label'       => 'CHERON CAMARGO',
