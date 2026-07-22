@@ -38,7 +38,7 @@ body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;font-size:11px;
 .pagina{width:210mm;min-height:297mm;margin:20px auto;background:#fff;padding:16mm 15mm 20mm;box-shadow:0 2px 20px rgba(0,0,0,.18)}
 .rpt-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #1A2D4F;padding-bottom:10px;margin-bottom:12px}
 .marca-area{display:flex;align-items:center;gap:10px}
-.marca-area svg{width:36px;height:36px;flex:0 0 auto}
+.marca-area img{width:36px;height:36px;flex:0 0 auto;object-fit:contain}
 .marca-txt b{display:block;font-size:14px;letter-spacing:2px;color:#1A2D4F;font-weight:800}
 .marca-txt small{font-size:8.5px;color:#666;letter-spacing:0.5px;text-transform:uppercase}
 .doc-meta{text-align:right;font-size:9.5px;color:#555}
@@ -100,18 +100,9 @@ table.mat tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1A2D
     <!-- Cabeçalho -->
     <div class="rpt-header">
         <div class="marca-area">
-            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cheron Camargo">
-  <defs><linearGradient id="gmu" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#5DD97A"/><stop offset="100%" stop-color="#1A9B52"/></linearGradient></defs>
-  <rect x="2" y="2" width="96" height="96" rx="26" fill="url(#gmu)"/>
-  <rect x="12" y="12" width="76" height="76" rx="21" fill="none" stroke="white" stroke-width="2.5"/>
-  <circle cx="50" cy="33" r="17" fill="none" stroke="white" stroke-width="2.5"/>
-  <circle cx="50" cy="67" r="17" fill="none" stroke="white" stroke-width="2.5"/>
-  <circle cx="33" cy="50" r="17" fill="none" stroke="white" stroke-width="2.5"/>
-  <circle cx="67" cy="50" r="17" fill="none" stroke="white" stroke-width="2.5"/>
-  <circle cx="50" cy="50" r="5" fill="white"/>
-</svg>
+            <img src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="Cheron & Camargo">
             <div class="marca-txt">
-                <b>CHERON CAMARGO</b>
+                <b>Cheron &amp; Camargo</b>
                 <small>Saneamento Básico</small>
             </div>
         </div>
@@ -255,7 +246,7 @@ table.mat tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1A2D
 
     <!-- Rodapé -->
     <div class="rpt-footer">
-        <span>CHERON CAMARGO · Relatório de Medição da Rede · <?= htmlspecialchars($num_doc) ?></span>
+        <span>Cheron &amp; Camargo · Relatório de Medição da Rede · <?= htmlspecialchars($num_doc) ?></span>
         <span>Gerado em <?= $data_ger ?></span>
     </div>
 

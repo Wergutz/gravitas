@@ -13,7 +13,7 @@ $pct       = (int)round($stepAtual / 21 * 100);
 <meta name="theme-color" content="#1A2D4F">
 <meta name="robots" content="noindex,nofollow">
 <meta name="csrf" content="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
-<title>Frente de Serviço · CHERON CAMARGO</title>
+<title>Frente de Serviço · Cheron &amp; Camargo</title>
 <link rel="stylesheet" href="<?= EXECUTOR_BASE ?>/assets/css/executor.css">
 </head>
 <body>
@@ -22,16 +22,8 @@ $pct       = (int)round($stepAtual / 21 * 100);
   <!-- Topo fixo -->
   <div class="top">
     <div class="top-row">
-      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cheron Camargo">
-  <rect x="4" y="4" width="92" height="92" rx="26" fill="none" stroke="#3CB86A" stroke-width="3"/>
-  <rect x="14" y="14" width="72" height="72" rx="19" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="33" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="67" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="33" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="67" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="50" r="5" fill="#3CB86A"/>
-</svg>
-      <div class="nm">CHERON CAMARGO<small>EXECUTOR</small></div>
+      <img class="logo" src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="Cheron & Camargo">
+      <div class="nm">Cheron &amp; Camargo<small>EXECUTOR</small></div>
       <div class="eq">
         <b><?= htmlspecialchars($_SESSION['nome']) ?></b>
         <?= $diaDaSemana ?>, <?= $hoje ?>
