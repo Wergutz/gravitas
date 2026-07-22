@@ -74,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
-<title>Alterar Senha · CHERON CAMARGO</title>
+<title>Alterar Senha · Cheron &amp; Camargo</title>
 <style>
 :root{
   --navy:#1A2D4F; --navy-900:#11203B; --navy-500:#3A578A;
@@ -92,7 +92,7 @@ svg{display:block}
 .card{background:#fff;border:1px solid var(--line);border-radius:18px;
       padding:36px 38px;width:100%;max-width:420px;box-shadow:0 8px 40px #1a2d4f0d}
 .brand{display:flex;align-items:center;gap:10px;margin-bottom:28px}
-.brand svg{width:28px;height:28px}
+.brand img{width:28px;height:28px;object-fit:contain}
 .brand b{font-weight:800;letter-spacing:3px;font-size:14px}
 h1{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:4px}
 .sub{font-size:13px;color:var(--muted);margin-bottom:24px}
@@ -122,16 +122,8 @@ h1{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:4px}
 <body>
 <div class="card">
   <div class="brand">
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cheron Camargo">
-  <rect x="4" y="4" width="92" height="92" rx="26" fill="none" stroke="#3CB86A" stroke-width="3"/>
-  <rect x="14" y="14" width="72" height="72" rx="19" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="33" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="67" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="33" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="67" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="50" r="5" fill="#3CB86A"/>
-</svg>
-    <b>CHERON CAMARGO</b>
+    <img src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="Cheron & Camargo">
+    <b>Cheron &amp; Camargo</b>
   </div>
 
   <h1>Alterar senha</h1>

@@ -14,7 +14,7 @@ $perfil = ($_SESSION['gv_perfil'] ?? 'empresa') === 'usuario' ? 'Usuário' : 'Em
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1A2D4F">
 <meta name="robots" content="noindex,nofollow">
-<title>Painel · CHERON CAMARGO</title>
+<title>Painel · Cheron &amp; Camargo</title>
 <style>
   :root{--navy:#1A2D4F;--navy-900:#11203B;--ink:#1E2738;--muted:#6B7686;--line:#E4E8EF;
         --bg:#F4F6FA;--gold:#E0A53D;
@@ -23,7 +23,7 @@ $perfil = ($_SESSION['gv_perfil'] ?? 'empresa') === 'usuario' ? 'Usuário' : 'Em
   body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:100vh}
   header{background:linear-gradient(160deg,var(--navy),var(--navy-900));color:#fff;
          display:flex;align-items:center;gap:14px;padding:16px 28px}
-  header svg{width:30px;height:30px}
+  header img{width:30px;height:30px;object-fit:contain}
   .nm{font-weight:800;letter-spacing:3px;font-size:15px}
   .tag{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#C7D2E5;
        border:1px solid #ffffff2e;border-radius:999px;padding:4px 10px}
@@ -44,16 +44,8 @@ $perfil = ($_SESSION['gv_perfil'] ?? 'empresa') === 'usuario' ? 'Usuário' : 'Em
 </head>
 <body>
 <header>
-  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cheron Camargo">
-  <rect x="4" y="4" width="92" height="92" rx="26" fill="none" stroke="#3CB86A" stroke-width="3"/>
-  <rect x="14" y="14" width="72" height="72" rx="19" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="33" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="67" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="33" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="67" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="50" r="5" fill="#3CB86A"/>
-</svg>
-  <span class="nm">CHERON CAMARGO</span>
+  <img src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="Cheron & Camargo">
+  <span class="nm">Cheron &amp; Camargo</span>
   <span class="tag">Painel · <?php echo $perfil; ?></span>
   <a class="sair" href="../auth/logout.php">Sair</a>
 </header>

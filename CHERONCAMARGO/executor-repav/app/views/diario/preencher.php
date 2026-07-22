@@ -85,7 +85,7 @@ function stepFeito(int $s, array $foStep, array $pres, array $cargas, array $are
 <meta name="theme-color" content="#1A2D4F">
 <meta name="robots" content="noindex,nofollow">
 <meta name="csrf" content="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
-<title>Diário de Repavimentação · CHERON CAMARGO</title>
+<title>Diário de Repavimentação · Cheron &amp; Camargo</title>
 <link rel="stylesheet" href="<?= REPAV_BASE ?>/assets/css/repav.css">
 </head>
 <body>
@@ -97,7 +97,7 @@ function stepFeito(int $s, array $foStep, array $pres, array $cargas, array $are
       <a href="<?= REPAV_BASE ?>/" style="color:#fff;display:flex;align-items:center">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
       </a>
-      <div class="nm">CHERON CAMARGO<small>DIÁRIO DE REPAVIMENTAÇÃO</small></div>
+      <div class="nm">Cheron &amp; Camargo<small>DIÁRIO DE REPAVIMENTAÇÃO</small></div>
       <div class="eq">
         <b><?= htmlspecialchars($trecho['pv_montante'] ?? '?') ?> → <?= htmlspecialchars($trecho['pv_jusante'] ?? '?') ?></b>
         <span style="font-size:9.5px;color:#C7D2E5"><?= htmlspecialchars($trecho['rua'] ?? '') ?></span>

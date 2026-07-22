@@ -66,7 +66,7 @@ body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;font-size:11px;
 /* Cabeçalho */
 .rpt-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #1A2D4F;padding-bottom:10px;margin-bottom:12px}
 .marca-area{display:flex;align-items:center;gap:10px}
-.marca-area svg{width:36px;height:36px;flex:0 0 auto}
+.marca-area img{width:36px;height:36px;flex:0 0 auto;object-fit:contain}
 .marca-txt b{display:block;font-size:14px;letter-spacing:2px;color:#1A2D4F;font-weight:800}
 .marca-txt small{font-size:8.5px;color:#666;letter-spacing:0.5px;text-transform:uppercase}
 .doc-meta{text-align:right;font-size:9.5px;color:#555}
@@ -136,17 +136,9 @@ table.totais tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1
     <!-- Cabeçalho -->
     <div class="rpt-header">
         <div class="marca-area">
-            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cheron Camargo">
-  <rect x="4" y="4" width="92" height="92" rx="26" fill="none" stroke="#3CB86A" stroke-width="3"/>
-  <rect x="14" y="14" width="72" height="72" rx="19" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="33" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="67" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="33" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="67" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="50" r="5" fill="#3CB86A"/>
-</svg>
+            <img src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="Cheron & Camargo">
             <div class="marca-txt">
-                <b>CHERON CAMARGO</b>
+                <b>Cheron &amp; Camargo</b>
                 <small>Saneamento Básico</small>
             </div>
         </div>
@@ -301,7 +293,7 @@ table.totais tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1
 
     <!-- Rodapé -->
     <div class="rpt-footer">
-        <span>CHERON CAMARGO · Relatório de Repavimentação · <?= htmlspecialchars($num_doc) ?></span>
+        <span>Cheron &amp; Camargo · Relatório de Repavimentação · <?= htmlspecialchars($num_doc) ?></span>
         <span>Gerado em <?= $data_ger ?></span>
     </div>
 

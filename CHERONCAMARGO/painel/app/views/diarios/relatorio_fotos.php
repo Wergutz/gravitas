@@ -16,7 +16,7 @@
   .no-print a{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
   .capa{background:linear-gradient(160deg,var(--navy),#11203B);color:#fff;padding:40px 48px 32px;
     display:flex;align-items:center;gap:20px}
-  .capa svg{width:56px;height:56px;flex:0 0 auto}
+  .capa img{width:56px;height:56px;flex:0 0 auto;object-fit:contain}
   .capa-txt h1{font-size:22px;font-weight:800;letter-spacing:1px}
   .capa-txt .sub{font-size:13px;color:#9FB4D6;margin-top:6px;line-height:1.5}
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:2px solid var(--line)}
@@ -54,16 +54,7 @@
 
 <!-- Capa -->
 <div class="capa">
-  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cheron Camargo">
-  <defs><linearGradient id="gmu" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#5DD97A"/><stop offset="100%" stop-color="#1A9B52"/></linearGradient></defs>
-  <rect x="2" y="2" width="96" height="96" rx="26" fill="url(#gmu)"/>
-  <rect x="12" y="12" width="76" height="76" rx="21" fill="none" stroke="white" stroke-width="2.5"/>
-  <circle cx="50" cy="33" r="17" fill="none" stroke="white" stroke-width="2.5"/>
-  <circle cx="50" cy="67" r="17" fill="none" stroke="white" stroke-width="2.5"/>
-  <circle cx="33" cy="50" r="17" fill="none" stroke="white" stroke-width="2.5"/>
-  <circle cx="67" cy="50" r="17" fill="none" stroke="white" stroke-width="2.5"/>
-  <circle cx="50" cy="50" r="5" fill="white"/>
-</svg>
+  <img src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="Cheron & Camargo">
   <div class="capa-txt">
     <h1>Relatório Fotográfico</h1>
     <div class="sub">
@@ -108,7 +99,7 @@
 <?php endforeach; ?>
 
 <div style="padding:32px 40px;color:var(--muted);font-size:11px;border-top:1px solid var(--line);margin-top:20px">
-  CHERON CAMARGO · Relatório Fotográfico de Execução · Documento gerado automaticamente pelo sistema.
+  Cheron &amp; Camargo · Relatório Fotográfico de Execução · Documento gerado automaticamente pelo sistema.
 </div>
 
 </body>

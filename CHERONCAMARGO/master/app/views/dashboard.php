@@ -23,7 +23,7 @@ function svgIcon(string $path): string {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
-<title>Visão Executiva · CHERON CAMARGO</title>
+<title>Visão Executiva · Cheron &amp; Camargo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -34,16 +34,8 @@ function svgIcon(string $path): string {
 
 <aside class="sidebar">
   <div class="brand">
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cheron Camargo">
-  <rect x="4" y="4" width="92" height="92" rx="26" fill="none" stroke="#3CB86A" stroke-width="3"/>
-  <rect x="14" y="14" width="72" height="72" rx="19" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="33" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="67" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="33" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="67" cy="50" r="17" fill="none" stroke="#3CB86A" stroke-width="2.5"/>
-  <circle cx="50" cy="50" r="5" fill="#3CB86A"/>
-</svg>
-    <div><b>CHERON CAMARGO</b><small>VISÃO EXECUTIVA</small></div>
+    <img src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="Cheron & Camargo">
+    <div><b>Cheron &amp; Camargo</b><small>VISÃO EXECUTIVA</small></div>
   </div>
   <nav class="nav">
     <a href="<?= MASTER_BASE ?>/?modo=rt" class="<?= $modo==='rt'?'ativo':'' ?>">
