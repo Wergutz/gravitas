@@ -38,7 +38,7 @@ body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;font-size:11px;
 .pagina{width:210mm;min-height:297mm;margin:20px auto;background:#fff;padding:16mm 15mm 20mm;box-shadow:0 2px 20px rgba(0,0,0,.18)}
 .rpt-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #1A2D4F;padding-bottom:10px;margin-bottom:12px}
 .marca-area{display:flex;align-items:center;gap:10px}
-.marca-area img{width:36px;height:36px;flex:0 0 auto;object-fit:contain}
+.marca-area img{width:41px;height:41px;flex:0 0 auto;object-fit:contain}
 .marca-txt b{display:block;font-size:14px;letter-spacing:2px;color:#1A2D4F;font-weight:800}
 .marca-txt small{font-size:8.5px;color:#666;letter-spacing:0.5px;text-transform:uppercase}
 .doc-meta{text-align:right;font-size:9.5px;color:#555}

@@ -92,7 +92,7 @@ svg{display:block}
 .card{background:#fff;border:1px solid var(--line);border-radius:18px;
       padding:36px 38px;width:100%;max-width:420px;box-shadow:0 8px 40px #1a2d4f0d}
 .brand{display:flex;align-items:center;gap:10px;margin-bottom:28px}
-.brand img{width:28px;height:28px;object-fit:contain}
+.brand img{width:32px;height:32px;object-fit:contain}
 .brand b{font-weight:800;letter-spacing:3px;font-size:14px}
 h1{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:4px}
 .sub{font-size:13px;color:var(--muted);margin-bottom:24px}

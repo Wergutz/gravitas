@@ -66,7 +66,7 @@ body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;font-size:11px;
 /* Cabeçalho */
 .rpt-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #1A2D4F;padding-bottom:10px;margin-bottom:12px}
 .marca-area{display:flex;align-items:center;gap:10px}
-.marca-area img{width:36px;height:36px;flex:0 0 auto;object-fit:contain}
+.marca-area img{width:41px;height:41px;flex:0 0 auto;object-fit:contain}
 .marca-txt b{display:block;font-size:14px;letter-spacing:2px;color:#1A2D4F;font-weight:800}
 .marca-txt small{font-size:8.5px;color:#666;letter-spacing:0.5px;text-transform:uppercase}
 .doc-meta{text-align:right;font-size:9.5px;color:#555}

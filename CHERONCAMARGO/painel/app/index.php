@@ -23,7 +23,7 @@ $perfil = ($_SESSION['gv_perfil'] ?? 'empresa') === 'usuario' ? 'Usuário' : 'Em
   body{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:100vh}
   header{background:linear-gradient(160deg,var(--navy),var(--navy-900));color:#fff;
          display:flex;align-items:center;gap:14px;padding:16px 28px}
-  header img{width:30px;height:30px;object-fit:contain}
+  header img{width:35px;height:35px;object-fit:contain}
   .nm{font-weight:800;letter-spacing:3px;font-size:15px}
   .tag{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#C7D2E5;
        border:1px solid #ffffff2e;border-radius:999px;padding:4px 10px}
