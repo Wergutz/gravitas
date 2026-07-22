@@ -1,0 +1,264 @@
+<?php
+if (!defined('APP_BASE')) require_once __DIR__ . '/../../../config/app.php';
+auth_required([4]);
+
+$num_doc  = 'SOLMAT-' . date('Y') . '-' . sprintf('%04d', $caminhamento['id']);
+$data_ger = date('d/m/Y H:i');
+$usuario  = $_SESSION['user'] ?? [];
+
+$status_labels = [
+    'rascunho'  => 'Rascunho',
+    'publicado' => 'Publicado',
+    'execucao'  => 'Em Execução',
+    'concluido' => 'Concluído',
+];
+
+$extensao_total = array_sum(array_column($trechos, 'extensao'));
+?>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Solicitação de Materiais · Caminhamento #<?= (int)$caminhamento['id'] ?></title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;font-size:11px;color:#1a1a1a;background:#ddd;line-height:1.5}
+.toolbar{background:#1A2D4F;color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;font-size:12px}
+.toolbar a{color:#E0A53D;text-decoration:none;font-weight:700}
+.toolbar button{background:#E0A53D;color:#1A2D4F;border:none;padding:7px 18px;border-radius:6px;font-weight:800;font-size:12px;cursor:pointer}
+.pagina{width:210mm;min-height:297mm;margin:20px auto;background:#fff;padding:16mm 15mm 20mm;box-shadow:0 2px 20px rgba(0,0,0,.18)}
+.rpt-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2.5px solid #1A2D4F;padding-bottom:10px;margin-bottom:12px}
+.marca-area{display:flex;align-items:center;gap:10px}
+.marca-area svg{width:36px;height:36px;flex:0 0 auto}
+.marca-txt b{display:block;font-size:14px;letter-spacing:2px;color:#1A2D4F;font-weight:800}
+.marca-txt small{font-size:8.5px;color:#666;letter-spacing:0.5px;text-transform:uppercase}
+.doc-meta{text-align:right;font-size:9.5px;color:#555}
+.doc-meta strong{display:block;font-size:11px;color:#1A2D4F;font-weight:800;margin-bottom:2px}
+.rpt-titulo{text-align:center;margin:10px 0 14px;padding:10px 0;background:#f5f7fa;border-radius:4px}
+.rpt-titulo h1{font-size:15px;color:#1A2D4F;text-transform:uppercase;letter-spacing:1.5px;font-weight:800}
+.rpt-titulo p{font-size:11px;color:#555;margin-top:3px}
+.aviso-rascunho{background:#fff8e1;border:1.5px solid #E0A53D;border-radius:4px;padding:7px 12px;font-size:10.5px;color:#7a5200;margin-bottom:12px;font-weight:600}
+.secao{margin-bottom:14px}
+.secao-titulo{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px;color:#fff;background:#1A2D4F;padding:4px 8px;margin-bottom:8px}
+.grade-dados{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:4px}
+.dado label{display:block;font-size:8.5px;text-transform:uppercase;letter-spacing:0.8px;color:#888;font-weight:700;margin-bottom:2px}
+.dado span{font-size:11.5px;font-weight:700;color:#1a1a1a}
+table.mat{width:100%;border-collapse:collapse;font-size:11px}
+table.mat th{background:#1A2D4F;color:#fff;padding:6px 8px;text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:0.5px}
+table.mat td{padding:6px 8px;border-bottom:1px solid #eee;vertical-align:middle}
+table.mat tr:nth-child(even) td{background:#f8f9fb}
+table.mat tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1A2D4F}
+table.mat .qtd{text-align:right;font-weight:700;font-size:12px;color:#1A2D4F}
+table.mat .unid{color:#666;font-size:10.5px}
+.num-item{width:22px;height:22px;background:#e8ecf2;border-radius:50%;display:inline-grid;place-items:center;font-weight:700;font-size:10px;color:#1A2D4F}
+table.trch{width:100%;border-collapse:collapse;font-size:10.5px}
+table.trch th{background:#f0f3f8;color:#1A2D4F;padding:5px 8px;font-size:9px;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1.5px solid #1A2D4F}
+table.trch td{padding:5px 8px;border-bottom:1px solid #eee}
+table.trch tfoot td{background:#f8f9fb;font-weight:700;border-top:1.5px solid #ddd}
+.obs-box{background:#fafbfd;border:1px solid #dde;border-radius:4px;padding:8px 12px;font-size:11px;color:#333;font-style:italic}
+.assinaturas{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:28px;page-break-inside:avoid}
+.assinatura{border-top:1.5px solid #888;padding-top:6px;text-align:center;font-size:10px;color:#555}
+.assinatura b{display:block;font-size:10.5px;color:#1a1a1a;margin-bottom:2px}
+.linha-data{text-align:center;margin-top:16px;font-size:10px;color:#555;page-break-inside:avoid}
+.rpt-footer{margin-top:20px;border-top:1px solid #ccc;padding-top:6px;display:flex;justify-content:space-between;font-size:8.5px;color:#888}
+@media print{
+    body{background:#fff}
+    .toolbar{display:none!important}
+    .pagina{margin:0;box-shadow:none;padding:12mm 12mm 16mm}
+    @page{size:A4 portrait;margin:0}
+}
+</style>
+</head>
+<body>
+<div class="toolbar">
+    <a href="javascript:history.back()">← Voltar</a>
+    <span style="flex:1"></span>
+    <span>Documento: <?= htmlspecialchars($num_doc) ?></span>
+    <button onclick="window.print()">Imprimir / Salvar PDF</button>
+</div>
+
+<div class="pagina">
+
+    <!-- Cabeçalho -->
+    <div class="rpt-header">
+        <div class="marca-area">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cheron Camargo">
+  <defs><linearGradient id="gmu" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#5DD97A"/><stop offset="100%" stop-color="#1A9B52"/></linearGradient></defs>
+  <rect x="2" y="2" width="96" height="96" rx="26" fill="url(#gmu)"/>
+  <rect x="12" y="12" width="76" height="76" rx="21" fill="none" stroke="white" stroke-width="2.5"/>
+  <circle cx="50" cy="33" r="17" fill="none" stroke="white" stroke-width="2.5"/>
+  <circle cx="50" cy="67" r="17" fill="none" stroke="white" stroke-width="2.5"/>
+  <circle cx="33" cy="50" r="17" fill="none" stroke="white" stroke-width="2.5"/>
+  <circle cx="67" cy="50" r="17" fill="none" stroke="white" stroke-width="2.5"/>
+  <circle cx="50" cy="50" r="5" fill="white"/>
+</svg>
+            <div class="marca-txt">
+                <b>CHERON CAMARGO</b>
+                <small>Painel de Controle</small>
+            </div>
+        </div>
+        <div class="doc-meta">
+            <strong><?= htmlspecialchars($num_doc) ?></strong>
+            Caminhamento #<?= (int)$caminhamento['id'] ?><br>
+            Gerado em: <?= $data_ger ?><br>
+            Por: <?= htmlspecialchars($usuario['nome'] ?? '—') ?>
+        </div>
+    </div>
+
+    <!-- Título -->
+    <div class="rpt-titulo">
+        <h1>Solicitação de Materiais</h1>
+        <p>Referente ao Caminhamento #<?= (int)$caminhamento['id'] ?> · <?= htmlspecialchars($caminhamento['equipe_nome']) ?> · <?= date('d/m/Y', strtotime($caminhamento['data_execucao'])) ?></p>
+    </div>
+
+    <?php if (in_array($caminhamento['status'], ['rascunho', 'publicado'])): ?>
+    <div class="aviso-rascunho">
+        Atenção: este caminhamento ainda não foi concluído (status: <?= $status_labels[$caminhamento['status']] ?? $caminhamento['status'] ?>). As quantidades podem ser alteradas até a conclusão.
+    </div>
+    <?php endif; ?>
+
+    <!-- Dados do Caminhamento -->
+    <div class="secao">
+        <div class="secao-titulo">Dados do Caminhamento</div>
+        <div class="grade-dados">
+            <div class="dado"><label>Caminhamento Nº</label><span>#<?= (int)$caminhamento['id'] ?></span></div>
+            <div class="dado"><label>Equipe</label><span><?= htmlspecialchars($caminhamento['equipe_nome']) ?></span></div>
+            <div class="dado"><label>Data de Execução</label><span><?= date('d/m/Y', strtotime($caminhamento['data_execucao'])) ?></span></div>
+            <div class="dado"><label>Status</label><span><?= $status_labels[$caminhamento['status']] ?? $caminhamento['status'] ?></span></div>
+        </div>
+        <?php if (!empty($caminhamento['observacoes'])): ?>
+        <div class="obs-box"><?= htmlspecialchars($caminhamento['observacoes']) ?></div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Local da Obra -->
+    <?php
+    $bacias  = array_unique(array_filter(array_column($trechos, 'bacia')));
+    $ruas    = array_unique(array_filter(array_column($trechos, 'rua')));
+    $cidades = array_unique(array_filter(array_column($trechos, 'cidade')));
+    $local_obra = implode(' · ', array_filter([
+        !empty($bacias)  ? 'Bacia ' . implode(', ', $bacias)   : null,
+        !empty($ruas)    ? implode(', ', $ruas)                  : null,
+        !empty($cidades) ? implode(', ', $cidades)               : null,
+    ])) ?: '—';
+    ?>
+    <div class="secao">
+        <div class="secao-titulo">Local da Obra</div>
+        <div class="grade-dados" style="grid-template-columns:1fr;">
+            <div class="dado"><label>Endereço / Bacia</label><span><?= htmlspecialchars($local_obra) ?></span></div>
+        </div>
+    </div>
+
+    <!-- Local de Retirada (CORSAN) -->
+    <div class="secao">
+        <div class="secao-titulo">Local de Retirada — Solicitação à CORSAN</div>
+        <div style="background:#f8f9fb;border:1px solid #dde;border-radius:4px;padding:10px 14px;font-size:11px;color:#333;">
+            Solicitamos à CORSAN que informe o local de retirada dos materiais listados acima,
+            bem como data e horário disponíveis para retirada.
+            <br><br>
+            <b>Local de retirada indicado pela CORSAN:</b>
+            <span style="border-bottom:1px solid #aaa;display:inline-block;min-width:260px;">&nbsp;</span>
+        </div>
+    </div>
+
+    <!-- Materiais Solicitados -->
+    <div class="secao">
+        <div class="secao-titulo">Materiais Solicitados (<?= count($materiais) ?> item<?= count($materiais) !== 1 ? 's' : '' ?>)</div>
+        <?php if (empty($materiais)): ?>
+            <p style="color:#888;font-size:11px;padding:8px 0;">Nenhum material associado aos trechos deste caminhamento.</p>
+        <?php else: ?>
+        <table class="mat">
+            <thead>
+                <tr>
+                    <th style="width:30px;">#</th>
+                    <th>Material</th>
+                    <th style="text-align:right;width:90px;">Quantidade</th>
+                    <th style="width:70px;">Unidade</th>
+                    <th style="width:90px;">Recebido</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($materiais as $i => $mat): ?>
+                <tr>
+                    <td><span class="num-item"><?= ($i + 1) ?></span></td>
+                    <td><b><?= htmlspecialchars($mat['material_nome']) ?></b></td>
+                    <td class="qtd"><?= number_format((float)$mat['total_qtd'], 2, ',', '.') ?></td>
+                    <td class="unid"><?= htmlspecialchars($mat['unidade']) ?></td>
+                    <td style="border-bottom:1px dashed #aaa;min-width:80px;">&nbsp;</td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4"><b>Total de itens solicitados: <?= count($materiais) ?></b></td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+        <?php endif; ?>
+    </div>
+
+    <!-- Trechos Referência -->
+    <div class="secao">
+        <div class="secao-titulo">Trechos de Referência (<?= count($trechos) ?>)</div>
+        <?php if (empty($trechos)): ?>
+            <p style="color:#888;font-size:11px;">Nenhum trecho associado.</p>
+        <?php else: ?>
+        <table class="trch">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>PV Montante</th>
+                    <th>PV Jusante</th>
+                    <th>Rua / Logradouro</th>
+                    <th style="text-align:right;">Extensão</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($trechos as $t): ?>
+                <tr>
+                    <td style="color:#888;"><?= (int)$t['sequencia'] ?></td>
+                    <td><b><?= htmlspecialchars($t['pv_montante']) ?></b></td>
+                    <td><?= htmlspecialchars($t['pv_jusante'] ?? '—') ?></td>
+                    <td><?= htmlspecialchars($t['rua'] ?? '—') ?></td>
+                    <td style="text-align:right;"><?= $t['extensao'] ? number_format((float)$t['extensao'], 1, ',', '.') . ' m' : '—' ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4"><b>Extensão Total</b></td>
+                    <td style="text-align:right;"><b><?= $extensao_total > 0 ? number_format($extensao_total, 1, ',', '.') . ' m' : '—' ?></b></td>
+                </tr>
+            </tfoot>
+        </table>
+        <?php endif; ?>
+    </div>
+
+    <!-- Assinaturas -->
+    <div class="linha-data">
+        _______________, _____ de __________________ de ________
+    </div>
+    <div class="assinaturas">
+        <div class="assinatura">
+            <b>Solicitante</b>
+            <?= htmlspecialchars($usuario['nome'] ?? '______________________') ?><br>
+            <span style="font-size:9px;">Gravitas — Planejamento</span>
+        </div>
+        <div class="assinatura">
+            <b>CORSAN — Recebimento</b>
+            <br>
+            <span style="font-size:9px;">Carimbo e assinatura</span>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <div class="rpt-footer">
+        <span>CHERON CAMARGO · Solicitação de Materiais · <?= htmlspecialchars($num_doc) ?></span>
+        <span>Gerado em <?= $data_ger ?></span>
+    </div>
+
+</div>
+</body>
+</html>

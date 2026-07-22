@@ -58,6 +58,35 @@ $sistemas = [
             ['dest' => '/marco_urbano/topografo/',      'label' => 'Topógrafo',               'sub' => 'Importação e OS de topografia'],
         ],
     ],
+    [
+        // TODO: entrada nova (Cheron Camargo) — confirmar credenciais reais do banco
+        // (mesmo padrão do bloco marco_urbano acima) antes do deploy em produção.
+        'id'          => 'cheron_camargo',
+        'db'          => 'u278289683_cheron_camargo',
+        'user'        => 'u278289683_cheron_camargo',
+        'pass'        => 'TROCAR_SENHA_REAL_DO_BANCO',
+        'session'     => 'CC_PAINEL',
+        'cookie_path' => '/cheron_camargo/',
+        'label'       => 'CHERON CAMARGO',
+        'sub'         => 'Cliente Gravitas',
+        'alterar_senha' => '/cheron_camargo/painel/alterar-senha.php',
+        'destinos'    => [
+            1 => '/cheron_camargo/painel/',
+            3 => '/cheron_camargo/painel/',
+            4 => '/cheron_camargo/painel/',
+            5 => '/cheron_camargo/executor/',
+            6 => '/cheron_camargo/master/',
+            7 => '/cheron_camargo/executor-repav/',
+            8 => '/cheron_camargo/topografo/',
+        ],
+        'apps'        => [
+            ['dest' => '/cheron_camargo/painel/',        'label' => 'Planejador',              'sub' => 'Gestão, relatórios e diários'],
+            ['dest' => '/cheron_camargo/master/',         'label' => 'Visão Executiva',         'sub' => 'Dashboard do cliente master'],
+            ['dest' => '/cheron_camargo/executor/',       'label' => 'App do Executor',         'sub' => 'Frente de serviço em campo'],
+            ['dest' => '/cheron_camargo/executor-repav/', 'label' => 'Executor Repavimentação', 'sub' => 'Medição e controle de pavimento'],
+            ['dest' => '/cheron_camargo/topografo/',      'label' => 'Topógrafo',               'sub' => 'Importação e OS de topografia'],
+        ],
+    ],
 ];
 
 // Sessão GV_LOGIN: CSRF + rate limiting + estado do seletor
