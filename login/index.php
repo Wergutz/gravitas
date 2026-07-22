@@ -207,7 +207,7 @@ if (!empty($_SESSION['sa_ok'])) {
   .sistema-col{}
   .sistema-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;
                   padding-bottom:10px;border-bottom:2px solid var(--line)}
-  .sistema-header svg{width:28px;height:28px}
+  .sistema-header svg,.sistema-header img{width:28px;height:28px;object-fit:contain}
   .sistema-header-txt b{display:block;font-size:13px;font-weight:800;letter-spacing:1px;color:var(--navy)}
   .sistema-header-txt small{font-size:11px;color:var(--muted);font-weight:500}
 
@@ -290,6 +290,8 @@ if (!empty($_SESSION['sa_ok'])) {
               <path d="M 50 50 L 67.4 29.3 L 55.5 53.5 Z" fill="#C9A227"/>
               <circle cx="50" cy="50" r="6" fill="#C9A227"/>
             </svg>
+            <?php elseif ($cfg['id'] === 'cheron_camargo'): ?>
+            <img src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="" aria-hidden="true">
             <?php else: ?>
             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <rect x="4" y="4" width="92" height="92" rx="26" fill="none" stroke="#3CB86A" stroke-width="3"/>
