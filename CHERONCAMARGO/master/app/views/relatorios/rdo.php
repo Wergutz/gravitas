@@ -1,5 +1,5 @@
 <?php
-$empresa  = defined('APP_CLIENT') ? APP_CLIENT : 'GRAVITAS';
+$empresa  = defined('APP_CLIENT') ? APP_CLIENT : 'Cheron & Camargo';
 $dataFmt  = date('d/m/Y', strtotime($data));
 $diaSem   = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'][date('w', strtotime($data))];
 $totalPres = $presentes + $ausentes;

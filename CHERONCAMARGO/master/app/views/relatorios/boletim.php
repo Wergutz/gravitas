@@ -1,5 +1,5 @@
 <?php
-$empresa  = defined('APP_CLIENT') ? APP_CLIENT : 'GRAVITAS';
+$empresa  = defined('APP_CLIENT') ? APP_CLIENT : 'Cheron & Camargo';
 $periodoFmt = date('d/m/Y', strtotime($inicio)) . ' a ' . date('d/m/Y', strtotime($fim));
 $total = 0; foreach ($porBaciaEquipe as $r) $total += (float)$r['metros'];
 $repavPeriodo = $repavPeriodo ?? null;
