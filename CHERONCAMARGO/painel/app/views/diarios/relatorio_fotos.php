@@ -16,7 +16,7 @@
   .no-print a{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
   .capa{background:linear-gradient(160deg,var(--navy),#11203B);color:#fff;padding:40px 48px 32px;
     display:flex;align-items:center;gap:20px}
-  .capa img{width:56px;height:56px;flex:0 0 auto;object-fit:contain}
+  .capa img{width:64px;height:64px;flex:0 0 auto;object-fit:contain}
   .capa-txt h1{font-size:22px;font-weight:800;letter-spacing:1px}
   .capa-txt .sub{font-size:13px;color:#9FB4D6;margin-top:6px;line-height:1.5}
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:2px solid var(--line)}

@@ -24,7 +24,7 @@ button,a{font-family:inherit;cursor:pointer}
 .top{background:linear-gradient(165deg,var(--navy),var(--navy-900));color:#fff;
      padding:16px 18px 14px;position:sticky;top:0;z-index:10}
 .top-row{display:flex;align-items:center;gap:10px}
-.top img.logo{width:26px;height:26px;object-fit:contain}
+.top img.logo{width:30px;height:30px;object-fit:contain}
 .top .nm{font-weight:800;letter-spacing:2px;font-size:13px}
 .top .nm small{display:block;font-size:8px;letter-spacing:1.5px;color:#9FB4D6;font-weight:700}
 .top .eq{margin-left:auto;text-align:right;font-size:11px;color:#C7D2E5}
