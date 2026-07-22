@@ -54,7 +54,7 @@
 
 <!-- Capa -->
 <div class="capa">
-  <img src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="Cheron & Camargo">
+  <img src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo-white.png" alt="Cheron & Camargo">
   <div class="capa-txt">
     <h1>Relatório Fotográfico</h1>
     <div class="sub">
