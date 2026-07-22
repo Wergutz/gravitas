@@ -1,0 +1,8 @@
+<?php
+// Configuração central do Painel — alterar aqui ao replicar para nova empresa
+define('APP_BASE',      '/cheron_camargo/painel');   // caminho sem barra final
+define('EXECUTOR_BASE', '/cheron_camargo/executor'); // app do executor
+define('MASTER_BASE',   '/cheron_camargo/master');   // painel do cliente master
+define('REPAV_BASE',    '/cheron_camargo/executor-repav'); // app executor de repavimentação
+define('APP_NAME',      'Painel de Controle');
+define('APP_CLIENT',    'CHERON CAMARGO');

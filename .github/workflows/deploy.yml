@@ -30,5 +30,9 @@ jobs:
             mkdir -p $BASE/marco_urbano
             cp -rT $BASE/principal/marco_urbano $BASE/marco_urbano
             mkdir -p $BASE/marco_urbano/topografo/uploads/os/topo
+            mkdir -p $BASE/principal/cheron_camargo/painel/uploads/os/topo
+            mkdir -p $BASE/cheron_camargo
+            cp -rT $BASE/principal/cheron_camargo $BASE/cheron_camargo
+            mkdir -p $BASE/cheron_camargo/topografo/uploads/os/topo
             mkdir -p $BASE/login
             cp -rT $BASE/principal/login $BASE/login

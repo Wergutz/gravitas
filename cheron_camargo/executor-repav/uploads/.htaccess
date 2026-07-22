@@ -1,0 +1,5 @@
+Options -Indexes
+Header always set X-Robots-Tag "noindex, nofollow"
+<FilesMatch "\.(php|php5|phtml|cgi|pl|py|sh)$">
+    Deny from all
+</FilesMatch>

@@ -1,0 +1,16 @@
+Options -Indexes
+Header always set X-Robots-Tag "noindex, nofollow"
+Header always set X-Content-Type-Options "nosniff"
+Header always set X-Frame-Options "DENY"
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /cheron_camargo/executor-repav/
+
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    RewriteRule ^login\.php$ - [L]
+
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
