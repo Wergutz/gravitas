@@ -37,7 +37,7 @@ foreach ($fotos as $f) {
 <!-- Topo -->
 <div class="top">
   <div class="top-row">
-    <img class="logo" src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="Cheron & Camargo">
+    <img class="logo" src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo-white.png" alt="Cheron & Camargo">
     <div class="nm">Cheron &amp; Camargo<small>DIÁRIO <?= date('d/m', strtotime($diario['data'])) ?></small></div>
     <a href="<?= EXECUTOR_BASE ?>/" style="margin-left:auto;color:#9FB4D6;font-size:11px;text-decoration:none">← Início</a>
   </div>

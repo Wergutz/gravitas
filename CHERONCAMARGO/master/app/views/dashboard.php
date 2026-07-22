@@ -34,7 +34,7 @@ function svgIcon(string $path): string {
 
 <aside class="sidebar">
   <div class="brand">
-    <img src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="Cheron & Camargo">
+    <img src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo-white.png" alt="Cheron & Camargo">
     <div><b>Cheron &amp; Camargo</b><small>VISÃO EXECUTIVA</small></div>
   </div>
   <nav class="nav">

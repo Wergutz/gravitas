@@ -22,7 +22,7 @@ $pct       = (int)round($stepAtual / 21 * 100);
   <!-- Topo fixo -->
   <div class="top">
     <div class="top-row">
-      <img class="logo" src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="Cheron & Camargo">
+      <img class="logo" src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo-white.png" alt="Cheron & Camargo">
       <div class="nm">Cheron &amp; Camargo<small>EXECUTOR</small></div>
       <div class="eq">
         <b><?= htmlspecialchars($_SESSION['nome']) ?></b>
