@@ -413,6 +413,12 @@ class TrechoController
             $rows = $_SESSION['import_prev_trechos']['rows'] ?? [];
             unset($_SESSION['import_prev_trechos']);
 
+            if (empty($rows)) {
+                $_SESSION['flash_erro'] = 'A sessão da importação expirou ou foi perdida antes da confirmação. Suba o arquivo novamente e confirme sem demora.';
+                header('Location: ' . APP_BASE . '/trechos/importar');
+                exit;
+            }
+
             $stmtChk = $pdo->prepare("SELECT id FROM trechos WHERE pv_montante = ? AND pv_jusante = ? AND (contrato = ? OR (contrato IS NULL AND ? IS NULL))");
             $stmtIns = $pdo->prepare("
                 INSERT INTO trechos
@@ -428,6 +434,7 @@ class TrechoController
             ");
 
             $ok = 0;
+            $erros = [];
             $uid = (int)($_SESSION['usuario_id'] ?? 0);
             foreach ($rows as $r) {
                 if (!in_array($r['_status'], ['novo', 'atualizar'])) continue;
@@ -448,7 +455,11 @@ class TrechoController
                         ]);
                     }
                     $ok++;
-                } catch (\Exception $e) {}
+                } catch (\Exception $e) {
+                    if (count($erros) < 5) {
+                        $erros[] = "Linha {$r['_linha']} ({$r['pv_montante']}): " . $e->getMessage();
+                    }
+                }
             }
 
             try {
@@ -456,7 +467,12 @@ class TrechoController
                     ->execute([(int)($_SESSION['usuario_id']??0), 'importacao',
                         json_encode(['modulo'=>'trechos','linhas'=>count($rows),'importadas'=>$ok])]);
             } catch (\Exception $e) {}
-            $_SESSION['flash_ok'] = "$ok trecho(s) importado(s) com sucesso.";
+
+            if ($erros) {
+                $_SESSION['flash_erro'] = "$ok trecho(s) importado(s). " . count($erros) . " erro(s) de banco, ex.: " . implode(' | ', $erros);
+            } else {
+                $_SESSION['flash_ok'] = "$ok trecho(s) importado(s) com sucesso.";
+            }
             header('Location: ' . APP_BASE . '/trechos');
             exit;
         }
