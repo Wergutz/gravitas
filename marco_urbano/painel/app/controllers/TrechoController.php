@@ -436,6 +436,17 @@ class TrechoController
             $ok = 0;
             $erros = [];
             $uid = (int)($_SESSION['usuario_id'] ?? 0);
+            // Superadmin entra em cada sistema com o ID da conta raiz, que pode não
+            // existir na tabela `usuarios` deste banco — nesse caso grava NULL.
+            if ($uid > 0) {
+                $stmtUid = $pdo->prepare("SELECT 1 FROM usuarios WHERE id = ?");
+                $stmtUid->execute([$uid]);
+                if (!$stmtUid->fetchColumn()) {
+                    $uid = null;
+                }
+            } else {
+                $uid = null;
+            }
             foreach ($rows as $r) {
                 if (!in_array($r['_status'], ['novo', 'atualizar'])) continue;
                 try {
