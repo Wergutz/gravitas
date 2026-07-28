@@ -1,0 +1,57 @@
+name: Build Yamaha Floppy Manager Installer
+
+on:
+  push:
+    branches: [main, claude/yamaha-floppy-formatter-qxfbml]
+    paths:
+      - 'yamaha-floppy-formatter/**'
+      - '.github/workflows/yamaha-floppy-installer.yml'
+  pull_request:
+    paths:
+      - 'yamaha-floppy-formatter/**'
+  workflow_dispatch: {}
+
+jobs:
+  build-installer:
+    name: Compilar app + instalador
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: yamaha-floppy-formatter
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Rodar testes da biblioteca Core
+        run: dotnet test tests/YamahaFloppy.Core.Tests/YamahaFloppy.Core.Tests.csproj -c Release
+
+      - name: Publicar o app (self-contained, single-file, win-x64)
+        run: >
+          dotnet publish src/YamahaFloppy.App/YamahaFloppy.App.csproj -c Release
+          -r win-x64 --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+
+      - name: Instalar Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Compilar instalador (.exe)
+        shell: pwsh
+        run: |
+          $version = "1.0.${{ github.run_number }}"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
+            "/DMyAppVersion=$version" `
+            installer\YamahaFloppyManager.iss
+
+      - name: Publicar instalador como artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: YamahaFloppyManager-Setup
+          path: yamaha-floppy-formatter/installer/output/*.exe
+          if-no-files-found: error

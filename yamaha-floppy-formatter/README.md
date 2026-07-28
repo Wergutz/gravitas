@@ -53,6 +53,26 @@ detectar e formatar discos. Não foi possível compilar essa parte neste
 ambiente de desenvolvimento (Linux); revise/compile-a no Windows antes do
 primeiro uso real (veja abaixo).
 
+## Como obter o instalador (.exe) — sem precisar de um Windows para compilar
+
+Este repositório tem um workflow do GitHub Actions
+(`.github/workflows/yamaha-floppy-installer.yml`) que compila o app e gera
+o instalador automaticamente em um runner Windows:
+
+1. No GitHub, abra a aba **Actions** do repositório.
+2. Selecione o workflow **"Build Yamaha Floppy Manager Installer"**.
+3. Clique em **"Run workflow"** (ou apenas espere: ele roda sozinho a cada
+   push que mexe em `yamaha-floppy-formatter/`).
+4. Quando terminar, abra a execução e baixe o artifact
+   **"YamahaFloppyManager-Setup"** — dentro dele está o
+   `YamahaFloppyManager-Setup-x.x.x.exe`.
+5. Copie esse `.exe` para o Windows 11 onde você vai usar o programa e
+   rode-o — ele instala o app (com atalho no Menu Iniciar e, se marcado, na
+   Área de Trabalho) e já pergunta se quer abrir o programa ao final.
+
+O instalador é gerado com [Inno Setup](https://jrsoftware.org/isinfo.php) a
+partir do script `installer/YamahaFloppyManager.iss`.
+
 ## Como compilar (no Windows 11)
 
 Pré-requisitos: [.NET 8 SDK](https://dotnet.microsoft.com/download) instalado.
@@ -70,6 +90,16 @@ dotnet publish src\YamahaFloppy.App\YamahaFloppy.App.csproj -c Release -r win-x6
 
 O executável (`YamahaFloppyManager.exe`) fica em
 `src\YamahaFloppy.App\bin\Release\net8.0-windows\win-x64\publish\`.
+
+### Gerar o instalador localmente (alternativa ao GitHub Actions)
+
+1. Instale o [Inno Setup](https://jrsoftware.org/isdl.php).
+2. Rode o `dotnet publish` acima (precisa existir a pasta `publish\`).
+3. Compile o instalador:
+   ```powershell
+   & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer\YamahaFloppyManager.iss
+   ```
+4. O instalador aparece em `installer\output\YamahaFloppyManager-Setup-1.0.0.exe`.
 
 ## Como rodar os testes
 
