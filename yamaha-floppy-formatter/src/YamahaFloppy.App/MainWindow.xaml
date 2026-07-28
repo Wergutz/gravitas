@@ -1,0 +1,112 @@
+<Window x:Class="YamahaFloppy.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Gerenciador de Disquetes Virtuais Yamaha"
+        Height="640" Width="820" MinHeight="560" MinWidth="700"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"
+                   Text="Gerenciador de Disquetes Virtuais para Emulador de Disquete Yamaha"/>
+
+        <GroupBox Grid.Row="1" Header="1. Selecione o pendrive" Padding="8" Margin="0,0,0,10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <ComboBox x:Name="DrivesComboBox" Grid.Row="0" Grid.Column="0" Margin="0,0,8,0"
+                          DisplayMemberPath="." SelectionChanged="DrivesComboBox_SelectionChanged"/>
+                <Button x:Name="RefreshDrivesButton" Grid.Row="0" Grid.Column="1" Content="Atualizar lista"
+                        Padding="10,4" Click="RefreshDrivesButton_Click"/>
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,0" TextWrapping="Wrap"
+                           Foreground="DarkRed"
+                           Text="Só são listados discos conectados por USB. Confira o modelo e o tamanho antes de formatar: TODOS os dados do pendrive serão apagados."/>
+            </Grid>
+        </GroupBox>
+
+        <GroupBox Grid.Row="2" Header="2. Formatar pendrive e criar disquetes virtuais" Padding="8" Margin="0,0,0,10">
+            <StackPanel>
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="24"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="160"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Grid.Column="0" Text="Tamanho do disquete:" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="FloppyFormatComboBox" Grid.Column="1" SelectedIndex="0" VerticalAlignment="Center">
+                        <ComboBoxItem Content="1.44MB (HD)"/>
+                        <ComboBoxItem Content="720KB (DD)"/>
+                    </ComboBox>
+
+                    <TextBlock Grid.Column="3" Text="Quantidade:" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    <TextBox x:Name="DiskCountTextBox" Grid.Column="4" Text="10" VerticalAlignment="Center"/>
+
+                    <TextBlock Grid.Column="6" Text="Rótulo do volume:" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    <TextBox x:Name="VolumeLabelTextBox" Grid.Column="7" Text="YAMAHA" VerticalAlignment="Center"/>
+                </Grid>
+
+                <CheckBox x:Name="ConfirmEraseCheckBox" Margin="0,0,0,8"
+                          Content="Confirmo que desejo apagar TODOS os dados deste pendrive e criar uma nova partição."/>
+
+                <Button x:Name="FormatButton" Content="Formatar pendrive e criar disquetes virtuais"
+                        Padding="10,6" HorizontalAlignment="Left" Click="FormatButton_Click"/>
+
+                <Separator Margin="0,10"/>
+
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Já formatou este pendrive antes? " VerticalAlignment="Center"/>
+                    <Button x:Name="OpenExistingFolderButton" Content="Abrir pendrive já preparado..."
+                            Padding="8,4" Click="OpenExistingFolderButton_Click"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+
+        <GroupBox Grid.Row="3" Header="3. Disquetes virtuais nesta pasta" Padding="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock x:Name="CurrentFolderTextBlock" Grid.Row="0" Margin="0,0,0,6"
+                           Text="Nenhuma pasta aberta ainda." FontStyle="Italic"/>
+
+                <ListView x:Name="SlotsListView" Grid.Row="1" MouseDoubleClick="SlotsListView_MouseDoubleClick">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Disco" Width="220" DisplayMemberPath="DisplayName"/>
+                            <GridViewColumn Header="Arquivo" Width="160" DisplayMemberPath="FileName"/>
+                            <GridViewColumn Header="Tamanho (bytes)" Width="140" DisplayMemberPath="SizeBytes"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </Grid>
+        </GroupBox>
+
+        <StatusBar Grid.Row="4" Margin="0,10,0,0">
+            <StatusBarItem>
+                <TextBlock x:Name="StatusTextBlock" Text="Pronto."/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>

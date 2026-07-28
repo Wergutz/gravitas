@@ -1,0 +1,36 @@
+<Window x:Class="YamahaFloppy.App.FloppyEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Editor de Disquete Virtual" Height="480" Width="600"
+        WindowStartupLocation="CenterOwner">
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock x:Name="TitleTextBlock" Grid.Row="0" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button x:Name="ImportButton" Content="Importar arquivo(s)..." Padding="8,4" Margin="0,0,8,0"
+                    Click="ImportButton_Click"/>
+            <Button x:Name="ExportButton" Content="Exportar selecionado..." Padding="8,4" Margin="0,0,8,0"
+                    Click="ExportButton_Click"/>
+            <Button x:Name="DeleteButton" Content="Apagar selecionado" Padding="8,4" Click="DeleteButton_Click"/>
+        </StackPanel>
+
+        <ListView x:Name="FilesListView" Grid.Row="2">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Nome" Width="220" DisplayMemberPath="Name"/>
+                    <GridViewColumn Header="Tamanho (bytes)" Width="130" DisplayMemberPath="SizeBytes"/>
+                    <GridViewColumn Header="Data" Width="150" DisplayMemberPath="Timestamp"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <TextBlock x:Name="FooterTextBlock" Grid.Row="3" Margin="0,10,0,0"/>
+    </Grid>
+</Window>
