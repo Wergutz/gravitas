@@ -10,7 +10,7 @@ auth_required([3]); // Planejador
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- CSS ÚNICO OFICIAL -->
-<link rel="stylesheet" href="/visionhub_locar/assets/css/planejador.css?v=1">
+<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css?v=1">
 </head>
 <body>
 
@@ -19,22 +19,22 @@ auth_required([3]); // Planejador
 <!-- SIDEBAR -->
 <aside class="sidebar">
     <div class="logo">
-        <img src="/visionhub_locar/assets/img/farol.png" alt="VisionHub">
+        <img src="/marco_urbano2/assets/img/farol.png" alt="VisionHub">
         <span>VISION HUB</span>
     </div>
 
     <nav>
-        <a href="/visionhub_locar/planejador/menu.php" class="active">📊 Dashboard</a>
+        <a href="/marco_urbano2/planejador/menu.php" class="active">📊 Dashboard</a>
 
         <!-- ÚNICA ALTERAÇÃO AQUI -->
-        <a href="/visionhub_locar/planejador/planejamento.php">🗂 Novo Planejamento</a>
-        <a href="/visionhub_locar/planejador/medicao.php">📐 Incluir Medição</a>
-        <a href="/visionhub_locar/planejador/planejamento_selecionar.php">📋 Planejamentos</a>
-        <a href="/visionhub_locar/planejador/relatorio.php">📄 Relatórios</a>
-        <a href="/visionhub_locar/planejador/equipamentos_pesados.php">🚜 Equip. Pesados</a>
-        <a href="/visionhub_locar/planejador/equipamentos_leves.php">🧰 Equip. Leves</a>
-        <a href="/visionhub_locar/planejador/funcionarios.php">👷 Funcionários</a>
-        <a href="/visionhub_locar/public/logout.php">🚪 Sair</a>
+        <a href="/marco_urbano2/planejador/planejamento.php">🗂 Novo Planejamento</a>
+        <a href="/marco_urbano2/planejador/medicao.php">📐 Incluir Medição</a>
+        <a href="/marco_urbano2/planejador/planejamento_selecionar.php">📋 Planejamentos</a>
+        <a href="/marco_urbano2/planejador/relatorio.php">📄 Relatórios</a>
+        <a href="/marco_urbano2/planejador/equipamentos_pesados.php">🚜 Equip. Pesados</a>
+        <a href="/marco_urbano2/planejador/equipamentos_leves.php">🧰 Equip. Leves</a>
+        <a href="/marco_urbano2/planejador/funcionarios.php">👷 Funcionários</a>
+        <a href="/marco_urbano2/public/logout.php">🚪 Sair</a>
     </nav>
 </aside>
 

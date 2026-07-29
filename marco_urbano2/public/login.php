@@ -1,5 +1,9 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_name('MU2_PAINEL');
+    session_set_cookie_params(['path' => '/marco_urbano2/', 'samesite' => 'Lax', 'httponly' => true]);
+    session_start();
+}
 $erro = $_SESSION['erro'] ?? null;
 unset($_SESSION['erro']);
 ?>
@@ -10,7 +14,7 @@ unset($_SESSION['erro']);
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VisionHub Locar | Login</title>
 
-<link rel="stylesheet" href="/visionhub_locar/assets/css/login.css">
+<link rel="stylesheet" href="/marco_urbano2/assets/css/login.css">
 
 </head>
 <body>
@@ -24,7 +28,7 @@ unset($_SESSION['erro']);
     <form class="login-form" action="process_login.php" method="post">
 
         <div class="logo">
-        <img src="/visionhub_locar/assets/img/farol4.png" alt="VisionHub Locar">
+        <img src="/marco_urbano2/assets/img/farol4.png" alt="VisionHub Locar">
 
         </div>
 

@@ -8,9 +8,9 @@ auth_required([3]);
 <meta charset="UTF-8">
 <title>Equipes | VisionHub Locar</title>
 
-<link rel="stylesheet" href="/visionhub_locar/public/css/base.css">
-<link rel="stylesheet" href="/visionhub_locar/public/css/menu.css">
-<link rel="stylesheet" href="/visionhub_locar/public/css/internal.css">
+<link rel="stylesheet" href="/marco_urbano2/public/css/base.css">
+<link rel="stylesheet" href="/marco_urbano2/public/css/menu.css">
+<link rel="stylesheet" href="/marco_urbano2/public/css/internal.css">
 </head>
 <body>
 

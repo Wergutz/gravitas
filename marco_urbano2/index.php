@@ -1,9 +1,11 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) {
+    session_name('MU2_PAINEL');
+    session_set_cookie_params(['path' => '/marco_urbano2/', 'samesite' => 'Lax', 'httponly' => true]);
     session_start();
 }
 
-$base = '/visionhub_locar';
+$base = '/marco_urbano2';
 
 if (!isset($_SESSION['usuario_id'], $_SESSION['tipo_usuario'])) {
     header("Location: $base/public/login.php");

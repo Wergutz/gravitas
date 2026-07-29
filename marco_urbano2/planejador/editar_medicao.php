@@ -115,21 +115,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta charset="UTF-8">
 <title>Editar Medição | VisionHub Locar</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="/visionhub_locar/assets/css/planejador.css?v=1">
+<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css?v=1">
 </head>
 <body>
 
 <div class="app">
 <aside class="sidebar">
     <div class="logo">
-        <img src="/visionhub_locar/assets/img/farol.png">
+        <img src="/marco_urbano2/assets/img/farol.png">
         <span>VISION HUB</span>
     </div>
     <nav>
-        <a href="/visionhub_locar/planejador/menu.php">📊 Dashboard</a>
-        <a href="/visionhub_locar/planejador/medicao.php" class="active">📐 Medições</a>
-        <a href="/visionhub_locar/planejador/relatorio.php">📄 Relatório</a>
-        <a href="/visionhub_locar/public/logout.php">🚪 Sair</a>
+        <a href="/marco_urbano2/planejador/menu.php">📊 Dashboard</a>
+        <a href="/marco_urbano2/planejador/medicao.php" class="active">📐 Medições</a>
+        <a href="/marco_urbano2/planejador/relatorio.php">📄 Relatório</a>
+        <a href="/marco_urbano2/public/logout.php">🚪 Sair</a>
     </nav>
 </aside>
 
@@ -157,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div style="display:flex;flex-wrap:wrap;gap:10px;">
 <?php foreach ($fotos as $f): ?>
 <img
-    src="/visionhub_locar/uploads/fotos/<?= htmlspecialchars($f['arquivo']) ?>"
+    src="/marco_urbano2/uploads/fotos/<?= htmlspecialchars($f['arquivo']) ?>"
     style="width:160px;border-radius:6px;border:1px solid #374151;">
 <?php endforeach; ?>
 </div>

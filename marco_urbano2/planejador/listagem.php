@@ -16,7 +16,7 @@ $lista = $pdo->query("
 <head>
 <meta charset="UTF-8">
 <title>Listagem de Planejamentos</title>
-<link rel="stylesheet" href="/visionhub_locar/assets/css/planejador.css">
+<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css">
 </head>
 <body>
 
@@ -24,14 +24,14 @@ $lista = $pdo->query("
 
 <aside class="sidebar">
     <div class="logo">
-        <img src="/visionhub_locar/assets/img/farol.png">
+        <img src="/marco_urbano2/assets/img/farol.png">
         <span>VISION HUB</span>
     </div>
     <nav>
         <a href="menu.php">📊 Dashboard</a>
         <a href="planejamento.php">🛣 Planejamento</a>
         <a href="listagem.php" class="active">📋 Listagem</a>
-        <a href="/visionhub_locar/public/logout.php">🚪 Sair</a>
+        <a href="/marco_urbano2/public/logout.php">🚪 Sair</a>
     </nav>
 </aside>
 

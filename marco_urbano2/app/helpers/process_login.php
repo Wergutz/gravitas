@@ -1,5 +1,9 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_name('MU2_PAINEL');
+    session_set_cookie_params(['path' => '/marco_urbano2/', 'samesite' => 'Lax', 'httponly' => true]);
+    session_start();
+}
 
 require_once __DIR__ . '/../app/config/database.php';
 
@@ -11,7 +15,7 @@ $senha   = $_POST['senha'] ?? '';
 
 if (!$usuario || !$senha) {
     $_SESSION['erro'] = 'Informe usuário e senha';
-    header('Location: /visionhub_locar/public/login.php');
+    header('Location: /marco_urbano2/public/login.php');
     exit;
 }
 
@@ -32,19 +36,19 @@ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 ========================= */
 if (!$user) {
     $_SESSION['erro'] = 'Usuário não encontrado';
-    header('Location: /visionhub_locar/public/login.php');
+    header('Location: /marco_urbano2/public/login.php');
     exit;
 }
 
 if ((int)$user['ativo'] !== 1) {
     $_SESSION['erro'] = 'Usuário desativado';
-    header('Location: /visionhub_locar/public/login.php');
+    header('Location: /marco_urbano2/public/login.php');
     exit;
 }
 
 if (!password_verify($senha, $user['senha'])) {
     $_SESSION['erro'] = 'Senha incorreta';
-    header('Location: /visionhub_locar/public/login.php');
+    header('Location: /marco_urbano2/public/login.php');
     exit;
 }
 
@@ -54,5 +58,5 @@ if (!password_verify($senha, $user['senha'])) {
 $_SESSION['usuario_id']   = (int)$user['id'];
 $_SESSION['tipo_usuario'] = (int)$user['tipo_usuario'];
 
-header('Location: /visionhub_locar/index.php');
+header('Location: /marco_urbano2/index.php');
 exit;

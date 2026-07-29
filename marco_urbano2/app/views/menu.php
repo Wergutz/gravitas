@@ -1,10 +1,12 @@
 <?php
-if (session_status() !== PHP_SESSION_ACTIVE) {
+if (session_status() === PHP_SESSION_NONE) {
+    session_name('MU2_PAINEL');
+    session_set_cookie_params(['path' => '/marco_urbano2/', 'samesite' => 'Lax', 'httponly' => true]);
     session_start();
 }
 
 $tipo = $_SESSION['tipo_usuario'] ?? null;
-$base = '/visionhub_locar';
+$base = '/marco_urbano2';
 ?>
 
 <nav class="menu">

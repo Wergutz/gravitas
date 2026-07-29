@@ -180,7 +180,7 @@ $funcionarios = $pdo->query("
 <meta charset="UTF-8">
 <title>Funcionários | VisionHub Locar</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="/visionhub_locar/assets/css/planejador.css?v=1">
+<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css?v=1">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -189,15 +189,15 @@ $funcionarios = $pdo->query("
 
 <aside class="sidebar">
     <div class="logo">
-        <img src="/visionhub_locar/assets/img/farol.png">
+        <img src="/marco_urbano2/assets/img/farol.png">
         <span>VISION HUB</span>
     </div>
     <nav>
-        <a href="/visionhub_locar/planejador/menu.php">📊 Dashboard</a>
-        <a href="/visionhub_locar/planejador/equipamentos_pesados.php">🚜 Equip. Pesados</a>
-        <a href="/visionhub_locar/planejador/equipamentos_leves.php">🧰 Equip. Leves</a>
-        <a href="/visionhub_locar/planejador/funcionarios.php" class="active">👷 Funcionários</a>
-        <a href="/visionhub_locar/public/logout.php">🚪 Sair</a>
+        <a href="/marco_urbano2/planejador/menu.php">📊 Dashboard</a>
+        <a href="/marco_urbano2/planejador/equipamentos_pesados.php">🚜 Equip. Pesados</a>
+        <a href="/marco_urbano2/planejador/equipamentos_leves.php">🧰 Equip. Leves</a>
+        <a href="/marco_urbano2/planejador/funcionarios.php" class="active">👷 Funcionários</a>
+        <a href="/marco_urbano2/public/logout.php">🚪 Sair</a>
     </nav>
 </aside>
 

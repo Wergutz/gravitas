@@ -43,7 +43,7 @@ $trechos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <meta charset="UTF-8">
 <title>Visualizar Planejamento | VisionHub Locar</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="/visionhub_locar/assets/css/planejador.css?v=1">
+<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css?v=1">
 </head>
 <body>
 
@@ -52,15 +52,15 @@ $trechos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <!-- SIDEBAR -->
 <aside class="sidebar">
     <div class="logo">
-        <img src="/visionhub_locar/assets/img/farol.png">
+        <img src="/marco_urbano2/assets/img/farol.png">
         <span>VISION HUB</span>
     </div>
     <nav>
-        <a href="/visionhub_locar/planejador/menu.php">📊 Dashboard</a>
-        <a href="/visionhub_locar/planejador/planejamento_selecionar.php">
+        <a href="/marco_urbano2/planejador/menu.php">📊 Dashboard</a>
+        <a href="/marco_urbano2/planejador/planejamento_selecionar.php">
             📂 Selecionar Planejamento
         </a>
-        <a href="/visionhub_locar/public/logout.php">🚪 Sair</a>
+        <a href="/marco_urbano2/public/logout.php">🚪 Sair</a>
     </nav>
 </aside>
 
@@ -128,7 +128,7 @@ $trechos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- CROQUI -->
     <div class="form-group">
         <strong>Croqui:</strong><br>
-        <a href="/visionhub_locar/uploads/croquis/<?= $trecho['croqui'] ?>" target="_blank">
+        <a href="/marco_urbano2/uploads/croquis/<?= $trecho['croqui'] ?>" target="_blank">
             📄 Visualizar Croqui
         </a>
     </div>
@@ -176,9 +176,9 @@ $trechos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->execute([$trecho['id']]);
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $foto):
         ?>
-            <a href="/visionhub_locar/uploads/fotos/<?= $foto['arquivo'] ?>" target="_blank">
+            <a href="/marco_urbano2/uploads/fotos/<?= $foto['arquivo'] ?>" target="_blank">
                 <img
-                    src="/visionhub_locar/uploads/fotos/<?= $foto['arquivo'] ?>"
+                    src="/marco_urbano2/uploads/fotos/<?= $foto['arquivo'] ?>"
                     style="height:100px;border-radius:6px;"
                 >
             </a>

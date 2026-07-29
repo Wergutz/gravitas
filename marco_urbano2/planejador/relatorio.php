@@ -78,7 +78,7 @@ if (!empty($_POST['trechos'])) {
 <title>Relatório de Medição | VisionHub Locar</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="/visionhub_locar/assets/css/planejador.css?v=1">
+<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css?v=1">
 
 <style>
 @media print {
@@ -153,15 +153,15 @@ if (!empty($_POST['trechos'])) {
 
 <aside class="sidebar no-print">
     <div class="logo">
-        <img src="/visionhub_locar/assets/img/farol.png">
+        <img src="/marco_urbano2/assets/img/farol.png">
         <span>VISION HUB</span>
     </div>
     <nav>
-        <a href="/visionhub_locar/planejador/menu.php">📊 Dashboard</a>
-        <a href="/visionhub_locar/planejador/planejamento.php">🗂 Novo Planejamento</a>
-        <a href="/visionhub_locar/planejador/medicao.php">📐 Medição</a>
-        <a href="/visionhub_locar/planejador/relatorio.php" class="active">📄 Relatório</a>
-        <a href="/visionhub_locar/public/logout.php">🚪 Sair</a>
+        <a href="/marco_urbano2/planejador/menu.php">📊 Dashboard</a>
+        <a href="/marco_urbano2/planejador/planejamento.php">🗂 Novo Planejamento</a>
+        <a href="/marco_urbano2/planejador/medicao.php">📐 Medição</a>
+        <a href="/marco_urbano2/planejador/relatorio.php" class="active">📄 Relatório</a>
+        <a href="/marco_urbano2/public/logout.php">🚪 Sair</a>
     </nav>
 </aside>
 
@@ -257,7 +257,7 @@ $areaTotal = array_sum(array_column($medicoes,'area'));
 
 <?php if (!empty($t['croqui'])): ?>
 <h4>Croqui</h4>
-<img src="/visionhub_locar/uploads/croquis/<?= htmlspecialchars($t['croqui']) ?>">
+<img src="/marco_urbano2/uploads/croquis/<?= htmlspecialchars($t['croqui']) ?>">
 <?php endif; ?>
 
 <h4>Fotos</h4>
@@ -266,7 +266,7 @@ $stmt = $pdo->prepare("SELECT * FROM trecho_fotos WHERE trecho_id = ?");
 $stmt->execute([$t['id']]);
 foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $f):
 ?>
-<img src="/visionhub_locar/uploads/fotos/<?= htmlspecialchars($f['arquivo']) ?>">
+<img src="/marco_urbano2/uploads/fotos/<?= htmlspecialchars($f['arquivo']) ?>">
 <?php endforeach; ?>
 
 </div>

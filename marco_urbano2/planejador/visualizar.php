@@ -24,7 +24,7 @@ $trechos = $trechos->fetchAll(PDO::FETCH_ASSOC);
 <head>
 <meta charset="UTF-8">
 <title>Visualizar Planejamento</title>
-<link rel="stylesheet" href="/visionhub_locar/assets/css/planejador.css">
+<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css">
 </head>
 <body>
 
@@ -32,13 +32,13 @@ $trechos = $trechos->fetchAll(PDO::FETCH_ASSOC);
 
 <aside class="sidebar">
     <div class="logo">
-        <img src="/visionhub_locar/assets/img/farol.png">
+        <img src="/marco_urbano2/assets/img/farol.png">
         <span>VISION HUB</span>
     </div>
     <nav>
         <a href="menu.php">📊 Dashboard</a>
         <a href="listagem.php">📋 Listagem</a>
-        <a href="/visionhub_locar/public/logout.php">🚪 Sair</a>
+        <a href="/marco_urbano2/public/logout.php">🚪 Sair</a>
     </nav>
 </aside>
 
@@ -61,7 +61,7 @@ $trechos = $trechos->fetchAll(PDO::FETCH_ASSOC);
 
 <p>
 <b>Croqui:</b>
-<a href="/visionhub_locar/uploads/croquis/<?= $t['croqui'] ?>" target="_blank">
+<a href="/marco_urbano2/uploads/croquis/<?= $t['croqui'] ?>" target="_blank">
 📎 Abrir croqui
 </a>
 </p>
@@ -73,7 +73,7 @@ $fotos = $pdo->prepare("SELECT * FROM trecho_fotos WHERE trecho_id = ?");
 $fotos->execute([$t['id']]);
 foreach ($fotos as $f):
 ?>
-<img src="/visionhub_locar/uploads/fotos/<?= $f['arquivo'] ?>"
+<img src="/marco_urbano2/uploads/fotos/<?= $f['arquivo'] ?>"
      style="width:150px;border-radius:8px;">
 <?php endforeach; ?>
 </div>

@@ -1,5 +1,7 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) {
+    session_name('MU2_PAINEL');
+    session_set_cookie_params(['path' => '/marco_urbano2/', 'samesite' => 'Lax', 'httponly' => true]);
     session_start();
 }
 
@@ -39,7 +41,7 @@ a {
 
 <a href="usuarios.php">👤 Gerenciar Usuários</a>
 <a href="planejamentos.php">🗂 Gerenciar Planejamentos</a>
-<a href="/visionhub_locar/planejador/relatorio.php">📄 Relatórios</a>
+<a href="/marco_urbano2/planejador/relatorio.php">📄 Relatórios</a>
 
 <hr>
 

@@ -1,8 +1,8 @@
 <?php
 $host = 'localhost';
-$db   = 'u278289683_locar';
-$user = 'u278289683_locar';
-$pass = 'geb91/RS'; // USE A SENHA REAL NO SEU SERVIDOR
+$db   = 'u278289683_marco_urbano2';
+$user = 'u278289683_marco_urbano2';
+$pass = 'geb91/RS';
 $charset = 'utf8mb4';
 
 $options = [

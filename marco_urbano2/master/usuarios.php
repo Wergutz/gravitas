@@ -1,9 +1,13 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_name('MU2_PAINEL');
+    session_set_cookie_params(['path' => '/marco_urbano2/', 'samesite' => 'Lax', 'httponly' => true]);
+    session_start();
+}
 
 /* ===== PROTEÇÃO: SOMENTE MASTER ===== */
 if (!isset($_SESSION['usuario_id'], $_SESSION['tipo_usuario']) || $_SESSION['tipo_usuario'] != 1) {
-    header('Location: /visionhub_locar/public/login.php');
+    header('Location: /marco_urbano2/public/login.php');
     exit;
 }
 
@@ -177,7 +181,7 @@ td {
 
 <h1>Painel MASTER – Usuários</h1>
 
-<a class="logout" href="/visionhub_locar/public/logout.php">Sair</a>
+<a class="logout" href="/marco_urbano2/public/logout.php">Sair</a>
 
 <form method="post">
     <h3><?= $editando ? 'Editar usuário' : 'Cadastrar novo usuário' ?></h3>
