@@ -3,6 +3,7 @@
   <PropertyGroup>
     <!-- net8.0-windows: este projeto só compila no Windows (usa WPF + WMI). -->
     <TargetFramework>net8.0-windows</TargetFramework>
+    <OutputType>WinExe</OutputType>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
