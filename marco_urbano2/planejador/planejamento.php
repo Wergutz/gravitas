@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/config/database.php';
+require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -264,10 +265,9 @@ function adicionarTrecho() {
             <label>Tipo Pavimento</label>
             <select name="trechos[${i}][tipo_pavimento]" required>
                 <option value="">Selecione</option>
-                <option value="asfalto">Asfalto</option>
-                <option value="paralelepipedo">Paralelepípedo</option>
-                <option value="bloco_concreto">Bloco de Concreto</option>
-                <option value="chao_batido">Chão Batido</option>
+                <?php foreach (TIPOS_PAVIMENTO as $valor => $label): ?>
+                <option value="<?= $valor ?>"><?= htmlspecialchars($label) ?></option>
+                <?php endforeach; ?>
             </select>
         </div>
     `;

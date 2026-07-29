@@ -4,6 +4,7 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/config/database.php';
+require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
 require_once __DIR__ . '/../app/libs/tcpdf/tcpdf.php';
 
 auth_required([3]);
@@ -59,7 +60,7 @@ foreach ($trechos as $i => $t) {
         "PV Montante: {$t['pv_montante']} | PV Jusante: {$t['pv_jusante']}\n".
         "Tipo PI: {$t['tipo_pi_montante']}\n".
         "Qtd PVs: {$t['quantidade_pvs']}\n".
-        "Tipo Pavimento: ".strtoupper(str_replace('_',' ',$t['tipo_pavimento']))."\n".
+        "Tipo Pavimento: ".tipo_pavimento_label($t['tipo_pavimento'])."\n".
         "Área Total: {$t['area_total']} m²"
     );
 

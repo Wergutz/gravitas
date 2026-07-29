@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/config/database.php';
+require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
 
 auth_required([3]);
 
@@ -232,7 +233,7 @@ $areaTotal = array_sum(array_column($medicoes,'area'));
 <strong>Cidade:</strong> <?= htmlspecialchars($t['cidade']) ?><br>
 <strong>Contrato:</strong> <?= htmlspecialchars($t['contrato']) ?><br>
 <strong>Bacia:</strong> <?= htmlspecialchars($t['bacia']) ?><br>
-<strong>Tipo de Pavimento:</strong> <?= ucwords(str_replace('_',' ',$t['tipo_pavimento'])) ?>
+<strong>Tipo de Pavimento:</strong> <?= htmlspecialchars(tipo_pavimento_label($t['tipo_pavimento'])) ?>
 </p>
 
 <?php if ($medicoes): ?>
