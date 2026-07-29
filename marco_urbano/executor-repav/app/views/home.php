@@ -2,8 +2,9 @@
 header('X-Robots-Tag: noindex, nofollow');
 $hoje      = date('d/m/Y');
 $diaSem    = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][date('w')];
+// Etapas habilitadas nesta versão do diário: só de 11 a 16
 $stepAtual = $diarioHoje ? (int)$diarioHoje['step_atual'] : 0;
-$pct       = (int)round($stepAtual / 19 * 100);
+$pct       = (int)round(max(0, min($stepAtual, 16) - 10) / 6 * 100);
 $temAsfalto = !empty(array_filter($pavimentos, fn($p) => str_contains(strtolower($p['tipo_pavimento']), 'asfalto') || str_contains(strtolower($p['tipo_pavimento']), 'cbuq')));
 ?>
 <!DOCTYPE html>
