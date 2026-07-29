@@ -24,9 +24,9 @@
         <ListView x:Name="FilesListView" Grid.Row="2">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Nome" Width="220" DisplayMemberPath="Name"/>
-                    <GridViewColumn Header="Tamanho (bytes)" Width="130" DisplayMemberPath="SizeBytes"/>
-                    <GridViewColumn Header="Data" Width="150" DisplayMemberPath="Timestamp"/>
+                    <GridViewColumn Header="Nome" Width="220" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Header="Tamanho (bytes)" Width="130" DisplayMemberBinding="{Binding SizeBytes}"/>
+                    <GridViewColumn Header="Data" Width="150" DisplayMemberBinding="{Binding Timestamp}"/>
                 </GridView>
             </ListView.View>
         </ListView>
