@@ -15,12 +15,17 @@
 -- Hashes gerados com password_hash(..., PASSWORD_DEFAULT) via PHP CLI
 -- (PHP 8.4, algoritmo bcrypt $2y$).
 --
+-- ATUALIZAÇÃO: a senha foi padronizada para "Marco@2026", a mesma
+-- senha temporária padrão já usada nos usuários do marco_urbano
+-- (ver marco_urbano/painel/database/migrations/MU_usuarios_iniciais.sql).
+-- Ver marco_urbano2_atualizar_senhas.sql para o UPDATE aplicado em produção.
+--
 -- Usuário: planejador_isaias
---   Senha temporária: Locar@2026Pj
+--   Senha: Marco@2026
 --   tipo_usuario = 3 (PLANEJADOR)
 --
 -- Usuário: executor2_mu
---   Senha temporária: Locar@2026Ex
+--   Senha: Marco@2026
 --   tipo_usuario = 4 (EXECUTOR) — perfil ainda sem tela implementada
 --   (pasta executor/ vazia), usuário criado mesmo assim a pedido.
 -- =====================================================================
@@ -30,14 +35,14 @@ VALUES
 (
     'Isaías',
     'planejador_isaias',
-    '$2y$12$NiBaT/CMbFjNhhA61BfTMODbcx94K5tFi46.ywjATlRO16ImGXo7W',
+    '$2y$12$ajTNZxO8rdvfrrdqxA7UeuNPUWn1l/SR5wdToMsC7fojqACajODb.',
     3,
     1
 ),
 (
     'Executor 2',
     'executor2_mu',
-    '$2y$12$1eqJqfYUoUqv31M5Egxr2eC6M41Ik/yOl0DuCjACvvJgWP2LZ7z/2',
+    '$2y$12$ajTNZxO8rdvfrrdqxA7UeuNPUWn1l/SR5wdToMsC7fojqACajODb.',
     4,
     1
 );
