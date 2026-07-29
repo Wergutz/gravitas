@@ -1,8 +1,11 @@
 <?php
 header('X-Robots-Tag: noindex, nofollow');
-$totalSteps = 19;
+// Etapas habilitadas nesta versão do diário: só de 11 a 16
+$PRIMEIRA_ETAPA = 11;
+$ULTIMA_ETAPA   = 16;
+$totalSteps = $ULTIMA_ETAPA - $PRIMEIRA_ETAPA + 1;
 $stepAtual  = (int)$diario['step_atual'];
-$pct        = (int)round($stepAtual / $totalSteps * 100);
+$pct        = (int)round(max(0, min($stepAtual, $ULTIMA_ETAPA) - ($PRIMEIRA_ETAPA - 1)) / $totalSteps * 100);
 $bloqueado  = $diario['status'] === 'enviado';
 $diarioId   = (int)$diario['id'];
 
@@ -63,6 +66,8 @@ $PASSOS = [
     18 => ['t'=>'Foto: equipe no final',          'desc'=>'Integrantes + equipamentos', 'foto'=>true, 'min'=>1],
     19 => ['t'=>'Finalização do serviço',         'desc'=>'Confirmar fechamento do dia'],
 ];
+// Nesta versão do diário, só as etapas 11 a 16 ficam habilitadas para a equipe.
+$PASSOS = array_filter($PASSOS, fn($num) => $num >= $PRIMEIRA_ETAPA && $num <= $ULTIMA_ETAPA, ARRAY_FILTER_USE_KEY);
 
 function stepFeito(int $s, array $foStep, array $pres, array $cargas, array $areas, array $equips, array $diario): bool {
     if ($s <= (int)$diario['step_atual']) return true;
@@ -403,7 +408,7 @@ function stepFeito(int $s, array $foStep, array $pres, array $cargas, array $are
       aplicado hoje<br>
       <b id="foot-resumo"><?= number_format($areaTotal,2,',','.') ?> m² · <?= number_format($volAsf,2,',','.') ?> m³</b>
     </div>
-    <?php if (!$bloqueado && $stepAtual >= 17): ?>
+    <?php if (!$bloqueado && $stepAtual >= $ULTIMA_ETAPA): ?>
     <form method="post" action="<?= REPAV_BASE ?>/diario/<?= $diarioId ?>/encerrar" style="margin:0">
       <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
       <button type="submit" class="btn-encerrar" onclick="return confirm('Encerrar e enviar o diário ao Painel?')">
@@ -411,7 +416,7 @@ function stepFeito(int $s, array $foStep, array $pres, array $cargas, array $are
       </button>
     </form>
     <?php elseif (!$bloqueado): ?>
-    <span class="hint" style="font-size:11px;text-align:right;color:var(--muted)">Complete até o passo 17 para encerrar</span>
+    <span class="hint" style="font-size:11px;text-align:right;color:var(--muted)">Complete até o passo <?= $ULTIMA_ETAPA ?> para encerrar</span>
     <?php endif; ?>
   </div>
 
