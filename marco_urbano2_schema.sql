@@ -179,7 +179,7 @@ CREATE TABLE IF NOT EXISTS `trechos` (
   `pv_jusante` varchar(50) NOT NULL,
   `tipo_pi_montante` enum('PV','PI','CA','Outro') NOT NULL,
   `quantidade_pvs` int(11) NOT NULL,
-  `tipo_pavimento` enum('paralelepipedo_regular','paralelepipedo_irregular','bloco_concreto','asfalto','asfalto_paralelepipedo','chao_batido','calcada') NOT NULL,
+  `tipo_pavimento` enum('cbuq','calcada_reg_irreg','paralelepipedo','bloco_concreto','sem_pavimento','cbuq_pedra','calcada_mod') NOT NULL,
   `area_total` decimal(10,2) NOT NULL,
   `croqui` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp()

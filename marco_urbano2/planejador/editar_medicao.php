@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/config/database.php';
+require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
 
 auth_required([3]);
 
@@ -171,20 +172,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <label>Tipo de Pavimento</label>
 <select name="tipo_pavimento" required>
 <option value="">Selecione</option>
-<?php
-$tipos = [
-    'paralelepipedo_regular'=>'Paralelepípedo Regular',
-    'paralelepipedo_irregular'=>'Paralelepípedo Irregular',
-    'bloco_concreto'=>'Bloco de Concreto',
-    'asfalto'=>'Asfalto',
-    'asfalto_paralelepipedo'=>'Asfalto + Paralelepípedo',
-    'chao_batido'=>'Chão Batido',
-    'calcada'=>'Calçada'
-];
-foreach ($tipos as $k=>$v):
-?>
+<?php foreach (TIPOS_PAVIMENTO as $k=>$v): ?>
 <option value="<?= $k ?>" <?= $trecho['tipo_pavimento']===$k?'selected':'' ?>>
-<?= $v ?>
+<?= htmlspecialchars($v) ?>
 </option>
 <?php endforeach; ?>
 </select>
