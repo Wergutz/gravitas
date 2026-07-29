@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/config/database.php';
+require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
 
 auth_required([3]); // Planejador
 
@@ -118,7 +119,7 @@ $trechos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="form-group">
         <strong>Tipo de Pavimento:</strong>
-        <?= ucwords(str_replace('_', ' ', $trecho['tipo_pavimento'])) ?>
+        <?= htmlspecialchars(tipo_pavimento_label($trecho['tipo_pavimento'])) ?>
     </div>
 
     <div class="form-group">
