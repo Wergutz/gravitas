@@ -59,8 +59,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <aside class="sidebar">
     <div class="logo">
-        <img src="/marco_urbano2/assets/img/farol.png">
-        <span>VISION HUB</span>
+        <img src="/marco_urbano2/assets/img/logo-marco-urbano.svg" alt="Marco Urbano">
+        <span>MARCO URBANO</span>
     </div>
     <nav>
         <a href="/marco_urbano2/planejador/menu.php">📊 Dashboard</a>
@@ -78,7 +78,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1>Editar Planejamento</h1>
         <span>Identificação do planejamento</span>
     </div>
-    <div class="managed">MANAGED BY GRAVITAS</div>
 </div>
 
 <form method="post">

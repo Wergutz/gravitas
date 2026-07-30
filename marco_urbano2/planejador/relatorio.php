@@ -154,8 +154,8 @@ if (!empty($_POST['trechos'])) {
 
 <aside class="sidebar no-print">
     <div class="logo">
-        <img src="/marco_urbano2/assets/img/farol.png">
-        <span>VISION HUB</span>
+        <img src="/marco_urbano2/assets/img/logo-marco-urbano.svg" alt="Marco Urbano">
+        <span>MARCO URBANO</span>
     </div>
     <nav>
         <a href="/marco_urbano2/planejador/menu.php">📊 Dashboard</a>
@@ -175,7 +175,6 @@ if (!empty($_POST['trechos'])) {
             <span><?= htmlspecialchars($planejamento['nome']) ?></span>
         <?php endif; ?>
     </div>
-    <div class="managed">MANAGED BY GRAVITAS</div>
 </div>
 
 <div class="form-card no-print">

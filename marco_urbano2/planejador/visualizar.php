@@ -32,8 +32,8 @@ $trechos = $trechos->fetchAll(PDO::FETCH_ASSOC);
 
 <aside class="sidebar">
     <div class="logo">
-        <img src="/marco_urbano2/assets/img/farol.png">
-        <span>VISION HUB</span>
+        <img src="/marco_urbano2/assets/img/logo-marco-urbano.svg" alt="Marco Urbano">
+        <span>MARCO URBANO</span>
     </div>
     <nav>
         <a href="menu.php">📊 Dashboard</a>

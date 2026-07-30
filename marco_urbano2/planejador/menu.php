@@ -19,8 +19,8 @@ auth_required([3]); // Planejador
 <!-- SIDEBAR -->
 <aside class="sidebar">
     <div class="logo">
-        <img src="/marco_urbano2/assets/img/farol.png" alt="VisionHub">
-        <span>VISION HUB</span>
+        <img src="/marco_urbano2/assets/img/logo-marco-urbano.svg" alt="Marco Urbano">
+        <span>MARCO URBANO</span>
     </div>
 
     <nav>
@@ -47,7 +47,6 @@ auth_required([3]); // Planejador
         <h1>Dashboard do Planejador</h1>
         <span>Visão geral operacional</span>
     </div>
-    <div class="managed">MANAGED BY GRAVITAS</div>
 </div>
 
 <!-- CONTEÚDO PRINCIPAL -->

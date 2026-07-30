@@ -34,8 +34,8 @@ $planejamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <!-- SIDEBAR -->
 <aside class="sidebar">
     <div class="logo">
-        <img src="/marco_urbano2/assets/img/farol.png">
-        <span>VISION HUB</span>
+        <img src="/marco_urbano2/assets/img/logo-marco-urbano.svg" alt="Marco Urbano">
+        <span>MARCO URBANO</span>
     </div>
     <nav>
         <a href="/marco_urbano2/planejador/menu.php">📊 Dashboard</a>
@@ -53,7 +53,6 @@ $planejamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <h1>Selecionar Planejamento</h1>
         <span>Escolha um planejamento existente</span>
     </div>
-    <div class="managed">MANAGED BY GRAVITAS</div>
 </div>
 
 <div class="form-card">

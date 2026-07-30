@@ -28,8 +28,8 @@ unset($_SESSION['erro']);
     <form class="login-form" action="process_login.php" method="post">
 
         <div class="logo">
-        <img src="/marco_urbano2/assets/img/farol4.png" alt="VisionHub Locar">
-
+        <img src="/marco_urbano2/assets/img/logo-marco-urbano.svg" alt="Marco Urbano">
+        <h1>MARCO URBANO</h1>
         </div>
 
         <div class="row">

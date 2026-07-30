@@ -189,8 +189,8 @@ $funcionarios = $pdo->query("
 
 <aside class="sidebar">
     <div class="logo">
-        <img src="/marco_urbano2/assets/img/farol.png">
-        <span>VISION HUB</span>
+        <img src="/marco_urbano2/assets/img/logo-marco-urbano.svg" alt="Marco Urbano">
+        <span>MARCO URBANO</span>
     </div>
     <nav>
         <a href="/marco_urbano2/planejador/menu.php">📊 Dashboard</a>
@@ -208,7 +208,6 @@ $funcionarios = $pdo->query("
         <h1>Funcionários</h1>
         <span>Cadastro e conformidade operacional</span>
     </div>
-    <div class="managed">MANAGED BY GRAVITAS</div>
 </div>
 
 <div class="form-card">
