@@ -51,12 +51,12 @@ public sealed class Fat12Image
     }
 
     /// <summary>Cria uma imagem de disquete virtual em branco, já formatada em FAT12.</summary>
-    public static Fat12Image CreateNew(FloppyFormat format, string volumeLabel = "YAMAHA")
+    public static Fat12Image CreateNew(FloppyFormat format)
     {
         var geometry = FloppyGeometry.For(format);
         var data = new byte[geometry.TotalBytes];
 
-        WriteBootSector(data, geometry, volumeLabel);
+        WriteBootSector(data, geometry);
 
         // Inicializa as duas cópias da FAT: cluster 0 guarda o media descriptor,
         // cluster 1 é marcado como fim-de-cadeia (ambos reservados pelo padrão FAT).
@@ -346,14 +346,30 @@ public sealed class Fat12Image
         }
     }
 
-    private static void WriteBootSector(byte[] data, FloppyGeometry geometry, string volumeLabel)
+    /// <summary>
+    /// Texto de identificação gravado a partir do offset 96 (0x60) do boot sector,
+    /// copiado byte a byte de um disquete real formatado por um Yamaha PSR-550. O
+    /// firmware do teclado (e do emulador Gotek em modo original) valida o OEM ID
+    /// e esse texto antes de aceitar o disquete como "seu" — sem eles, o disquete é
+    /// listado (o firmware enxerga a FAT12 normalmente) mas o conteúdo não é
+    /// reconhecido, que era exatamente o sintoma relatado.
+    /// </summary>
+    private const string YamahaIdentificationText =
+        "PSR-550         Ver.1.00        Copyright(C)     1999 by YAMAHA ";
+
+    private static void WriteBootSector(byte[] data, FloppyGeometry geometry)
     {
-        // JMP curto + NOP, presente em todo boot sector FAT válido.
+        // JMP curto + NOP, presente em todo boot sector FAT válido. O destino do
+        // salto (0x1C) é o mesmo usado pelo disquete real do PSR-550, replicado
+        // aqui por completude — o firmware não executa esse código, só valida a
+        // estrutura da BPB e o texto de identificação abaixo.
         data[0] = 0xEB;
-        data[1] = 0x3C;
+        data[1] = 0x1C;
         data[2] = 0x90;
 
-        Encoding.ASCII.GetBytes("MSWIN4.1").CopyTo(data, 3);
+        // OEM ID: o teclado só reconhece disquetes com esse identificador exato
+        // (confirmado comparando byte a byte com um disquete formatado por ele).
+        Encoding.ASCII.GetBytes("YAMAHA  ").CopyTo(data, 3);
 
         BitConverter.GetBytes((ushort)FloppyGeometry.SectorSize).CopyTo(data, 11);
         data[13] = (byte)geometry.SectorsPerCluster;
@@ -368,21 +384,12 @@ public sealed class Fat12Image
         BitConverter.GetBytes((uint)0).CopyTo(data, 28); // hidden sectors
         BitConverter.GetBytes((uint)0).CopyTo(data, 32); // total sectors (32-bit, não usado aqui)
 
-        data[36] = 0x00; // drive number
-        data[37] = 0x00; // reservado
-        data[38] = 0x29; // boot signature (indica que os 3 campos seguintes existem)
+        // Bytes 36-95 (número de drive, assinatura de boot estendida, serial de
+        // volume, rótulo e tipo de FS) ficam zerados: o disquete real do PSR-550
+        // não usa a BPB estendida do MS-DOS, então preenchê-la (como um disquete
+        // "genérico" faria) só adiciona bytes que o teclado não espera encontrar.
 
-        var volumeId = (uint)(DateTime.Now.Ticks & 0xFFFFFFFF);
-        BitConverter.GetBytes(volumeId).CopyTo(data, 39);
-
-        var labelBytes = new byte[11];
-        Array.Fill(labelBytes, (byte)' ');
-        var normalizedLabel = volumeLabel.ToUpperInvariant();
-        var labelLength = Math.Min(11, normalizedLabel.Length);
-        Encoding.ASCII.GetBytes(normalizedLabel, 0, labelLength, labelBytes, 0);
-        labelBytes.CopyTo(data, 43);
-
-        Encoding.ASCII.GetBytes("FAT12   ").CopyTo(data, 54);
+        Encoding.ASCII.GetBytes(YamahaIdentificationText).CopyTo(data, 96);
 
         data[510] = 0x55;
         data[511] = 0xAA;

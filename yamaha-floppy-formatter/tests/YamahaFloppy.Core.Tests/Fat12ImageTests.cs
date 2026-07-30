@@ -21,6 +21,22 @@ public class Fat12ImageTests
     }
 
     [Fact]
+    public void CreateNew_WritesYamahaOemIdAndIdentificationString()
+    {
+        // Confirmado byte a byte contra um disquete real formatado por um
+        // Yamaha PSR-550 (ver Fat12Image.WriteBootSector): sem esse OEM ID e
+        // esse texto, o teclado não reconhece o conteúdo do disquete, mesmo
+        // com a estrutura FAT12 correta.
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        var bytes = image.GetBytes();
+
+        Assert.Equal("YAMAHA  ", Encoding.ASCII.GetString(bytes, 3, 8));
+        Assert.Equal(
+            "PSR-550         Ver.1.00        Copyright(C)     1999 by YAMAHA ",
+            Encoding.ASCII.GetString(bytes, 96, 64));
+    }
+
+    [Fact]
     public void CreateNew_WritesMediaDescriptorMatchingFormat()
     {
         var hd = Fat12Image.CreateNew(FloppyFormat.Hd1440);
@@ -181,7 +197,7 @@ public class Fat12ImageTests
     [Fact]
     public void SaveAndLoad_RoundTripsImageIdentically()
     {
-        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440, "TESTDISK");
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
         image.AddFile("SONG1.MID", Encoding.ASCII.GetBytes("conteudo"));
 
         var tempPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".img");

@@ -60,7 +60,7 @@ public static class EmulatorVolume
             if (File.Exists(path))
                 throw new IOException($"Já existe um disquete virtual de índice {index} ({fileName}) nesta pasta.");
 
-            var image = Fat12Image.CreateNew(format, $"YAMAHA{index:D2}");
+            var image = Fat12Image.CreateNew(format);
             image.Save(path);
 
             created.Add(new FloppySlot(index, path, image.TotalCapacityBytes, format));
