@@ -36,7 +36,19 @@ public static class UsbDriveService
             var pnpId = (disk["PNPDeviceID"] as string) ?? deviceId;
             var interfaceType = (disk["InterfaceType"] as string) ?? "USB";
 
-            var letters = GetDriveLettersForDisk(deviceId);
+            // Um pendrive sem nenhuma partição (disco "cru", comum antes da primeira
+            // formatação) faz a consulta ASSOCIATORS OF falhar com "Not Found" no WMI.
+            // Isso não pode derrubar a listagem inteira — só significa "sem letra ainda".
+            List<string> letters;
+            try
+            {
+                letters = GetDriveLettersForDisk(deviceId);
+            }
+            catch (Exception ex) when (ex is ManagementException or System.Runtime.InteropServices.COMException)
+            {
+                letters = new List<string>();
+            }
+
             drives.Add(new UsbDriveInfo(diskNumber, pnpId, model, size, interfaceType, letters));
         }
 
