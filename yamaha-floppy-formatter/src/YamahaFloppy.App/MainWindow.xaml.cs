@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Forms;
 using YamahaFloppy.App.Models;
@@ -154,7 +155,7 @@ public partial class MainWindow : Window
             return;
         }
 
-        SlotsListView.ItemsSource = slots;
+        SlotsListView.ItemsSource = slots.Select(BuildDisplayRow).ToList();
 
         if (slots.Count == 0)
         {
@@ -162,11 +163,29 @@ public partial class MainWindow : Window
         }
     }
 
+    /// <summary>
+    /// Abre cada disquete para contar quantos arquivos e quantos bytes já
+    /// estão gravados nele (diferente do tamanho do .IMG, que é sempre fixo).
+    /// </summary>
+    private static FloppySlotDisplay BuildDisplayRow(FloppySlot slot)
+    {
+        try
+        {
+            var files = EmulatorVolume.OpenDisk(slot).ListFiles();
+            return new FloppySlotDisplay(slot, files.Count, files.Sum(f => (long)f.SizeBytes));
+        }
+        catch
+        {
+            return new FloppySlotDisplay(slot, 0, 0);
+        }
+    }
+
     private void SlotsListView_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
-        if (SlotsListView.SelectedItem is not FloppySlot slot)
+        if (SlotsListView.SelectedItem is not FloppySlotDisplay row)
             return;
 
+        var slot = row.Slot;
         if (slot.Format is null)
         {
             MessageBox.Show(this, $"O arquivo '{slot.FileName}' não tem um tamanho de disquete reconhecido (720KB/1.44MB).",
@@ -176,6 +195,9 @@ public partial class MainWindow : Window
 
         var editor = new FloppyEditorWindow(slot) { Owner = this };
         editor.ShowDialog();
+
+        // Reflete no resumo (Arquivos/Usado) qualquer alteração feita no editor.
+        LoadSlotsFromCurrentFolder();
     }
 
     private void SetBusy(bool busy, string? status)

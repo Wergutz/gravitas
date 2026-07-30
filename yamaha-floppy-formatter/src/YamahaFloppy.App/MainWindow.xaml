@@ -94,9 +94,10 @@
                 <ListView x:Name="SlotsListView" Grid.Row="1" MouseDoubleClick="SlotsListView_MouseDoubleClick">
                     <ListView.View>
                         <GridView>
-                            <GridViewColumn Header="Disco" Width="220" DisplayMemberBinding="{Binding DisplayName}"/>
-                            <GridViewColumn Header="Arquivo" Width="160" DisplayMemberBinding="{Binding FileName}"/>
-                            <GridViewColumn Header="Tamanho (bytes)" Width="140" DisplayMemberBinding="{Binding SizeBytes}"/>
+                            <GridViewColumn Header="Disco" Width="200" DisplayMemberBinding="{Binding DisplayName}"/>
+                            <GridViewColumn Header="Arquivo" Width="140" DisplayMemberBinding="{Binding FileName}"/>
+                            <GridViewColumn Header="Arquivos" Width="80" DisplayMemberBinding="{Binding FileCount}"/>
+                            <GridViewColumn Header="Usado (bytes)" Width="120" DisplayMemberBinding="{Binding UsedBytes}"/>
                         </GridView>
                     </ListView.View>
                 </ListView>
