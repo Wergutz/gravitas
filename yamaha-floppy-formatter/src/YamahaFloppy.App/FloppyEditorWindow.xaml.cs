@@ -30,7 +30,7 @@ public partial class FloppyEditorWindow : Window
 
     private void ImportButton_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog
+        var dialog = new Microsoft.Win32.OpenFileDialog
         {
             Title = "Selecione arquivo(s) para copiar para o disquete virtual",
             Multiselect = true,
@@ -76,7 +76,7 @@ public partial class FloppyEditorWindow : Window
             return;
         }
 
-        var dialog = new SaveFileDialog
+        var dialog = new Microsoft.Win32.SaveFileDialog
         {
             Title = "Salvar arquivo do disquete virtual",
             FileName = entry.Name,
