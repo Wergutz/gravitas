@@ -39,6 +39,8 @@ public partial class FloppyEditorWindow : Window
         if (dialog.ShowDialog(this) != true)
             return;
 
+        var importedNames = new List<string>();
+
         foreach (var path in dialog.FileNames)
         {
             try
@@ -56,6 +58,7 @@ public partial class FloppyEditorWindow : Window
                 }
 
                 _image.AddFile(fileName, content, overwrite: true);
+                importedNames.Add(fileName);
             }
             catch (Exception ex)
             {
@@ -64,7 +67,14 @@ public partial class FloppyEditorWindow : Window
             }
         }
 
-        SaveAndRefresh();
+        var successMessage = importedNames.Count switch
+        {
+            0 => null,
+            1 => $"✓ '{importedNames[0]}' importado e gravado com sucesso no disquete virtual.",
+            _ => $"✓ {importedNames.Count} arquivos importados e gravados com sucesso no disquete virtual.",
+        };
+
+        SaveAndRefresh(successMessage);
     }
 
     private void ExportButton_Click(object sender, RoutedEventArgs e)
@@ -89,6 +99,7 @@ public partial class FloppyEditorWindow : Window
         {
             var content = _image.ExtractFile(entry.Name);
             File.WriteAllBytes(dialog.FileName, content);
+            SetStatus($"✓ '{entry.Name}' exportado com sucesso para: {dialog.FileName}", isError: false);
         }
         catch (Exception ex)
         {
@@ -114,7 +125,7 @@ public partial class FloppyEditorWindow : Window
         try
         {
             _image.DeleteFile(entry.Name);
-            SaveAndRefresh();
+            SaveAndRefresh($"✓ '{entry.Name}' apagado e disquete virtual atualizado com sucesso.");
         }
         catch (Exception ex)
         {
@@ -123,18 +134,33 @@ public partial class FloppyEditorWindow : Window
         }
     }
 
-    private void SaveAndRefresh()
+    /// <summary>
+    /// Grava as alterações de volta no arquivo .IMG no disco (é isso que realmente
+    /// "salva no disquete virtual" — sem isso, as mudanças ficariam só em memória).
+    /// Mostra uma confirmação em verde no sucesso, ou um erro em vermelho na falha.
+    /// </summary>
+    private void SaveAndRefresh(string? successMessage)
     {
         try
         {
             EmulatorVolume.SaveDisk(_slot, _image);
+            SetStatus(successMessage, isError: false);
         }
         catch (Exception ex)
         {
             MessageBox.Show(this, $"Não foi possível salvar as alterações no disquete virtual:\n{ex.Message}",
                 "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+            SetStatus($"✗ Falha ao gravar no disquete virtual: {ex.Message}", isError: true);
         }
 
         Refresh();
+    }
+
+    private void SetStatus(string? message, bool isError)
+    {
+        StatusTextBlock.Text = message ?? string.Empty;
+        StatusTextBlock.Foreground = isError
+            ? System.Windows.Media.Brushes.DarkRed
+            : System.Windows.Media.Brushes.DarkGreen;
     }
 }
