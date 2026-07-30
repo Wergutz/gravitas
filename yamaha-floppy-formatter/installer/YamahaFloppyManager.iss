@@ -61,4 +61,8 @@ Name: "{group}\Desinstalar {#MyAppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "Abrir {#MyAppName} agora"; Flags: nowait postinstall skipifsilent
+; shellexec: usa ShellExecute (mesmo mecanismo do Explorer) em vez de
+; CreateProcess. Necessário porque o .exe exige elevação (requireAdministrator
+; no seu manifest, para poder formatar disco) — CreateProcess não sabe mostrar
+; o prompt do UAC e falha com "erro 740: operação requer elevação".
+Filename: "{app}\{#MyAppExeName}"; Description: "Abrir {#MyAppName} agora"; Flags: nowait postinstall skipifsilent shellexec
