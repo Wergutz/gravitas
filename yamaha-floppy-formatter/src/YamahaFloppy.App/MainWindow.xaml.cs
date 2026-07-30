@@ -89,7 +89,7 @@ public partial class MainWindow : Window
         var confirm = MessageBox.Show(this,
             $"ATENÇÃO: isso vai apagar PERMANENTEMENTE todos os dados de:\n\n" +
             $"{selectedDrive}\n\n" +
-            $"E criar uma nova partição FAT32 com {diskCount} disquete(s) virtual(is).\n\n" +
+            $"E criar uma nova partição FAT16 com {diskCount} disquete(s) virtual(is).\n\n" +
             "Esta ação não pode ser desfeita. Deseja continuar?",
             "Confirmar formatação", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
 

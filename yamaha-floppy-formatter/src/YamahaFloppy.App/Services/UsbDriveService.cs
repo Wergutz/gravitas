@@ -6,18 +6,26 @@ using YamahaFloppy.App.Models;
 namespace YamahaFloppy.App.Services;
 
 /// <summary>
-/// Detecta pendrives USB e os formata com uma única partição FAT32, usando
-/// diskpart. Isso é o suficiente e o correto para os emuladores de disquete
-/// estilo Gotek/FlashFloppy: eles leem múltiplos arquivos de imagem de uma
-/// única partição, não múltiplas partições reais (ver <c>EmulatorVolume</c>
-/// em YamahaFloppy.Core, que cria os arquivos DSKA0000.IMG etc. dentro dessa
-/// partição).
+/// Detecta pendrives USB e os formata com uma única partição FAT16, usando
+/// diskpart. FAT16 (não FAT32) é obrigatório aqui porque o firmware original
+/// do Gotek (sem FlashFloppy) só reconhece pendrives FAT12/FAT16 — em FAT32 o
+/// emulador consegue listar os arquivos DSKA####.IMG, mas interpreta a
+/// estrutura de diretório/FAT errado e não lê o conteúdo corretamente. Ver
+/// <c>EmulatorVolume</c> em YamahaFloppy.Core, que cria os arquivos
+/// DSKA0000.IMG etc. dentro dessa partição.
+///
+/// Como o Windows só cria volumes FAT16 até 4GB, a partição é limitada a
+/// <see cref="MaxFat16PartitionMegabytes"/> mesmo em pendrives maiores — os
+/// disquetes virtuais (no máximo 999 x 1.44MB) cabem tranquilamente nesse
+/// espaço.
 ///
 /// Esta classe só existe no projeto Windows (net8.0-windows) porque depende
 /// de WMI e do utilitário diskpart.exe, ambos exclusivos do Windows.
 /// </summary>
 public static class UsbDriveService
 {
+    private const int MaxFat16PartitionMegabytes = 2000;
+
     /// <summary>Lista discos físicos conectados por USB (nunca discos internos/fixos).</summary>
     public static IReadOnlyList<UsbDriveInfo> ListUsbDrives()
     {
@@ -66,7 +74,7 @@ public static class UsbDriveService
         ListUsbDrives().FirstOrDefault(d => d.PnpDeviceId == pnpDeviceId);
 
     /// <summary>
-    /// Apaga todo o conteúdo do pendrive e cria uma única partição FAT32.
+    /// Apaga todo o conteúdo do pendrive e cria uma única partição FAT16.
     /// Retorna a letra de unidade atribuída (ex.: "E:\").
     /// </summary>
     public static async Task<string> FormatDriveAsync(UsbDriveInfo drive, string volumeLabel, CancellationToken ct = default)
@@ -81,11 +89,16 @@ public static class UsbDriveService
         var driveLetter = GetFirstAvailableDriveLetter();
         var cleanLabel = SanitizeVolumeLabel(volumeLabel);
 
+        var driveSizeMegabytes = current.SizeBytes / (1024 * 1024);
+        var createPartitionCommand = driveSizeMegabytes > MaxFat16PartitionMegabytes
+            ? $"create partition primary size={MaxFat16PartitionMegabytes}\r\n"
+            : "create partition primary\r\n";
+
         var script =
             $"select disk {current.DiskNumber}\r\n" +
             "clean\r\n" +
-            "create partition primary\r\n" +
-            $"format fs=fat32 quick label=\"{cleanLabel}\"\r\n" +
+            createPartitionCommand +
+            $"format fs=fat quick label=\"{cleanLabel}\"\r\n" +
             $"assign letter={driveLetter}\r\n";
 
         var (exitCode, output) = await RunDiskpartScriptAsync(script, ct);

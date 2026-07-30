@@ -17,7 +17,10 @@ botão/chave seletora, na ordem dos nomes dos arquivos.
 
 Por isso "criar as partições ao formatar", pedido inicialmente, corresponde
 na prática a:
-1. Formatar o pendrive inteiro como **uma única partição FAT32**.
+1. Formatar o pendrive inteiro (ou os primeiros ~2GB dele, se for maior) como
+   **uma única partição FAT16**. FAT16 é obrigatório porque o firmware
+   original do Gotek (sem FlashFloppy) só reconhece pendrives FAT12/FAT16 —
+   em FAT32 ele lista os arquivos, mas não consegue ler o conteúdo certo.
 2. Criar dentro dela **N arquivos `DSKA####.IMG`**, cada um já formatado
    internamente como um disquete FAT12 válido (720KB ou 1.44MB, à escolha).
 
