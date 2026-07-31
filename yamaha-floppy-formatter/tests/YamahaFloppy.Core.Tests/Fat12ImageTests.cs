@@ -228,4 +228,200 @@ public class Fat12ImageTests
         Assert.Equal(737_280, image.TotalCapacityBytes);
         Assert.True(image.FreeSpaceBytes > 700_000);
     }
+
+    // ---- Testes das operações de leitura/escrita por offset (base do sistema de
+    // arquivos passthrough usado pelo Dokan para montar um disquete virtual no Explorer) ----
+
+    [Fact]
+    public void FindFile_ExistingFile_ReturnsMetadata()
+    {
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        image.AddFile("SONG1.MID", new byte[100]);
+
+        var entry = image.FindFile("SONG1.MID");
+
+        Assert.NotNull(entry);
+        Assert.Equal("SONG1.MID", entry!.Name);
+        Assert.Equal(100, entry.SizeBytes);
+    }
+
+    [Fact]
+    public void FindFile_UnknownFile_ReturnsNull()
+    {
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        Assert.Null(image.FindFile("NOPE.TXT"));
+    }
+
+    [Fact]
+    public void ReadFileData_PartialRangeInMiddle_ReturnsExpectedBytes()
+    {
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        var content = Encoding.ASCII.GetBytes("0123456789ABCDEF");
+        image.AddFile("DATA.BIN", content);
+
+        var buffer = new byte[4];
+        var read = image.ReadFileData("DATA.BIN", 3, buffer, 0, 4);
+
+        Assert.Equal(4, read);
+        Assert.Equal("3456", Encoding.ASCII.GetString(buffer));
+    }
+
+    [Fact]
+    public void ReadFileData_OffsetPastEndOfFile_ReturnsZero()
+    {
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        image.AddFile("DATA.BIN", new byte[10]);
+
+        var buffer = new byte[4];
+        var read = image.ReadFileData("DATA.BIN", 100, buffer, 0, 4);
+
+        Assert.Equal(0, read);
+    }
+
+    [Fact]
+    public void ReadFileData_CountBeyondEndOfFile_ReturnsOnlyAvailableBytes()
+    {
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        var content = Encoding.ASCII.GetBytes("Hello");
+        image.AddFile("DATA.BIN", content);
+
+        var buffer = new byte[20];
+        var read = image.ReadFileData("DATA.BIN", 2, buffer, 0, 20);
+
+        Assert.Equal(3, read); // "llo"
+        Assert.Equal("llo", Encoding.ASCII.GetString(buffer, 0, read));
+    }
+
+    [Fact]
+    public void ReadFileData_AcrossClusterBoundary_ReturnsContiguousBytes()
+    {
+        // Hd1440: 1 setor/cluster = 512 bytes/cluster.
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        var content = new byte[1200];
+        new Random(1).NextBytes(content);
+        image.AddFile("BIG.BIN", content);
+
+        var buffer = new byte[300];
+        var read = image.ReadFileData("BIG.BIN", 400, buffer, 0, 300); // cruza o limite do cluster (512)
+
+        Assert.Equal(300, read);
+        Assert.Equal(content[400..700], buffer);
+    }
+
+    [Fact]
+    public void WriteFileData_OverwritesWithinExistingSize_KeepsSizeUnchanged()
+    {
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        image.AddFile("DATA.BIN", Encoding.ASCII.GetBytes("0123456789"));
+
+        var patch = Encoding.ASCII.GetBytes("XY");
+        image.WriteFileData("DATA.BIN", 3, patch, 0, 2);
+
+        Assert.Equal("012XY56789", Encoding.ASCII.GetString(image.ExtractFile("DATA.BIN")));
+        Assert.Equal(10, image.FindFile("DATA.BIN")!.SizeBytes);
+    }
+
+    [Fact]
+    public void WriteFileData_PastCurrentEnd_ExtendsFileAndAllocatesClusters()
+    {
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        image.AddFile("DATA.BIN", Encoding.ASCII.GetBytes("abc"));
+        var freeBefore = image.FreeSpaceBytes;
+
+        var suffix = Encoding.ASCII.GetBytes("XYZ");
+        image.WriteFileData("DATA.BIN", 3, suffix, 0, 3);
+
+        Assert.Equal("abcXYZ", Encoding.ASCII.GetString(image.ExtractFile("DATA.BIN")));
+        Assert.Equal(6, image.FindFile("DATA.BIN")!.SizeBytes);
+        Assert.True(image.FreeSpaceBytes <= freeBefore);
+    }
+
+    [Fact]
+    public void WriteFileData_InMultipleChunksAcrossClusters_RoundTripsExactly()
+    {
+        // Simula o Explorer escrevendo um arquivo grande em pedaços, em qualquer ordem de offset.
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        image.AddFile("BIG.BIN", Array.Empty<byte>());
+
+        var content = new byte[1500];
+        new Random(7).NextBytes(content);
+
+        const int chunkSize = 400;
+        for (var offset = 0; offset < content.Length; offset += chunkSize)
+        {
+            var count = Math.Min(chunkSize, content.Length - offset);
+            image.WriteFileData("BIG.BIN", offset, content, offset, count);
+        }
+
+        Assert.Equal(content, image.ExtractFile("BIG.BIN"));
+    }
+
+    [Fact]
+    public void SetFileLength_Shrink_TruncatesContentAndFreesClusters()
+    {
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        image.AddFile("DATA.BIN", new byte[2000]); // várias clusters (512 bytes cada)
+        var freeBefore = image.FreeSpaceBytes;
+
+        image.SetFileLength("DATA.BIN", 50);
+
+        Assert.Equal(50, image.FindFile("DATA.BIN")!.SizeBytes);
+        Assert.Equal(50, image.ExtractFile("DATA.BIN").Length);
+        Assert.True(image.FreeSpaceBytes > freeBefore);
+    }
+
+    [Fact]
+    public void SetFileLength_ShrinkToZero_FreesAllClusters()
+    {
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        image.AddFile("DATA.BIN", new byte[2000]);
+        var freeEmpty = Fat12Image.CreateNew(FloppyFormat.Hd1440).FreeSpaceBytes;
+
+        image.SetFileLength("DATA.BIN", 0);
+
+        Assert.Equal(0, image.FindFile("DATA.BIN")!.SizeBytes);
+        Assert.Equal(freeEmpty, image.FreeSpaceBytes);
+    }
+
+    [Fact]
+    public void SetFileLength_Grow_ExtendsFileWithAdditionalClusters()
+    {
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        image.AddFile("DATA.BIN", Encoding.ASCII.GetBytes("abc"));
+
+        image.SetFileLength("DATA.BIN", 1000);
+
+        Assert.Equal(1000, image.FindFile("DATA.BIN")!.SizeBytes);
+        Assert.Equal(1000, image.ExtractFile("DATA.BIN").Length);
+    }
+
+    [Fact]
+    public void RenameFile_ExistingFile_KeepsContentUnderNewName()
+    {
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        image.AddFile("OLD.TXT", Encoding.ASCII.GetBytes("conteudo"));
+
+        image.RenameFile("OLD.TXT", "NEW.TXT");
+
+        Assert.False(image.ContainsFile("OLD.TXT"));
+        Assert.True(image.ContainsFile("NEW.TXT"));
+        Assert.Equal("conteudo", Encoding.ASCII.GetString(image.ExtractFile("NEW.TXT")));
+    }
+
+    [Fact]
+    public void RenameFile_TargetNameAlreadyExists_Throws()
+    {
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        image.AddFile("A.TXT", new byte[1]);
+        image.AddFile("B.TXT", new byte[1]);
+
+        Assert.Throws<InvalidOperationException>(() => image.RenameFile("A.TXT", "B.TXT"));
+    }
+
+    [Fact]
+    public void RenameFile_UnknownFile_ThrowsFileNotFound()
+    {
+        var image = Fat12Image.CreateNew(FloppyFormat.Hd1440);
+        Assert.Throws<FileNotFoundException>(() => image.RenameFile("NOPE.TXT", "NEW.TXT"));
+    }
 }

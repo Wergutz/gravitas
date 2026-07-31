@@ -114,32 +114,25 @@ public sealed class Fat12Image
         for (var i = 0; i < Geometry.RootEntryCount; i++)
         {
             var entryOffset = rootOffset + i * DirEntrySize;
-            var entry = _data.AsSpan(entryOffset, DirEntrySize);
-
-            var firstByte = entry[0];
+            var firstByte = _data[entryOffset];
             if (firstByte is DirEntryFree or DirEntryDeleted)
                 continue;
 
-            var attr = entry[11];
+            var attr = _data[entryOffset + 11];
             if ((attr & AttrLongName) == AttrLongName || (attr & AttrVolumeLabel) != 0)
                 continue;
 
-            var name = FatShortName.FromDirectoryBytes(entry[..11]);
-            var firstCluster = BitConverter.ToUInt16(entry[26..28]);
-            var size = BitConverter.ToInt32(entry[28..32]);
-            var writeTime = BitConverter.ToUInt16(entry[22..24]);
-            var writeDate = BitConverter.ToUInt16(entry[24..26]);
-
-            result.Add(new FloppyDirectoryEntry(
-                name,
-                size,
-                firstCluster,
-                DecodeDosDateTime(writeDate, writeTime),
-                IsReadOnly: (attr & AttrReadOnly) != 0,
-                IsHidden: (attr & AttrHidden) != 0));
+            result.Add(ReadDirectoryEntry(entryOffset));
         }
 
         return result;
+    }
+
+    /// <summary>Busca metadados de um único arquivo pelo nome, ou null se não existir.</summary>
+    public FloppyDirectoryEntry? FindFile(string fileName)
+    {
+        var entryOffset = FindEntryOffset(FatShortName.ToDirectoryBytes(fileName));
+        return entryOffset is null ? null : ReadDirectoryEntry(entryOffset.Value);
     }
 
     /// <summary>Copia um arquivo do PC para dentro do disquete virtual (na raiz).</summary>
@@ -172,6 +165,26 @@ public sealed class Fat12Image
     /// <summary>Lê o conteúdo de um arquivo do disquete virtual, para copiar para o PC.</summary>
     public byte[] ExtractFile(string fileName)
     {
+        var entry = FindFile(fileName)
+            ?? throw new FileNotFoundException($"Arquivo '{fileName}' não encontrado no disquete virtual.");
+
+        if (entry.SizeBytes == 0)
+            return Array.Empty<byte>();
+
+        var result = new byte[entry.SizeBytes];
+        ReadFileData(fileName, 0, result, 0, entry.SizeBytes);
+        return result;
+    }
+
+    /// <summary>
+    /// Lê até <paramref name="count"/> bytes do arquivo a partir de <paramref name="fileOffset"/>,
+    /// gravando em <paramref name="destination"/> a partir de <paramref name="destinationOffset"/>.
+    /// Retorna quantos bytes foram efetivamente lidos (0 se o offset já passou do fim do
+    /// arquivo). Usado pelo sistema de arquivos passthrough (Dokan), onde o Explorer lê em
+    /// pedaços e em qualquer posição.
+    /// </summary>
+    public int ReadFileData(string fileName, long fileOffset, byte[] destination, int destinationOffset, int count)
+    {
         var nameBytes = FatShortName.ToDirectoryBytes(fileName);
         var entryOffset = FindEntryOffset(nameBytes)
             ?? throw new FileNotFoundException($"Arquivo '{fileName}' não encontrado no disquete virtual.");
@@ -180,24 +193,117 @@ public sealed class Fat12Image
         var firstCluster = BitConverter.ToUInt16(entry[26..28]);
         var size = BitConverter.ToInt32(entry[28..32]);
 
-        if (size == 0)
-            return Array.Empty<byte>();
+        if (fileOffset >= size || count == 0)
+            return 0;
 
-        var result = new byte[size];
+        var toRead = (int)Math.Min(count, size - fileOffset);
+        var clusters = GetClusterChain(firstCluster);
         var clusterSize = Geometry.BytesPerCluster;
-        var cluster = firstCluster;
-        var written = 0;
+        var read = 0;
 
-        while (cluster != 0 && cluster < EndOfChain - 7)
+        while (read < toRead)
         {
-            var toCopy = Math.Min(clusterSize, size - written);
-            var clusterOffset = ClusterToByteOffset(cluster);
-            _data.AsSpan(clusterOffset, toCopy).CopyTo(result.AsSpan(written, toCopy));
-            written += toCopy;
-            cluster = GetFatEntry(cluster);
+            var absoluteOffset = fileOffset + read;
+            var clusterIndex = (int)(absoluteOffset / clusterSize);
+            var clusterInnerOffset = (int)(absoluteOffset % clusterSize);
+            var chunk = Math.Min(toRead - read, clusterSize - clusterInnerOffset);
+            var byteOffset = ClusterToByteOffset(clusters[clusterIndex]) + clusterInnerOffset;
+            _data.AsSpan(byteOffset, chunk).CopyTo(destination.AsSpan(destinationOffset + read, chunk));
+            read += chunk;
         }
 
-        return result;
+        return read;
+    }
+
+    /// <summary>
+    /// Escreve <paramref name="count"/> bytes de <paramref name="source"/> no arquivo a partir
+    /// de <paramref name="fileOffset"/>, alocando mais clusters se a escrita for além do
+    /// tamanho atual. Usado pelo sistema de arquivos passthrough (Dokan), onde o Explorer
+    /// escreve em pedaços e pode escrever além do fim atual do arquivo.
+    /// </summary>
+    public void WriteFileData(string fileName, long fileOffset, byte[] source, int sourceOffset, int count)
+    {
+        var nameBytes = FatShortName.ToDirectoryBytes(fileName);
+        var entryOffset = FindEntryOffset(nameBytes)
+            ?? throw new FileNotFoundException($"Arquivo '{fileName}' não encontrado no disquete virtual.");
+
+        var entry = _data.AsSpan(entryOffset, DirEntrySize);
+        int firstCluster = BitConverter.ToUInt16(entry[26..28]);
+        var size = BitConverter.ToInt32(entry[28..32]);
+
+        if (count == 0)
+            return;
+
+        var endOffset = fileOffset + count;
+        var clusters = GetClusterChain(firstCluster);
+        firstCluster = GrowClusterChain(firstCluster, clusters, endOffset);
+
+        var clusterSize = Geometry.BytesPerCluster;
+        var written = 0;
+        while (written < count)
+        {
+            var absoluteOffset = fileOffset + written;
+            var clusterIndex = (int)(absoluteOffset / clusterSize);
+            var clusterInnerOffset = (int)(absoluteOffset % clusterSize);
+            var chunk = Math.Min(count - written, clusterSize - clusterInnerOffset);
+            var byteOffset = ClusterToByteOffset(clusters[clusterIndex]) + clusterInnerOffset;
+            source.AsSpan(sourceOffset + written, chunk).CopyTo(_data.AsSpan(byteOffset, chunk));
+            written += chunk;
+        }
+
+        var newSize = (int)Math.Max(size, endOffset);
+        BitConverter.GetBytes((ushort)firstCluster).CopyTo(entry[26..28]);
+        BitConverter.GetBytes(newSize).CopyTo(entry[28..32]);
+    }
+
+    /// <summary>
+    /// Ajusta o tamanho do arquivo para exatamente <paramref name="newLength"/> bytes,
+    /// alocando ou liberando clusters conforme necessário. Usado pelas chamadas
+    /// SetEndOfFile/SetAllocationSize do sistema de arquivos passthrough (Dokan).
+    /// </summary>
+    public void SetFileLength(string fileName, long newLength)
+    {
+        var nameBytes = FatShortName.ToDirectoryBytes(fileName);
+        var entryOffset = FindEntryOffset(nameBytes)
+            ?? throw new FileNotFoundException($"Arquivo '{fileName}' não encontrado no disquete virtual.");
+
+        var entry = _data.AsSpan(entryOffset, DirEntrySize);
+        int firstCluster = BitConverter.ToUInt16(entry[26..28]);
+        var clusters = GetClusterChain(firstCluster);
+        var clusterSize = Geometry.BytesPerCluster;
+        var neededClusters = newLength <= 0 ? 0 : (int)((newLength + clusterSize - 1) / clusterSize);
+
+        if (neededClusters < clusters.Count)
+        {
+            for (var i = neededClusters; i < clusters.Count; i++)
+                SetFatEntry(clusters[i], FreeCluster);
+
+            if (neededClusters == 0)
+                firstCluster = 0;
+            else
+                SetFatEntry(clusters[neededClusters - 1], EndOfChain);
+        }
+        else if (neededClusters > clusters.Count)
+        {
+            firstCluster = GrowClusterChain(firstCluster, clusters, newLength);
+        }
+
+        BitConverter.GetBytes((ushort)firstCluster).CopyTo(entry[26..28]);
+        BitConverter.GetBytes((int)newLength).CopyTo(entry[28..32]);
+    }
+
+    /// <summary>Renomeia um arquivo já existente no diretório raiz, mantendo seu conteúdo.</summary>
+    public void RenameFile(string oldFileName, string newFileName)
+    {
+        var oldNameBytes = FatShortName.ToDirectoryBytes(oldFileName);
+        var entryOffset = FindEntryOffset(oldNameBytes)
+            ?? throw new FileNotFoundException($"Arquivo '{oldFileName}' não encontrado no disquete virtual.");
+
+        if (ContainsFile(newFileName))
+            throw new InvalidOperationException($"O disquete virtual já contém um arquivo chamado '{newFileName}'.");
+
+        var newNameBytes = FatShortName.ToDirectoryBytes(newFileName);
+        newNameBytes.CopyTo(_data, entryOffset);
     }
 
     /// <summary>Remove um arquivo do disquete virtual, liberando seus clusters.</summary>
@@ -210,13 +316,8 @@ public sealed class Fat12Image
         var entry = _data.AsSpan(entryOffset, DirEntrySize);
         var firstCluster = BitConverter.ToUInt16(entry[26..28]);
 
-        var cluster = firstCluster;
-        while (cluster != 0 && cluster < EndOfChain - 7)
-        {
-            var next = GetFatEntry(cluster);
+        foreach (var cluster in GetClusterChain(firstCluster))
             SetFatEntry(cluster, FreeCluster);
-            cluster = next;
-        }
 
         _data[entryOffset] = DirEntryDeleted;
     }
@@ -253,6 +354,61 @@ public sealed class Fat12Image
         }
 
         return null;
+    }
+
+    private FloppyDirectoryEntry ReadDirectoryEntry(int entryOffset)
+    {
+        var entry = _data.AsSpan(entryOffset, DirEntrySize);
+        var attr = entry[11];
+        var name = FatShortName.FromDirectoryBytes(entry[..11]);
+        var firstCluster = BitConverter.ToUInt16(entry[26..28]);
+        var size = BitConverter.ToInt32(entry[28..32]);
+        var writeTime = BitConverter.ToUInt16(entry[22..24]);
+        var writeDate = BitConverter.ToUInt16(entry[24..26]);
+
+        return new FloppyDirectoryEntry(
+            name,
+            size,
+            firstCluster,
+            DecodeDosDateTime(writeDate, writeTime),
+            IsReadOnly: (attr & AttrReadOnly) != 0,
+            IsHidden: (attr & AttrHidden) != 0);
+    }
+
+    /// <summary>Percorre a cadeia de clusters de um arquivo a partir do primeiro cluster.</summary>
+    private List<int> GetClusterChain(int firstCluster)
+    {
+        var clusters = new List<int>();
+        var cluster = firstCluster;
+        while (cluster != 0 && cluster < EndOfChain - 7)
+        {
+            clusters.Add(cluster);
+            cluster = GetFatEntry(cluster);
+        }
+        return clusters;
+    }
+
+    /// <summary>
+    /// Garante que <paramref name="clusters"/> tenha clusters suficientes para cobrir até
+    /// <paramref name="endOffset"/> bytes, alocando e encadeando clusters adicionais se
+    /// necessário. Retorna o primeiro cluster (que muda se a lista começava vazia).
+    /// </summary>
+    private int GrowClusterChain(int firstCluster, List<int> clusters, long endOffset)
+    {
+        var clusterSize = Geometry.BytesPerCluster;
+        var neededClusters = endOffset <= 0 ? 0 : (int)((endOffset + clusterSize - 1) / clusterSize);
+
+        if (neededClusters <= clusters.Count)
+            return firstCluster;
+
+        var additional = AllocateClusters(neededClusters - clusters.Count);
+        if (clusters.Count == 0)
+            firstCluster = additional[0];
+        else
+            SetFatEntry(clusters[^1], (ushort)additional[0]);
+
+        clusters.AddRange(additional);
+        return firstCluster;
     }
 
     private void WriteDirectoryEntry(int entryOffset, byte[] nameBytes, int firstCluster, int size, DateTime timestamp)

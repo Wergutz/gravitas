@@ -9,8 +9,9 @@ namespace YamahaFloppy.App.Models;
 /// pendrive (esse é sempre fixo: 1.474.560 bytes para 1.44MB, esteja o
 /// disquete vazio ou cheio).
 /// </summary>
-public sealed record FloppySlotDisplay(FloppySlot Slot, int FileCount, long UsedBytes)
+public sealed record FloppySlotDisplay(FloppySlot Slot, int FileCount, long UsedBytes, char? MountedDriveLetter)
 {
     public string DisplayName => Slot.DisplayName;
     public string FileName => Slot.FileName;
+    public string MountedText => MountedDriveLetter is { } letter ? $"{letter}:\\" : "—";
 }

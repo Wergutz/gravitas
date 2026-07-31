@@ -13,11 +13,13 @@ public partial class MainWindow : Window
 {
     private IReadOnlyList<UsbDriveInfo> _drives = Array.Empty<UsbDriveInfo>();
     private string? _currentFolder;
+    private readonly FloppyMountService _mountService = new();
 
     public MainWindow()
     {
         InitializeComponent();
         RefreshDrives();
+        Closing += (_, _) => _mountService.Dispose();
     }
 
     private void RefreshDrivesButton_Click(object sender, RoutedEventArgs e) => RefreshDrives();
@@ -167,16 +169,17 @@ public partial class MainWindow : Window
     /// Abre cada disquete para contar quantos arquivos e quantos bytes já
     /// estão gravados nele (diferente do tamanho do .IMG, que é sempre fixo).
     /// </summary>
-    private static FloppySlotDisplay BuildDisplayRow(FloppySlot slot)
+    private FloppySlotDisplay BuildDisplayRow(FloppySlot slot)
     {
+        var mountedDriveLetter = _mountService.GetMountedDriveLetter(slot.FilePath);
         try
         {
             var files = EmulatorVolume.OpenDisk(slot).ListFiles();
-            return new FloppySlotDisplay(slot, files.Count, files.Sum(f => (long)f.SizeBytes));
+            return new FloppySlotDisplay(slot, files.Count, files.Sum(f => (long)f.SizeBytes), mountedDriveLetter);
         }
         catch
         {
-            return new FloppySlotDisplay(slot, 0, 0);
+            return new FloppySlotDisplay(slot, 0, 0, mountedDriveLetter);
         }
     }
 
@@ -193,11 +196,91 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (_mountService.GetMountedDriveLetter(slot.FilePath) is not null)
+        {
+            MessageBox.Show(this,
+                $"'{slot.FileName}' está montado como unidade do Windows agora. Desmonte primeiro " +
+                "(botão 'Desmontar') antes de editar pelos botões Importar/Exportar, senão as mudanças de um jeito sobrescrevem as do outro.",
+                "Disquete montado", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
         var editor = new FloppyEditorWindow(slot) { Owner = this };
         editor.ShowDialog();
 
         // Reflete no resumo (Arquivos/Usado) qualquer alteração feita no editor.
         LoadSlotsFromCurrentFolder();
+    }
+
+    private void MountButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (SlotsListView.SelectedItem is not FloppySlotDisplay row)
+        {
+            MessageBox.Show(this, "Selecione um disquete virtual na lista antes de montar.", "Aviso",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (!DokanAvailability.IsInstalled())
+        {
+            MessageBox.Show(this,
+                "O driver do Dokan não está instalado neste computador — ele é necessário para montar " +
+                "disquetes virtuais como unidade do Windows.\n\n" +
+                "Baixe e instale o Dokan em https://github.com/dokan-dev/dokany/releases (arquivo DokanSetup) " +
+                "e tente novamente. Enquanto isso, use os botões Importar/Exportar do editor (duplo clique no disquete).",
+                "Driver do Dokan não encontrado", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        var slot = row.Slot;
+        if (slot.Format is null)
+        {
+            MessageBox.Show(this, $"O arquivo '{slot.FileName}' não tem um tamanho de disquete reconhecido (720KB/1.44MB).",
+                "Não suportado", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            var driveLetter = _mountService.Mount(slot);
+            LoadSlotsFromCurrentFolder();
+            SetStatus($"'{slot.FileName}' montado em {driveLetter}:\\ — abrindo no Explorer...");
+            System.Diagnostics.Process.Start("explorer.exe", $"{driveLetter}:\\");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Não foi possível montar '{slot.FileName}':\n{ex.Message}", "Erro",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void UnmountButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (SlotsListView.SelectedItem is not FloppySlotDisplay row)
+        {
+            MessageBox.Show(this, "Selecione um disquete virtual na lista antes de desmontar.", "Aviso",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        if (_mountService.GetMountedDriveLetter(row.Slot.FilePath) is null)
+        {
+            MessageBox.Show(this, $"'{row.Slot.FileName}' não está montado.", "Aviso",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        try
+        {
+            _mountService.Unmount(row.Slot);
+            LoadSlotsFromCurrentFolder();
+            SetStatus($"'{row.Slot.FileName}' desmontado e gravado no disquete virtual.");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Não foi possível desmontar '{row.Slot.FileName}':\n{ex.Message}", "Erro",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void SetBusy(bool busy, string? status)

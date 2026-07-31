@@ -6,4 +6,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- DokanNet é só a interface gerenciada (IDokanOperations) + P/Invoke; não traz
+         nenhum binário nativo. FloppyDokanOperations (que implementa essa interface)
+         fica aqui no Core, não no app WPF, justamente para poder ser testada no Linux
+         com DokanNet.MockDokanFileInfo, sem precisar do driver do Dokan instalado. -->
+    <PackageReference Include="DokanNet" Version="2.3.0.3" />
+  </ItemGroup>
+
 </Project>

@@ -4,7 +4,9 @@ Programa para Windows 11 que formata um pendrive e cria múltiplos **disquetes
 virtuais** (arquivos de imagem FAT12 de 720KB ou 1.44MB) para uso com
 emuladores de disquete estilo **Gotek/FlashFloppy** (ou compatíveis) ligados
 a teclados Yamaha. Permite importar, exportar e apagar arquivos de dentro de
-cada disquete virtual, sem precisar de outro programa.
+cada disquete virtual pelos botões do editor, ou **montar o disquete como uma
+unidade de verdade no Explorer** (via [Dokan](https://github.com/dokan-dev/dokany))
+para arrastar e soltar arquivos normalmente — sem precisar de outro programa.
 
 ## Como funciona (importante entender antes de usar)
 
@@ -36,19 +38,26 @@ yamaha-floppy-formatter/
 │   │   ├── Fat12Image.cs        # Cria/lê/grava imagens de disquete FAT12
 │   │   ├── EmulatorVolume.cs    # Gerencia os arquivos DSKA####.IMG na pasta do pendrive
 │   │   ├── FloppyFormat.cs      # Geometria dos formatos 720KB/1.44MB
-│   │   └── FatShortName.cs      # Validação de nomes de arquivo 8.3 (DOS)
+│   │   ├── FatShortName.cs      # Validação de nomes de arquivo 8.3 (DOS)
+│   │   └── FloppyDokanOperations.cs # Implementa IDokanOperations sobre um Fat12Image
 │   └── YamahaFloppy.App/        # Aplicativo WPF (Windows apenas)
 │       ├── MainWindow.xaml(.cs)       # Selecionar pendrive, formatar, listar disquetes
 │       ├── FloppyEditorWindow.xaml(.cs) # Importar/exportar/apagar arquivos de um disquete
-│       └── Services/UsbDriveService.cs  # Detecção USB (WMI) e formatação (diskpart)
+│       └── Services/
+│           ├── UsbDriveService.cs   # Detecção USB (WMI) e formatação (diskpart)
+│           ├── FloppyMountService.cs # Monta/desmonta disquetes virtuais como unidade (Dokan)
+│           └── DokanAvailability.cs  # Verifica se o driver do Dokan está instalado
 └── tests/
     └── YamahaFloppy.Core.Tests/ # Testes automatizados da lógica FAT12 (rodam em qualquer SO)
 ```
 
 `YamahaFloppy.Core` não depende de nada específico do Windows e foi testado
-neste ambiente (Linux) com `dotnet test` — 37 testes cobrindo criação de
-imagens, importação/exportação/remoção de arquivos, nomes inválidos, disco
-cheio, diretório raiz cheio, etc.
+neste ambiente (Linux) com `dotnet test` — os testes cobrem criação de
+imagens, importação/exportação/remoção de arquivos, leitura/escrita por
+offset, truncamento, renomeação, nomes inválidos, disco cheio, diretório raiz
+cheio, e a implementação de `IDokanOperations` (com um stub próprio de
+`IDokanFileInfo`, já que o `MockDokanFileInfo` do próprio DokanNet só funciona
+no Windows).
 
 `YamahaFloppy.App` (a interface gráfica) **só compila e roda no Windows**,
 pois usa WPF, Windows Forms (para o seletor de pasta) e WMI/diskpart para
@@ -121,11 +130,27 @@ dotnet test tests\YamahaFloppy.Core.Tests\YamahaFloppy.Core.Tests.csproj
    o seu teclado Yamaha espera) e a quantidade de disquetes virtuais.
 4. Marque a caixa de confirmação e clique em **"Formatar pendrive e criar
    disquetes virtuais"**. **Isso apaga todos os dados do pendrive.**
-5. Depois de formatado, a lista de disquetes virtuais aparece. Dê duplo
-   clique em um disco para abrir o editor e **importar**, **exportar** ou
-   **apagar** arquivos dele.
+5. Depois de formatado, a lista de disquetes virtuais aparece. Você pode:
+   - Dar duplo clique em um disco para abrir o editor e **importar**,
+     **exportar** ou **apagar** arquivos dele; ou
+   - Selecionar um disco e clicar em **"Montar no Explorer"** para abri-lo
+     como uma unidade de verdade (ex.: `Z:\`) e arrastar arquivos normalmente
+     — clique em **"Desmontar"** depois para gravar as mudanças de volta no
+     disquete virtual. Isso exige o driver do
+     [Dokan](https://github.com/dokan-dev/dokany/releases) instalado (ver
+     abaixo); sem ele, use o editor pelos botões.
 6. Da próxima vez, não precisa formatar de novo: use **"Abrir pendrive já
    preparado..."** e aponte para a unidade/pasta do pendrive.
+
+### Montar disquetes no Explorer (opcional)
+
+O botão **"Montar no Explorer"** precisa do driver do
+[Dokan](https://github.com/dokan-dev/dokany) instalado no Windows — é um
+driver de sistema de arquivos em modo usuário, de código aberto, usado por
+ferramentas como o rclone e o sshfs-win. Baixe e instale o `DokanSetup` mais
+recente em https://github.com/dokan-dev/dokany/releases (uma vez só; não
+precisa reinstalar a cada disquete montado). Se o driver não estiver
+instalado, o programa avisa e sugere usar o editor pelos botões em vez disso.
 
 ## Avisos de segurança
 
