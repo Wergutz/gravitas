@@ -1,3 +1,4 @@
+using System.IO;
 using DokanNet;
 using DokanNet.Logging;
 using YamahaFloppy.Core;
@@ -42,7 +43,7 @@ public sealed class FloppyMountService : IDisposable
 
         var driveLetter = GetFirstAvailableDriveLetter();
         var image = EmulatorVolume.OpenDisk(slot);
-        var volumeLabel = System.IO.Path.GetFileNameWithoutExtension(slot.FileName).ToUpperInvariant();
+        var volumeLabel = Path.GetFileNameWithoutExtension(slot.FileName).ToUpperInvariant();
         var operations = new FloppyDokanOperations(image, volumeLabel);
 
         var instance = new DokanInstanceBuilder(_dokan.Value)
