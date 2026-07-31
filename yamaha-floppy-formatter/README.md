@@ -137,8 +137,9 @@ dotnet test tests\YamahaFloppy.Core.Tests\YamahaFloppy.Core.Tests.csproj
      como uma unidade de verdade (ex.: `Z:\`) e arrastar arquivos normalmente
      — clique em **"Desmontar"** depois para gravar as mudanças de volta no
      disquete virtual. Isso exige o driver do
-     [Dokan](https://github.com/dokan-dev/dokany/releases) instalado (ver
-     abaixo); sem ele, use o editor pelos botões.
+     [Dokan](https://github.com/dokan-dev/dokany/releases), já instalado
+     automaticamente pelo instalador (ver abaixo); sem ele, use o editor
+     pelos botões.
 6. Da próxima vez, não precisa formatar de novo: use **"Abrir pendrive já
    preparado..."** e aponte para a unidade/pasta do pendrive.
 
@@ -147,10 +148,13 @@ dotnet test tests\YamahaFloppy.Core.Tests\YamahaFloppy.Core.Tests.csproj
 O botão **"Montar no Explorer"** precisa do driver do
 [Dokan](https://github.com/dokan-dev/dokany) instalado no Windows — é um
 driver de sistema de arquivos em modo usuário, de código aberto, usado por
-ferramentas como o rclone e o sshfs-win. Baixe e instale o `DokanSetup` mais
-recente em https://github.com/dokan-dev/dokany/releases (uma vez só; não
-precisa reinstalar a cada disquete montado). Se o driver não estiver
-instalado, o programa avisa e sugere usar o editor pelos botões em vez disso.
+ferramentas como o rclone e o sshfs-win. **O instalador do Gerenciador já
+instala o Dokan automaticamente e em silêncio** (o `.exe` do setup embute o
+`Dokan_x64.msi` oficial e roda `msiexec /quiet` durante a instalação) — não
+precisa baixar nem instalar nada à parte, diferente do "USB Floppy Manager"
+da ipcas. Se mesmo assim o driver não for encontrado (por exemplo, ao rodar
+o `.exe` do app copiado manualmente, sem passar pelo instalador), o programa
+avisa e sugere usar o editor pelos botões em vez disso.
 
 ## Avisos de segurança
 

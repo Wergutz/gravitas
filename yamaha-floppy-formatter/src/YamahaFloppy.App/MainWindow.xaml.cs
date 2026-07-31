@@ -226,8 +226,11 @@ public partial class MainWindow : Window
             MessageBox.Show(this,
                 "O driver do Dokan não está instalado neste computador — ele é necessário para montar " +
                 "disquetes virtuais como unidade do Windows.\n\n" +
-                "Baixe e instale o Dokan em https://github.com/dokan-dev/dokany/releases (arquivo DokanSetup) " +
-                "e tente novamente. Enquanto isso, use os botões Importar/Exportar do editor (duplo clique no disquete).",
+                "O instalador do Gerenciador já instala o Dokan automaticamente; se você abriu o programa " +
+                "sem passar pelo instalador (ex.: copiou o .exe manualmente), reinstale usando o " +
+                "YamahaFloppyManager-Setup.exe, ou baixe o driver à parte em " +
+                "https://github.com/dokan-dev/dokany/releases (arquivo Dokan_x64.msi) e tente novamente. " +
+                "Enquanto isso, use os botões Importar/Exportar do editor (duplo clique no disquete).",
                 "Driver do Dokan não encontrado", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }

@@ -7,9 +7,12 @@
 ;        dotnet publish ..\src\YamahaFloppy.App\YamahaFloppy.App.csproj -c Release ^
 ;          -r win-x64 --self-contained true -p:PublishSingleFile=true ^
 ;          -p:IncludeNativeLibrariesForSelfExtract=true
-;   3. Abra este arquivo no Inno Setup e clique em "Compile" (ou rode
+;   3. Baixe o driver do Dokan (embutido no instalador, ver [Files]/[Run]
+;      abaixo) para installer\vendor\Dokan_x64.msi:
+;        https://github.com/dokan-dev/dokany/releases/latest/download/Dokan_x64.msi
+;   4. Abra este arquivo no Inno Setup e clique em "Compile" (ou rode
 ;      ISCC.exe YamahaFloppyManager.iss pela linha de comando).
-;   4. O instalador é gerado em installer\output\.
+;   5. O instalador é gerado em installer\output\.
 ;
 ; O workflow do GitHub Actions (.github/workflows/yamaha-floppy-installer.yml)
 ; faz esses mesmos passos automaticamente e disponibiliza o .exe pronto,
@@ -54,6 +57,10 @@ Name: "desktopicon"; Description: "Criar um atalho na Área de Trabalho"; GroupD
 [Files]
 ; Todo o conteúdo publicado (exe self-contained single-file + arquivos de apoio, se houver).
 Source: "{#MyAppPublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Driver do Dokan (baixado pelo workflow do GitHub Actions antes de compilar o
+; instalador — ver .github/workflows/yamaha-floppy-installer.yml). Vai só para
+; a pasta temporária: é instalado pelo [Run] abaixo e não fica em {app}.
+Source: "vendor\Dokan_x64.msi"; DestDir: "{tmp}"; Flags: deleteafterinstall
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -61,6 +68,12 @@ Name: "{group}\Desinstalar {#MyAppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
+; Instala o driver do Dokan silenciosamente (msiexec /quiet), necessário para
+; o botão "Montar no Explorer". Roda antes da tela de conclusão; o instalador
+; já está elevado (PrivilegesRequired=admin), então o msiexec herda isso.
+; Rodar de novo com a mesma versão já instalada é inofensivo (o MSI só repara).
+Filename: "msiexec.exe"; Parameters: "/i ""{tmp}\Dokan_x64.msi"" /quiet /norestart"; StatusMsg: "Instalando driver Dokan (necessário para montar disquetes no Explorer)..."; Flags: waituntilterminated
+
 ; shellexec: usa ShellExecute (mesmo mecanismo do Explorer) em vez de
 ; CreateProcess. Necessário porque o .exe exige elevação (requireAdministrator
 ; no seu manifest, para poder formatar disco) — CreateProcess não sabe mostrar

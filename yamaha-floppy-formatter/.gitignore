@@ -2,3 +2,4 @@ bin/
 obj/
 *.user
 installer/output/
+installer/vendor/

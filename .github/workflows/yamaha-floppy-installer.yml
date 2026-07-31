@@ -38,6 +38,12 @@ jobs:
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
 
+      - name: Baixar instalador do driver Dokan (para embutir no setup)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path installer\vendor | Out-Null
+          Invoke-WebRequest -Uri "https://github.com/dokan-dev/dokany/releases/latest/download/Dokan_x64.msi" -OutFile installer\vendor\Dokan_x64.msi
+
       - name: Instalar Inno Setup
         run: choco install innosetup --no-progress -y
 
