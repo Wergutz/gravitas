@@ -26,14 +26,32 @@ const MU_RELATORIO = [
     'titulo'       => 'Relatório de Medição de Pavimentação',
     'subtitulo'    => 'Reposição de pavimento sobre vala de rede coletora de esgoto',
 
-    /* --- PENDENTES: preencher conforme o contrato ---------------------- */
-    // Ex.: '01/07/2026 a 31/07/2026'
+    /* =================================================================
+       PENDENTES — PREENCHER AQUI
+       -----------------------------------------------------------------
+       Enquanto estiverem como null, saem impressos no PDF como
+       "a confirmar", em destaque. Troque o null pelo texto entre aspas.
+
+       ANTES:  'resp_tecnico' => null,
+       DEPOIS: 'resp_tecnico' => 'Eng. João da Silva',
+
+       Cuidado só com isto: mantenha as aspas e a vírgula no fim.
+       ================================================================= */
+
+    // Período que esta medição cobre, como consta no contrato.
+    // Exemplo: '01/07/2026 a 31/07/2026'
     'periodo'      => null,
-    // Ex.: '01/08/2026'. Null usa a data de hoje.
+
+    // Data de emissão do relatório. Exemplo: '01/08/2026'
+    // Deixando null, o sistema usa a data em que o PDF for gerado.
     'emissao'      => null,
-    // Ex.: 'Eng. Fulano de Tal'
+
+    // Nome de quem assina o documento, como deve aparecer sobre a linha
+    // de assinatura. Exemplo: 'Eng. João da Silva'
     'resp_tecnico' => null,
-    // Ex.: 'ART 1234567890'
+
+    // Número da ART do responsável técnico.
+    // Exemplo: 'ART 1234567890'
     'art'          => null,
 ];
 
