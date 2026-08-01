@@ -1,0 +1,403 @@
+/* =====================================================================
+   RELATÓRIO DE MEDIÇÃO — IDENTIDADE MARCO URBANO
+   Padrão do banco de identidade visual (validado 22/07/2026):
+   verde da marca #31A862 · verde de seção #278A52 · corpo Times New Roman
+   título serifado CAIXA ALTA centralizado · régua verde sob o logo
+   rodapé com razão social + CNPJ + CREA + "Página N"
+   ===================================================================== */
+
+:root{
+  --mu-verde:      #31A862;
+  --mu-verde-esc:  #278A52;
+  --mu-verde-fraco:#EAF6EF;
+  --mu-tinta:      #111111;
+  --mu-cinza:      #5A5A5A;
+  --mu-linha:      #B9B9B9;
+}
+
+/* ---------- PÁGINA ---------------------------------------------------- */
+@page{
+  size: A4 portrait;
+  /* margens grandes em cima/baixo abrigam o cabeçalho e o rodapé fixos */
+  margin: 14mm 16mm 12mm 16mm;
+}
+
+.mu-doc{
+  font-family: "Times New Roman", Times, serif;
+  font-size: 11pt;
+  line-height: 1.45;
+  color: var(--mu-tinta);
+  background: #fff;
+}
+
+/* ---------- CABEÇALHO FIXO (repete em todas as páginas) --------------- */
+.mu-sheet{ width:100%; border-collapse:collapse; }
+.mu-sheet > thead, .mu-sheet > tfoot{ display: table-header-group; }
+.mu-sheet > tfoot{ display: table-footer-group; }
+.mu-sheet > thead > tr > td,
+.mu-sheet > tfoot > tr > td,
+.mu-sheet > tbody > tr > td{ border:0; padding:0; }
+.mu-sheet > thead > tr > td{ padding-bottom: 5mm; }
+.mu-sheet > tfoot > tr > td{ padding-top: 4mm; }
+.mu-sheet > tbody > tr > td{ padding-bottom: 10mm; }
+
+.mu-header{
+  height: 17mm;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 2.2pt solid var(--mu-verde);   /* régua verde sob o logo */
+  padding-bottom: 2mm;
+}
+.mu-header .mu-logo{ height: 12mm; width: auto; }
+.mu-header .mu-header-doc{
+  text-align: right;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 7.5pt;
+  line-height: 1.35;
+  color: var(--mu-cinza);
+  letter-spacing: .02em;
+}
+.mu-header .mu-header-doc strong{
+  display: block;
+  color: var(--mu-verde-esc);
+  font-size: 8pt;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+/* ---------- RODAPÉ FIXO (repete em todas as páginas) ------------------ */
+.mu-footer{
+  border-top: .6pt solid var(--mu-linha);
+  padding-top: 1.6mm;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 6.2pt;
+  color: var(--mu-cinza);
+  display: flex;
+  justify-content: space-between;
+  gap: 8mm;
+  white-space: nowrap;
+}
+.mu-footer .mu-doc-id{ white-space: nowrap; }
+
+/* NOTA: o Chrome não suporta counter(page) fora das @page margin boxes.
+   A numeração "Página N de M" exige geração de PDF no servidor
+   (wkhtmltopdf / Dompdf / Chrome headless). Até lá, o rodapé identifica
+   o documento e a paginação fica a cargo do rodapé nativo do navegador. */
+.mu-pagenum{ display: none; }
+
+/* ---------- TÍTULO DO DOCUMENTO --------------------------------------- */
+.mu-title{
+  text-align: center;
+  text-transform: uppercase;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 15pt;
+  font-weight: bold;
+  letter-spacing: .06em;
+  margin: 2mm 0 1mm;
+}
+.mu-subtitle{
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8.5pt;
+  color: var(--mu-cinza);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: 6mm;
+}
+
+/* ---------- QUADRO DE IDENTIFICAÇÃO ----------------------------------- */
+.mu-ident{
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8.5pt;
+  margin-bottom: 7mm;
+}
+.mu-ident th, .mu-ident td{
+  border: .6pt solid var(--mu-linha);
+  padding: 1.8mm 2.4mm;
+  vertical-align: top;
+}
+.mu-ident th{
+  width: 26mm;
+  background: var(--mu-verde-fraco);
+  color: var(--mu-verde-esc);
+  text-align: left;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 7.4pt;
+  letter-spacing: .04em;
+}
+.mu-ident td{ font-weight: 600; }
+
+/* ---------- BLOCO DE TRECHO ------------------------------------------- */
+.mu-trecho{ margin-bottom: 7mm; }
+/* cabeçalho verde, metadados e tabela nunca se separam */
+.mu-trecho-head,
+.mu-trecho .mu-meta,
+.mu-figs h5{ break-after: avoid; page-break-after: avoid; }
+.mu-trecho .mu-meta,
+.mu-trecho .mu-tab{ break-inside: avoid; page-break-inside: avoid; }
+.mu-trecho-head{
+  background: var(--mu-verde-esc);
+  color: #fff;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9pt;
+  font-weight: bold;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  padding: 1.8mm 2.6mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.mu-trecho-head .mu-med{
+  font-weight: normal;
+  font-size: 7.6pt;
+  letter-spacing: .06em;
+  opacity: .92;
+}
+.mu-trecho-body{
+  border: .6pt solid var(--mu-linha);
+  border-top: none;
+  padding: 3mm 3mm 3.5mm;
+}
+
+/* metadados em grade */
+.mu-meta{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5mm 3mm;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8pt;
+  margin-bottom: 3mm;
+}
+.mu-meta span{ display: block; }
+.mu-meta .mu-rot{
+  color: var(--mu-cinza);
+  font-size: 6.8pt;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.mu-meta .mu-val{ font-weight: bold; }
+
+/* tabela de medição */
+.mu-tab{
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8.5pt;
+  font-variant-numeric: tabular-nums;
+}
+.mu-tab thead th{
+  background: var(--mu-verde);
+  color: #fff;
+  border: .6pt solid var(--mu-verde);
+  padding: 1.6mm;
+  text-transform: uppercase;
+  font-size: 7.2pt;
+  letter-spacing: .05em;
+}
+.mu-tab tbody td{
+  border: .6pt solid var(--mu-linha);
+  padding: 1.5mm;
+  text-align: center;
+}
+.mu-tab tbody tr:nth-child(even) td{ background: #F7F7F7; }
+.mu-tab tfoot td{
+  border: .6pt solid var(--mu-linha);
+  background: var(--mu-verde-fraco);
+  color: var(--mu-verde-esc);
+  font-weight: bold;
+  padding: 1.7mm;
+  text-align: right;
+}
+.mu-tab tfoot td.mu-tot-val{ text-align: center; }
+
+/* croqui + fotos */
+.mu-figs{ margin-top: 3.5mm; }
+.mu-figs h5{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 7.4pt;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--mu-verde-esc);
+  border-bottom: .6pt solid var(--mu-verde-fraco);
+  padding-bottom: .8mm;
+  margin: 0 0 2mm;
+}
+.mu-galeria{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5mm;
+  margin-bottom: 3mm;
+}
+.mu-galeria.mu-croqui{ grid-template-columns: repeat(2, 1fr); }
+.mu-galeria.mu-croqui .mu-fig{ max-width: 74mm; }
+.mu-ph{ position: relative; }
+.mu-ph::after{
+  content: attr(data-ph);
+  position: absolute; inset: 0 0 auto 0; aspect-ratio: 3 / 4; width: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font: bold 8pt Arial, sans-serif; letter-spacing: .12em; color: #A8A8A8;
+}
+
+
+.mu-fig{
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin: 0;
+}
+.mu-fig img{
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;               /* fotos e croquis do app são 1600x2133 */
+  height: auto;
+  object-fit: contain;               /* prova fotográfica não pode ser cortada */
+  border: .6pt solid var(--mu-linha);
+  background: #F4F4F4;
+}
+.mu-galeria.mu-croqui .mu-fig img{ aspect-ratio: 3 / 4; }
+.mu-fig figcaption{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 6.6pt;
+  color: var(--mu-cinza);
+  padding-top: .8mm;
+  line-height: 1.25;
+}
+
+/* ---------- RESUMO CONSOLIDADO ---------------------------------------- */
+.mu-resumo{ break-inside: avoid; page-break-inside: avoid; margin-top: 8mm; }
+.mu-resumo .mu-trecho-head{ background: var(--mu-tinta); }
+.mu-resumo table{
+  width: 100%;
+  border-collapse: collapse;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8.5pt;
+  font-variant-numeric: tabular-nums;
+}
+.mu-resumo th, .mu-resumo td{
+  border: .6pt solid var(--mu-linha);
+  padding: 1.8mm 2.4mm;
+}
+.mu-resumo thead th{
+  background: var(--mu-verde-fraco);
+  color: var(--mu-verde-esc);
+  text-transform: uppercase;
+  font-size: 7.2pt;
+  letter-spacing: .05em;
+}
+.mu-resumo td.num{ text-align: center; }
+.mu-resumo tfoot td{ background: #F2F2F2; font-weight: bold; }
+.mu-nota{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 6.8pt;
+  color: var(--mu-cinza);
+  margin-top: 1.6mm;
+  line-height: 1.35;
+}
+
+/* ---------- ASSINATURAS ------------------------------------------------ */
+.mu-assin{
+  break-inside: avoid; page-break-inside: avoid;
+  margin-top: 16mm;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8pt;
+}
+.mu-assin > div{ width: 92mm; margin: 0 auto; }
+.mu-assin .mu-linha-assin{
+  border-top: .8pt solid var(--mu-tinta);
+  margin-bottom: 1.4mm;
+  padding-top: 1.4mm;
+}
+.mu-assin strong{ display: block; }
+.mu-assin span{ color: var(--mu-cinza); font-size: 7pt; }
+.mu-local-data{
+  text-align: right;
+  font-size: 9.5pt;
+  margin-top: 10mm;
+}
+
+/* ---------- CONFERIR --------------------------------------------------- */
+.mu-conf{
+  background: #FFF6D6;
+  border-bottom: .8pt dotted #B58900;
+  padding: 0 .6mm;
+}
+
+/* ---------- IMPRESSÃO -------------------------------------------------- */
+@media print{
+  .sidebar, .topbar, .no-print, nav, button{ display: none !important; }
+  body{ background: #fff !important; margin: 0 !important; }
+  .mu-doc{ margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
+  .mu-conf{ background: transparent; }
+  .mu-quebra{ break-after: page; page-break-after: always; }
+  .mu-trecho-head, .mu-tab thead th, .mu-ident th, .mu-resumo thead th{
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  thead{ display: table-header-group; }
+}
+
+/* ---------- PRÉ-VISUALIZAÇÃO EM TELA ----------------------------------- */
+@media screen{
+  body{ background:#6b6b6b; margin:0; padding:24px 0; }
+  .mu-doc{
+    width: 210mm;
+    min-height: 297mm;
+    padding: 14mm 16mm 12mm;
+    margin: 0 auto;
+    box-shadow: 0 4px 24px rgba(0,0,0,.4);
+    position: relative;
+  }
+}
+
+/* =======================================================================
+   INTEGRAÇÃO COM O PAINEL (planejador.css)
+   -----------------------------------------------------------------------
+   O CSS do pacote foi escrito para uma página isolada. Aqui ele convive
+   com o layout do painel, que tem fundo escuro, sidebar em flex e padding
+   no .content — tudo isso vazava para o papel: moldura escura nas bordas
+   e conteúdo cortado à direita. Estas regras neutralizam o painel na
+   impressão, sem tocar na aparência em tela.
+   ==================================================================== */
+@media print{
+  html, body{
+    background: #fff !important;
+    color: #000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+  }
+  .app{
+    display: block !important;
+    min-height: 0 !important;
+  }
+  .content, .content.relatorio{
+    background: #fff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: 0 !important;
+    flex: none !important;
+    display: block !important;
+  }
+  .form-card, .form-actions{ display: none !important; }
+  .mu-doc{
+    width: auto !important;
+    min-height: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Em tela, a folha branca do relatório precisa se destacar do painel
+   escuro sem repintar o body inteiro (o que descolorava a sidebar). */
+@media screen{
+  body{ background: #020617; padding: 0; }
+  .content.relatorio .mu-doc{
+    background: #fff;
+    color: #1a1a1a;
+    margin: 20px auto;
+  }
+}

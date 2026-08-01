@@ -307,3 +307,69 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* =======================================================================
+   CONTENÇÃO DE IMAGEM E GALERIA  (pacote 2 — regras de TELA)
+   -----------------------------------------------------------------------
+   Do 01-frontend-css.css foram aproveitadas apenas as regras de tela: o
+   @media print de lá foi escrito antes da identidade Marco Urbano e perde
+   para o relatorio-marco-urbano.css, conforme a precedência do relatório.
+
+   Sem isto a página do relatório media 1.878 px de largura contra 1.366 px
+   de viewport (rolagem horizontal) e 28.318 px de altura, porque as fotos
+   entravam em 1600 px nativos.
+   ==================================================================== */
+.content img{
+    max-width: 100%;
+    height: auto;
+}
+
+.form-card img,
+.table img{
+    max-width: 100%;
+    height: auto;
+}
+
+/* Galeria de fotos em grade que se adapta à largura disponível. */
+.mu-galeria-tela{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.mu-galeria-tela img{
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #0b1e33;
+}
+
+/* Tabela larga rola dentro da própria caixa, nunca empurra a página. */
+.table-wrap{
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* =========================
+   RESPONSIVO
+========================= */
+@media (max-width: 900px){
+    .app{ flex-direction: column; }
+    .sidebar{
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+    }
+    .sidebar nav{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+    }
+    .sidebar nav a{ flex: 1 1 auto; text-align: center; }
+    .content{ padding: 16px; }
+    .form-row{ flex-direction: column; }
+}

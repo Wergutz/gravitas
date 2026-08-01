@@ -2,10 +2,14 @@
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
+require_once __DIR__ . '/../app/helpers/validacao_midia.php';
+require_once __DIR__ . '/../app/helpers/midia_url.php';
 
 auth_required([3]);
 
-$erro = null;
+$erro      = null;
+$recusados = [];   // arquivos barrados pela validação pericial
+$avisos    = [];   // observações que não impedem o lançamento
 
 /* ===============================
    PLANEJAMENTOS DO USUÁRIO
@@ -82,11 +86,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($_FILES['croqui']['tmp_name'])) throw new Exception('Croqui é obrigatório.');
         if (empty($_FILES['fotos']['tmp_name'][0])) throw new Exception('Envie ao menos uma foto.');
 
+        $trechoId  = (int) $_POST['trecho_id'];
+        $usuarioId = (int) ($_SESSION['usuario_id'] ?? 0);
+
+        /* ---------------------------------------------------------------
+           1) Fila dos arquivos recebidos
+        --------------------------------------------------------------- */
+        $fila = [];
+
+        if (!empty($_FILES['croqui']['name'])) {
+            $fila[] = ['tipo' => 'croqui', 'f' => $_FILES['croqui']];
+        }
+
+        $nFotos = count($_FILES['fotos']['name'] ?? []);
+        for ($i = 0; $i < $nFotos; $i++) {
+            if (($_FILES['fotos']['error'][$i] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) continue;
+            $fila[] = ['tipo' => 'foto', 'f' => [
+                'name'     => $_FILES['fotos']['name'][$i],
+                'tmp_name' => $_FILES['fotos']['tmp_name'][$i],
+                'size'     => $_FILES['fotos']['size'][$i],
+                'error'    => $_FILES['fotos']['error'][$i],
+            ]];
+        }
+
+        /* ---------------------------------------------------------------
+           2) Validar TUDO antes de gravar QUALQUER COISA.
+              Não existe liberação excepcional: reprovou, não entra.
+        --------------------------------------------------------------- */
+        foreach ($fila as $item) {
+            $v = mu_validar_midia(
+                $item['f']['tmp_name'],
+                (string) $item['f']['name'],
+                $item['tipo'],
+                $trechoId,
+                null,               // referência de data: o momento do lançamento
+                $pdo
+            );
+            if (!$v['ok']) {
+                $recusados[] = ['arquivo' => $item['f']['name'], 'erros' => $v['erros']];
+            }
+            foreach ($v['avisos'] as $a) {
+                $avisos[] = ['arquivo' => $item['f']['name'], 'aviso' => $a];
+            }
+        }
+
+        /* ---------------------------------------------------------------
+           3) Um reprovado e nada é gravado — nem as medidas do trecho.
+        --------------------------------------------------------------- */
+        if ($recusados) {
+            throw new Exception('Lançamento recusado: há arquivo sem valor probatório.');
+        }
+
+        /* ---------------------------------------------------------------
+           4) Só agora grava
+        --------------------------------------------------------------- */
         $pdo->beginTransaction();
 
-        $trechoId = $_POST['trecho_id'];
         $areaTotal = 0;
-
         foreach ($_POST['comprimento'] as $i => $c) {
             $l = $_POST['largura'][$i];
             $a = $c * $l;
@@ -104,35 +160,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             WHERE id = ?
         ")->execute([$areaTotal, $_POST['tipo_pavimento'], $trechoId]);
 
-        /* CROQUI */
-        $dirCroqui = __DIR__ . '/../uploads/croquis/';
-        if (!is_dir($dirCroqui)) mkdir($dirCroqui, 0775, true);
+        foreach ($fila as $item) {
+            $reg = mu_arquivar_midia(
+                $item['f'], $trechoId, $item['tipo'], null, $usuarioId ?: null, $pdo
+            );
 
-        $croquiNome = uniqid('croqui_') . '.' . pathinfo($_FILES['croqui']['name'], PATHINFO_EXTENSION);
-        move_uploaded_file($_FILES['croqui']['tmp_name'], $dirCroqui . $croquiNome);
-
-        $pdo->prepare("UPDATE trechos SET croqui = ? WHERE id = ?")
-            ->execute([$croquiNome, $trechoId]);
-
-        /* FOTOS */
-        $dirFotos = __DIR__ . '/../uploads/fotos/';
-        if (!is_dir($dirFotos)) mkdir($dirFotos, 0775, true);
-
-        foreach ($_FILES['fotos']['tmp_name'] as $k => $tmp) {
-            $fotoNome = uniqid('foto_') . '.' . pathinfo($_FILES['fotos']['name'][$k], PATHINFO_EXTENSION);
-            move_uploaded_file($tmp, $dirFotos . $fotoNome);
-
-            $pdo->prepare("
-                INSERT INTO trecho_fotos (trecho_id, arquivo)
-                VALUES (?, ?)
-            ")->execute([$trechoId, $fotoNome]);
+            if ($item['tipo'] === 'croqui') {
+                $pdo->prepare("UPDATE trechos SET croqui = ? WHERE id = ?")
+                    ->execute([$reg['caminho'], $trechoId]);
+            } else {
+                $pdo->prepare("INSERT INTO trecho_fotos (trecho_id, arquivo) VALUES (?, ?)")
+                    ->execute([$trechoId, $reg['caminho']]);
+            }
         }
 
         $pdo->commit();
         header("Location: medicao.php?planejamento_id=".$_GET['planejamento_id']."&ok=1");
         exit;
 
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
         $erro = $e->getMessage();
     }
@@ -173,10 +219,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
-<?php if ($erro): ?>
+<?php if ($erro && !$recusados): ?>
 <div class="form-card" style="border:1px solid #ef4444;background:#2a0606;">
     <strong style="color:#fecaca;">Erro:</strong>
     <span style="color:#fee2e2;"><?= htmlspecialchars($erro) ?></span>
+</div>
+<?php endif; ?>
+
+<?php if ($recusados): ?>
+<div class="form-card" style="border:1px solid #ef4444;background:#2a0606;">
+    <h3 style="color:#fecaca;margin-bottom:6px;">Lançamento recusado</h3>
+    <p style="color:#fee2e2;font-size:14px;margin-bottom:14px;">
+        Nada foi gravado — nem as medidas do trecho. Corrija os arquivos abaixo e envie tudo de novo.
+    </p>
+
+    <?php foreach ($recusados as $r): ?>
+        <div style="margin-bottom:14px;padding-left:12px;border-left:3px solid #ef4444;">
+            <div style="color:#fff;font-weight:600;font-size:14px;word-break:break-all;">
+                <?= htmlspecialchars($r['arquivo']) ?>
+            </div>
+            <?php foreach ($r['erros'] as $e): ?>
+                <div style="margin-top:8px;">
+                    <div style="color:#fecaca;font-weight:600;font-size:13px;">
+                        <?= htmlspecialchars($e['titulo']) ?>
+                    </div>
+                    <div style="color:#e5e7eb;font-size:13px;line-height:1.5;">
+                        <?= htmlspecialchars($e['como_corrigir']) ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endforeach; ?>
+</div>
+<?php endif; ?>
+
+<?php if ($avisos): ?>
+<div class="form-card" style="border:1px solid #f59e0b;background:#2a1a06;">
+    <strong style="color:#fde68a;">Observações</strong>
+    <?php foreach ($avisos as $a): ?>
+        <div style="margin-top:8px;color:#fef3c7;font-size:13px;">
+            <strong><?= htmlspecialchars($a['arquivo']) ?>:</strong>
+            <?= htmlspecialchars($a['aviso']['titulo']) ?>
+            <?= htmlspecialchars($a['aviso']['como_corrigir']) ?>
+        </div>
+    <?php endforeach; ?>
 </div>
 <?php endif; ?>
 
@@ -297,6 +383,16 @@ function calcular(){
     });
     document.getElementById('areaTotal').innerText=total.toFixed(2);
 }
+</script>
+
+<!-- Conferência no navegador: avisa antes de subir 12 MB para ser recusado.
+     Conveniência apenas — quem decide é a validação do servidor. -->
+<script src="/marco_urbano2/assets/js/validacao-midia.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var fotos = document.querySelector('input[name="fotos[]"]');
+    if (fotos && window.MUValidacao) { MUValidacao.ligar(fotos); }
+});
 </script>
 
 </body>

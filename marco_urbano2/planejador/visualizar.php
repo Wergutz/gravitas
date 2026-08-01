@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/config/database.php';
+require_once __DIR__ . '/../app/helpers/midia_url.php';
 
 auth_required([3]);
 
@@ -61,7 +62,7 @@ $trechos = $trechos->fetchAll(PDO::FETCH_ASSOC);
 
 <p>
 <b>Croqui:</b>
-<a href="/marco_urbano2/uploads/croquis/<?= $t['croqui'] ?>" target="_blank">
+<a href="<?= htmlspecialchars(mu_url_midia($t['croqui'], 'croqui')) ?>" target="_blank">
 📎 Abrir croqui
 </a>
 </p>
@@ -73,8 +74,13 @@ $fotos = $pdo->prepare("SELECT * FROM trecho_fotos WHERE trecho_id = ?");
 $fotos->execute([$t['id']]);
 foreach ($fotos as $f):
 ?>
-<img src="/marco_urbano2/uploads/fotos/<?= $f['arquivo'] ?>"
+<a href="<?= htmlspecialchars(mu_url_midia($f['arquivo'])) ?>" target="_blank">
+<img src="<?= htmlspecialchars(mu_url_thumb($f['arquivo'], 220)) ?>"
+     alt="Foto do trecho <?= htmlspecialchars($t['pv_montante'].' → '.$t['pv_jusante']) ?>"
+     loading="lazy" decoding="async"
+     onerror="this.onerror=null;this.src='<?= htmlspecialchars(mu_url_midia($f['arquivo'])) ?>';"
      style="width:150px;border-radius:8px;">
+</a>
 <?php endforeach; ?>
 </div>
 

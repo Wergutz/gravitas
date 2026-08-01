@@ -1,0 +1,12 @@
+# A mídia da obra é dado de produção e prova pericial — nunca entra no git.
+# Versionamos só a estrutura de pastas e as regras de proteção.
+*
+!.gitignore
+!.gitkeep
+!.htaccess
+!originais/
+!derivadas/
+originais/*
+derivadas/*
+!originais/.gitkeep
+!derivadas/.gitkeep

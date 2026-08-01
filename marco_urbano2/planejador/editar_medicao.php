@@ -2,10 +2,14 @@
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
+require_once __DIR__ . '/../app/helpers/validacao_midia.php';
+require_once __DIR__ . '/../app/helpers/midia_url.php';
 
 auth_required([3]);
 
-$erro = null;
+$erro      = null;
+$recusados = [];
+$avisos    = [];
 
 /* ===============================
    TRECHO
@@ -59,6 +63,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new Exception('Selecione o tipo de pavimento.');
         }
 
+        $usuarioId = (int) ($_SESSION['usuario_id'] ?? 0);
+
+        /* --- fila das fotos novas (opcional nesta tela) ---------------- */
+        $fila = [];
+        $nFotos = count($_FILES['fotos']['name'] ?? []);
+        for ($i = 0; $i < $nFotos; $i++) {
+            if (($_FILES['fotos']['error'][$i] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) continue;
+            $fila[] = ['tipo' => 'foto', 'f' => [
+                'name'     => $_FILES['fotos']['name'][$i],
+                'tmp_name' => $_FILES['fotos']['tmp_name'][$i],
+                'size'     => $_FILES['fotos']['size'][$i],
+                'error'    => $_FILES['fotos']['error'][$i],
+            ]];
+        }
+
+        /* --- valida tudo antes de gravar qualquer coisa ---------------- */
+        foreach ($fila as $item) {
+            $v = mu_validar_midia(
+                $item['f']['tmp_name'], (string) $item['f']['name'],
+                $item['tipo'], (int) $trecho['id'], null, $pdo
+            );
+            if (!$v['ok']) {
+                $recusados[] = ['arquivo' => $item['f']['name'], 'erros' => $v['erros']];
+            }
+            foreach ($v['avisos'] as $a) {
+                $avisos[] = ['arquivo' => $item['f']['name'], 'aviso' => $a];
+            }
+        }
+
+        /* Um reprovado e nada muda — nem a correção das medidas. */
+        if ($recusados) {
+            throw new Exception('Correção recusada: há arquivo sem valor probatório.');
+        }
+
         $pdo->beginTransaction();
 
         /* limpa medições antigas */
@@ -84,27 +122,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             WHERE id = ?
         ")->execute([$areaTotal, $_POST['tipo_pavimento'], $trecho['id']]);
 
-        /* novas fotos (opcional) */
-        if (!empty($_FILES['fotos']['tmp_name'][0])) {
-            $dir = __DIR__ . '/../uploads/fotos/';
-            if (!is_dir($dir)) mkdir($dir, 0775, true);
-
-            foreach ($_FILES['fotos']['tmp_name'] as $k => $tmp) {
-                $nome = uniqid('foto_') . '.' . pathinfo($_FILES['fotos']['name'][$k], PATHINFO_EXTENSION);
-                move_uploaded_file($tmp, $dir . $nome);
-
-                $pdo->prepare("
-                    INSERT INTO trecho_fotos (trecho_id, arquivo)
-                    VALUES (?, ?)
-                ")->execute([$trecho['id'], $nome]);
-            }
+        foreach ($fila as $item) {
+            $reg = mu_arquivar_midia(
+                $item['f'], (int) $trecho['id'], 'foto', null, $usuarioId ?: null, $pdo
+            );
+            $pdo->prepare("INSERT INTO trecho_fotos (trecho_id, arquivo) VALUES (?, ?)")
+                ->execute([$trecho['id'], $reg['caminho']]);
         }
 
         $pdo->commit();
         header("Location: medicao.php?planejamento_id=".$trecho['planejamento_id']."&ok=1");
         exit;
 
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
         $erro = $e->getMessage();
     }
@@ -143,10 +173,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
-<?php if ($erro): ?>
+<?php if ($erro && !$recusados): ?>
 <div class="form-card" style="border:1px solid #ef4444;background:#2a0606;">
     <strong style="color:#fecaca;">Erro:</strong>
     <span style="color:#fee2e2;"><?= htmlspecialchars($erro) ?></span>
+</div>
+<?php endif; ?>
+
+<?php if ($recusados): ?>
+<div class="form-card" style="border:1px solid #ef4444;background:#2a0606;">
+    <h3 style="color:#fecaca;margin-bottom:6px;">Correção recusada</h3>
+    <p style="color:#fee2e2;font-size:14px;margin-bottom:14px;">
+        Nada foi alterado. Corrija os arquivos abaixo e envie de novo.
+    </p>
+    <?php foreach ($recusados as $r): ?>
+        <div style="margin-bottom:14px;padding-left:12px;border-left:3px solid #ef4444;">
+            <div style="color:#fff;font-weight:600;font-size:14px;word-break:break-all;">
+                <?= htmlspecialchars($r['arquivo']) ?>
+            </div>
+            <?php foreach ($r['erros'] as $e): ?>
+                <div style="margin-top:8px;">
+                    <div style="color:#fecaca;font-weight:600;font-size:13px;">
+                        <?= htmlspecialchars($e['titulo']) ?>
+                    </div>
+                    <div style="color:#e5e7eb;font-size:13px;line-height:1.5;">
+                        <?= htmlspecialchars($e['como_corrigir']) ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endforeach; ?>
 </div>
 <?php endif; ?>
 
@@ -157,9 +213,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php if ($fotos): ?>
 <div style="display:flex;flex-wrap:wrap;gap:10px;">
 <?php foreach ($fotos as $f): ?>
+<a href="<?= htmlspecialchars(mu_url_midia($f['arquivo'], 'foto')) ?>" target="_blank">
 <img
-    src="/marco_urbano2/uploads/fotos/<?= htmlspecialchars($f['arquivo']) ?>"
+    src="<?= htmlspecialchars(mu_url_thumb($f['arquivo'], 440)) ?>"
+    alt="Foto do trecho <?= htmlspecialchars($trecho['pv_montante'].' → '.$trecho['pv_jusante']) ?>"
+    loading="lazy" decoding="async"
+    onerror="this.onerror=null;this.src='<?= htmlspecialchars(mu_url_midia($f['arquivo'], 'foto')) ?>';"
     style="width:160px;border-radius:6px;border:1px solid #374151;">
+</a>
 <?php endforeach; ?>
 </div>
 <?php else: ?>
