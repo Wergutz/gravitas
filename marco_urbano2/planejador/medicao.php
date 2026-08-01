@@ -439,10 +439,23 @@ function calcular(){
      Conveniência apenas — quem decide é a validação do servidor. -->
 <script src="/marco_urbano2/assets/js/validacao-midia.js"></script>
 <script>
+/* Coordenada do município DESTE trecho, para a conferência no navegador
+   usar a mesma referência do servidor. Sem isto a tela acusaria "fora da
+   obra" em qualquer contrato que não fosse o de Barra do Quaraí. */
+var MU_OBRA = <?= json_encode(
+    (function () use ($trechoSelecionado) {
+        if (!$trechoSelecionado) return null;
+        $c = mu_coordenada_municipio($trechoSelecionado['cidade'] ?? '');
+        return $c ? ['obraLat' => $c['lat'], 'obraLon' => $c['lon'],
+                     'raioKm' => $c['raio_km'], 'obraNome' => $c['nome']] : null;
+    })(),
+    JSON_UNESCAPED_UNICODE
+) ?>;
+
 document.addEventListener('DOMContentLoaded', function () {
     /* Conferência no navegador, nos dois caminhos de envio de foto. */
     document.querySelectorAll('input[name="fotos[]"]').forEach(function (inp) {
-        if (window.MUValidacao) { MUValidacao.ligar(inp); }
+        if (window.MUValidacao) { MUValidacao.ligar(inp, MU_OBRA || {}); }
     });
 
     /* Retorno visual: sem isto o input fica escondido no label e a pessoa

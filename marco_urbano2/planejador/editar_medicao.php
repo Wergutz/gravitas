@@ -311,9 +311,19 @@ function addLinha(){
 
 <script src="/marco_urbano2/assets/js/validacao-midia.js"></script>
 <script>
+/* Coordenada do município deste trecho — mesma referência do servidor. */
+var MU_OBRA = <?= json_encode(
+    (function () use ($trecho) {
+        $c = mu_coordenada_municipio($trecho['cidade'] ?? '');
+        return $c ? ['obraLat' => $c['lat'], 'obraLon' => $c['lon'],
+                     'raioKm' => $c['raio_km'], 'obraNome' => $c['nome']] : null;
+    })(),
+    JSON_UNESCAPED_UNICODE
+) ?>;
+
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('input[name="fotos[]"]').forEach(function (inp) {
-        if (window.MUValidacao) { MUValidacao.ligar(inp); }
+        if (window.MUValidacao) { MUValidacao.ligar(inp, MU_OBRA || {}); }
         inp.addEventListener('change', function () {
             var box = inp.closest('.mu-envio-op');
             var n = inp.files ? inp.files.length : 0;
