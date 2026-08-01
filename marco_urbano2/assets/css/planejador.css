@@ -435,3 +435,70 @@ body {
     line-height: 1.6;
     color: #9ca3af;
 }
+
+/* =======================================================================
+   IMPRESSÃO — vale para TODAS as telas do painel
+   -----------------------------------------------------------------------
+   O painel é escuro por desenho (fundo #020617). Sem estas regras,
+   imprimir ou salvar em PDF qualquer tela que não seja o relatório sai
+   com a página inteira preta: o Chrome do Android costuma vir com
+   "gráficos de plano de fundo" ligado, e imprime o fundo escuro.
+
+   O relatório tem a própria folha de impressão, mais completa, que
+   continua valendo por ser carregada depois desta.
+   ==================================================================== */
+@media print{
+    html, body{
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    .app{ display: block !important; }
+
+    /* Navegação e botões não fazem sentido no papel. */
+    .sidebar, .no-print, nav, button, .form-actions{
+        display: none !important;
+    }
+
+    img{ max-width: 100%; height: auto; }
+
+    /* --------------------------------------------------------------
+       As regras de cor abaixo valem só para as telas comuns do painel.
+       O relatório usa .content.relatorio e tem folha de impressão
+       própria, com a paleta da Marco Urbano — achatar tudo para preto
+       aqui estragaria o documento oficial.
+       -------------------------------------------------------------- */
+    .content:not(.relatorio){
+        background: #fff !important;
+        color: #000 !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+    }
+
+    .content:not(.relatorio) h1,
+    .content:not(.relatorio) h2,
+    .content:not(.relatorio) h3,
+    .content:not(.relatorio) h4,
+    .content:not(.relatorio) p,
+    .content:not(.relatorio) span,
+    .content:not(.relatorio) strong,
+    .content:not(.relatorio) label,
+    .content:not(.relatorio) td,
+    .content:not(.relatorio) th{
+        color: #000 !important;
+    }
+
+    .content:not(.relatorio) .form-card{
+        background: #fff !important;
+        border: 1px solid #999 !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    .content:not(.relatorio) .table th,
+    .content:not(.relatorio) .table td{
+        border: 1px solid #999 !important;
+    }
+
+    .content:not(.relatorio) .table th{ background: #eee !important; }
+}
