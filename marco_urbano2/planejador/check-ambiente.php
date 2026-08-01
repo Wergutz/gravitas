@@ -10,6 +10,7 @@
  */
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/config/database.php';
+require_once __DIR__ . '/../app/config/municipios.php';
 
 auth_required([1, 3]);
 
@@ -159,6 +160,50 @@ $tudoOk = !in_array(false, array_column($itens, 'ok'), true);
 <?php endforeach; ?>
 </tbody>
 </table>
+</div>
+
+<div class="form-card">
+    <h3>Municípios com obra cadastrada</h3>
+    <p style="font-size:13px;color:#9ca3af;line-height:1.6;margin-bottom:12px;">
+        A foto é recusada quando o GPS dela está longe do município <strong>do trecho</strong>.
+        Se um trecho estiver numa cidade que não aparece aqui, a distância não é conferida —
+        e a foto passa pelas demais regras. Para incluir, edite
+        <code>app/config/municipios.php</code>.
+    </p>
+    <table class="table" style="width:100%;">
+    <thead><tr><th>Município</th><th>Coordenada de referência</th><th>Raio aceito</th></tr></thead>
+    <tbody>
+    <?php foreach (MU_MUNICIPIOS as $nome => $c): ?>
+        <tr>
+            <td><strong><?= htmlspecialchars($nome) ?></strong></td>
+            <td style="font-family:monospace;font-size:13px;">
+                <?= number_format($c['lat'], 4, '.', '') ?>, <?= number_format($c['lon'], 4, '.', '') ?>
+            </td>
+            <td><?= number_format($c['raio_km'] ?? MU_RAIO_PADRAO, 0, ',', '.') ?> km</td>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+    </table>
+
+    <?php
+    /* Municípios que aparecem em trechos mas não estão cadastrados. */
+    $faltando = [];
+    try {
+        foreach ($pdo->query("SELECT DISTINCT cidade FROM trechos WHERE cidade <> ''") as $row) {
+            if (mu_coordenada_municipio($row['cidade']) === null) {
+                $faltando[] = $row['cidade'];
+            }
+        }
+    } catch (Throwable $e) { /* sem trechos ainda */ }
+    ?>
+    <?php if ($faltando): ?>
+    <p style="margin-top:12px;padding:10px;border-left:3px solid #f59e0b;background:#2a1a06;
+              color:#fef3c7;font-size:13px;line-height:1.6;">
+        <strong>Há trecho em município sem coordenada:</strong>
+        <?= htmlspecialchars(implode(', ', $faltando)) ?>.
+        Nesses trechos a conferência de distância não roda.
+    </p>
+    <?php endif; ?>
 </div>
 
 <div class="form-card">

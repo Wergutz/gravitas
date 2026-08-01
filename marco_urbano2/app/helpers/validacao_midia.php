@@ -23,14 +23,21 @@ declare(strict_types=1);
    ponto para que a ordem dos require no medicao.php não importe. */
 require_once __DIR__ . '/upload_pericial.php';
 
+/* Coordenadas dos municípios, usadas pela regra FORA_DA_OBRA. */
+require_once __DIR__ . '/../config/municipios.php';
+
 /* ===========================================================================
  *  CONFIGURAÇÃO DAS REGRAS
  * ======================================================================== */
 
 const MU_VAL = [
 
-    /* --- geolocalização da obra --------------------------------------- */
-    // Barra do Quaraí/RS — 30°12'26"S 57°33'17"W  >>> CONFIRMAR por contrato
+    /* --- geolocalização da obra ---------------------------------------
+       A coordenada NÃO fica aqui: a regra FORA_DA_OBRA usa o município
+       do próprio trecho, cadastrado em app/config/municipios.php. Um
+       ponto fixo travaria qualquer contrato fora de Barra do Quaraí.
+       Estes valores permanecem só como último recurso, para o caso de
+       o município do trecho não estar cadastrado. */
     'obra_lat'     => -30.2072,
     'obra_lon'     => -57.5547,
     'raio_km'      => 15.0,
@@ -93,6 +100,16 @@ function mu_validar_midia(
     $erros  = [];
     $avisos = [];
     $exige  = MU_EXIGE[$tipo] ?? MU_EXIGE['foto'];
+
+    /* Município do trecho: é contra ele que a distância é conferida. */
+    $cidadeTrecho = '';
+    try {
+        $stCid = $pdo->prepare('SELECT cidade FROM trechos WHERE id = ? LIMIT 1');
+        $stCid->execute([$trechoId]);
+        $cidadeTrecho = (string) ($stCid->fetchColumn() ?: '');
+    } catch (Throwable $e) {
+        // Sem a cidade, a regra de distância simplesmente não roda.
+    }
 
     /* --- 1. tipo real -------------------------------------------------- */
     $info = @getimagesize($tmp);
@@ -189,13 +206,31 @@ function mu_validar_midia(
         }
     }
 
-    /* --- 6. a foto foi tirada na obra? --------------------------------- */
+    /* --- 6. a foto foi tirada na obra? ---------------------------------
+       Compara com a coordenada do município DO TRECHO, não com um ponto
+       fixo — o mesmo sistema atende contratos em cidades diferentes.
+       Município não cadastrado: a regra não roda, porque não há contra
+       o que comparar. As demais continuam valendo. */
     if ($exif['lat'] !== null && $exif['lon'] !== null) {
-        $dist = mu_distancia_km($exif['lat'], $exif['lon'], MU_VAL['obra_lat'], MU_VAL['obra_lon']);
-        if ($dist > MU_VAL['raio_km']) {
-            $erros[] = mu_erro('FORA_DA_OBRA',
-                'A foto foi tirada a ' . number_format($dist, 1, ',', '.') . ' km da obra.',
-                'A coordenada da foto está fora do município da obra. Confira se a foto é deste contrato.');
+        $obra = mu_coordenada_municipio($cidadeTrecho);
+
+        if ($obra !== null) {
+            $dist = mu_distancia_km($exif['lat'], $exif['lon'], $obra['lat'], $obra['lon']);
+            if ($dist > $obra['raio_km']) {
+                $erros[] = mu_erro('FORA_DA_OBRA',
+                    'A foto foi tirada a ' . number_format($dist, 1, ',', '.') . ' km de ' . $obra['nome'] . '.',
+                    'O trecho é em ' . $obra['nome'] . ', e a coordenada gravada na foto está a '
+                  . number_format($dist, 1, ',', '.') . ' km de lá (o limite é '
+                  . number_format($obra['raio_km'], 0, ',', '.') . ' km). '
+                  . 'Confira se a foto é deste trecho. Se o município estiver certo e mesmo assim '
+                  . 'for recusado, o ponto de referência da cidade pode precisar de ajuste em '
+                  . 'app/config/municipios.php.');
+            }
+        } else {
+            $avisos[] = mu_erro('MUNICIPIO_NAO_CADASTRADO',
+                'Não foi possível conferir se a foto é da obra.',
+                'O município “' . $cidadeTrecho . '” não está em app/config/municipios.php, '
+              . 'então a distância não foi verificada. A foto foi aceita pelas demais regras.');
         }
     }
 
