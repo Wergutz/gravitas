@@ -12,6 +12,7 @@ if (!isset($_SESSION['usuario_id'], $_SESSION['tipo_usuario']) || $_SESSION['tip
 }
 
 require_once __DIR__ . '/../app/config/database.php';
+require_once __DIR__ . '/../app/helpers/midia_url.php';
 
 /* =================================================
    EXCLUIR PLANEJAMENTO COMPLETO (CASCADE MANUAL)
@@ -43,8 +44,8 @@ if (isset($_GET['excluir'])) {
             $fotos->execute([$t['id']]);
 
             foreach ($fotos->fetchAll() as $f) {
-                $arquivo = __DIR__ . '/../uploads/fotos/' . $f['arquivo'];
-                if (file_exists($arquivo)) unlink($arquivo);
+                $arquivo = mu_path_midia($f['arquivo'], 'foto');
+                if ($arquivo !== null) { @unlink($arquivo); }
             }
 
             $pdo->prepare("DELETE FROM trecho_fotos WHERE trecho_id = ?")
@@ -55,8 +56,8 @@ if (isset($_GET['excluir'])) {
                 ->execute([$t['id']]);
 
             /* ===== EXCLUIR CROQUI ===== */
-            $croqui = __DIR__ . '/../uploads/croquis/' . $t['croqui'];
-            if ($t['croqui'] && file_exists($croqui)) unlink($croqui);
+            $croqui = mu_path_midia($t['croqui'], 'croqui');
+            if ($croqui !== null) { @unlink($croqui); }
         }
 
         /* ===== EXCLUIR TRECHOS ===== */

@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
+require_once __DIR__ . '/../app/helpers/midia_url.php';
 
 auth_required([3]); // Planejador
 
@@ -128,7 +129,7 @@ $trechos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <!-- CROQUI -->
     <div class="form-group">
         <strong>Croqui:</strong><br>
-        <a href="/marco_urbano2/uploads/croquis/<?= $trecho['croqui'] ?>" target="_blank">
+        <a href="<?= htmlspecialchars(mu_url_midia($trecho['croqui'], 'croqui')) ?>" target="_blank">
             📄 Visualizar Croqui
         </a>
     </div>
@@ -176,9 +177,12 @@ $trechos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $stmt->execute([$trecho['id']]);
         foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $foto):
         ?>
-            <a href="/marco_urbano2/uploads/fotos/<?= $foto['arquivo'] ?>" target="_blank">
+            <a href="<?= htmlspecialchars(mu_url_midia($foto['arquivo'])) ?>" target="_blank">
                 <img
-                    src="/marco_urbano2/uploads/fotos/<?= $foto['arquivo'] ?>"
+                    src="<?= htmlspecialchars(mu_url_thumb($foto['arquivo'], 220)) ?>"
+                    alt="Foto do trecho <?= htmlspecialchars($trecho['pv_montante'].' → '.$trecho['pv_jusante']) ?>"
+                    loading="lazy" decoding="async"
+                    onerror="this.onerror=null;this.src='<?= htmlspecialchars(mu_url_midia($foto['arquivo'])) ?>';"
                     style="height:100px;border-radius:6px;"
                 >
             </a>

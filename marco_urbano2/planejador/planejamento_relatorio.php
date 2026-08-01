@@ -5,6 +5,7 @@ error_reporting(E_ALL);
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
+require_once __DIR__ . '/../app/helpers/midia_url.php';
 require_once __DIR__ . '/../app/libs/tcpdf/tcpdf.php';
 
 auth_required([3]);
@@ -69,8 +70,8 @@ foreach ($trechos as $i => $t) {
     $pdf->SetFont('helvetica','B',11);
     $pdf->Cell(0,6,'Croqui do Trecho:',0,1);
 
-    $croqui = __DIR__ . '/../uploads/croquis/'.$t['croqui'];
-    if (file_exists($croqui)) {
+    $croqui = mu_path_midia($t['croqui'], 'croqui');
+    if ($croqui !== null) {
         $pdf->Image($croqui, '', '', 160, 0, '', '', 'T', false, 300, 'C');
     } else {
         $pdf->SetFont('helvetica','',10);
@@ -107,8 +108,8 @@ foreach ($trechos as $i => $t) {
         $pdf->Cell(0,8,'Fotos do Trecho '.($i+1),0,1);
 
         foreach ($fotos as $f) {
-            $img = __DIR__ . '/../uploads/fotos/'.$f['arquivo'];
-            if (file_exists($img)) {
+            $img = mu_path_midia($f['arquivo'], 'foto');
+            if ($img !== null) {
                 $pdf->Image($img, '', '', 80);
                 $pdf->Ln(5);
             }
