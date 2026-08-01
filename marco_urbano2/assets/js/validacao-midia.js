@@ -17,8 +17,15 @@
   'use strict';
 
   var CFG = {
-    obraLat: -30.2072,        // Barra do Quaraí/RS  >>> CONFIRMAR por contrato
-    obraLon: -57.5547,
+    /* A coordenada da obra NÃO é fixa: vem do município do trecho que
+       está sendo medido, injetada pela página em MUValidacao.ligar().
+       Nula por padrão de propósito — sem coordenada, a conferência de
+       distância não roda aqui e quem decide é o servidor. Deixar um
+       ponto fixo faria a tela acusar "fora da obra" em todo contrato
+       que não fosse Barra do Quaraí. */
+    obraLat: null,
+    obraLon: null,
+    obraNome: '',
     raioKm: 15,
     megapixelsMin: 6.0,
     diasMaxAtras: 120
@@ -132,9 +139,14 @@
     if (!exif.data) e.push('A foto não tem data de captura.');
     if (exif.lat === null || exif.lon === null) {
       e.push('A foto não tem localização. Ligue a marcação de local na câmera do celular.');
-    } else {
+    } else if (CFG.obraLat !== null && CFG.obraLon !== null) {
+      /* Só confere distância quando a página informou a coordenada do
+         município do trecho. Sem ela não há contra o que comparar. */
       var d = distanciaKm(exif.lat, exif.lon, CFG.obraLat, CFG.obraLon);
-      if (d > CFG.raioKm) e.push('A foto foi tirada a ' + d.toFixed(1).replace('.', ',') + ' km da obra.');
+      if (d > CFG.raioKm) {
+        e.push('A foto foi tirada a ' + d.toFixed(1).replace('.', ',') + ' km de ' +
+               (CFG.obraNome || 'onde o trecho está cadastrado') + '.');
+      }
     }
     if (exif.data) {
       if (exif.data.getTime() > Date.now() + 864e5) {
