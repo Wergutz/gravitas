@@ -163,6 +163,52 @@ $tudoOk = !in_array(false, array_column($itens, 'ok'), true);
 </div>
 
 <div class="form-card">
+    <h3>Versão em execução</h3>
+    <p style="font-size:13px;color:#9ca3af;line-height:1.6;margin-bottom:10px;">
+        Serve para saber se o servidor já está rodando a versão mais recente. Arquivo
+        estático (CSS) atualiza na hora; PHP pode ficar em cache alguns minutos.
+    </p>
+    <table class="table" style="width:100%;">
+    <tbody>
+    <?php
+    $arquivos = [
+        'Regras de validação'   => __DIR__ . '/../app/helpers/validacao_midia.php',
+        'Municípios cadastrados'=> __DIR__ . '/../app/config/municipios.php',
+        'Tela de medição'       => __DIR__ . '/medicao.php',
+        'Relatório'             => __DIR__ . '/relatorio.php',
+    ];
+    foreach ($arquivos as $rotulo => $caminho):
+        $existe = is_file($caminho);
+    ?>
+        <tr>
+            <td style="width:34px;font-size:18px;"><?= $existe ? '✅' : '❌' ?></td>
+            <td><strong><?= htmlspecialchars($rotulo) ?></strong></td>
+            <td style="font-size:13px;color:#9ca3af;">
+                <?= $existe ? 'atualizado em ' . date('d/m/Y H:i', filemtime($caminho)) : 'não encontrado' ?>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+        <tr>
+            <td style="font-size:18px;"><?= function_exists('opcache_get_status') ? 'ℹ️' : '✅' ?></td>
+            <td><strong>Cache de código (OPcache)</strong></td>
+            <td style="font-size:13px;color:#9ca3af;">
+                <?php
+                if (!function_exists('opcache_get_status')) {
+                    echo 'desligado — toda alteração vale na hora';
+                } else {
+                    $st = @opcache_get_status(false);
+                    echo (is_array($st) && !empty($st['opcache_enabled']))
+                        ? 'ligado — se a data acima já for a nova mas o comportamento for antigo, aguarde alguns minutos'
+                        : 'desligado — toda alteração vale na hora';
+                }
+                ?>
+            </td>
+        </tr>
+    </tbody>
+    </table>
+</div>
+
+<div class="form-card">
     <h3>Municípios com obra cadastrada</h3>
     <p style="font-size:13px;color:#9ca3af;line-height:1.6;margin-bottom:12px;">
         A foto é recusada quando o GPS dela está longe do município <strong>do trecho</strong>.
@@ -186,23 +232,56 @@ $tudoOk = !in_array(false, array_column($itens, 'ok'), true);
     </table>
 
     <?php
-    /* Municípios que aparecem em trechos mas não estão cadastrados. */
-    $faltando = [];
+    /* Cidade gravada em cada trecho — é contra ela que a distância é
+       conferida. É aqui que se vê por que uma foto foi recusada: se o
+       trecho está como "Barra do Quaraí" e a foto foi tirada em outra
+       cidade, a recusa está certa; o que precisa mudar é o cadastro do
+       trecho, não a regra. */
+    $porCidade = [];
     try {
-        foreach ($pdo->query("SELECT DISTINCT cidade FROM trechos WHERE cidade <> ''") as $row) {
-            if (mu_coordenada_municipio($row['cidade']) === null) {
-                $faltando[] = $row['cidade'];
-            }
-        }
+        $q = $pdo->query("
+            SELECT cidade, COUNT(*) AS n
+            FROM trechos
+            GROUP BY cidade
+            ORDER BY n DESC
+        ");
+        foreach ($q as $row) { $porCidade[] = $row; }
     } catch (Throwable $e) { /* sem trechos ainda */ }
     ?>
-    <?php if ($faltando): ?>
-    <p style="margin-top:12px;padding:10px;border-left:3px solid #f59e0b;background:#2a1a06;
-              color:#fef3c7;font-size:13px;line-height:1.6;">
-        <strong>Há trecho em município sem coordenada:</strong>
-        <?= htmlspecialchars(implode(', ', $faltando)) ?>.
-        Nesses trechos a conferência de distância não roda.
+
+    <?php if ($porCidade): ?>
+    <h3 style="margin-top:22px;">Cidade gravada nos trechos</h3>
+    <p style="font-size:13px;color:#9ca3af;line-height:1.6;margin-bottom:10px;">
+        A foto é comparada com a cidade <strong>do trecho</strong>, não com a do contrato.
+        Se um trecho de teste ficou com a cidade da obra e a foto foi tirada em outro lugar,
+        a recusa está certa — o que precisa mudar é a cidade do trecho.
     </p>
+    <table class="table" style="width:100%;">
+    <thead><tr><th>Cidade no trecho</th><th>Trechos</th><th>Situação</th></tr></thead>
+    <tbody>
+    <?php foreach ($porCidade as $c):
+        $nome = trim((string) $c['cidade']);
+        $coord = $nome === '' ? null : mu_coordenada_municipio($nome);
+    ?>
+        <tr>
+            <td><strong><?= $nome === '' ? '(em branco)' : htmlspecialchars($nome) ?></strong></td>
+            <td><?= (int) $c['n'] ?></td>
+            <td style="font-size:13px;">
+                <?php if ($coord !== null): ?>
+                    <span style="color:#86efac;">
+                        ✅ confere contra <?= htmlspecialchars($coord['nome']) ?>,
+                        raio de <?= number_format($coord['raio_km'], 0, ',', '.') ?> km
+                    </span>
+                <?php else: ?>
+                    <span style="color:#fcd34d;">
+                        ⚠️ sem coordenada cadastrada — a distância não é conferida nestes trechos
+                    </span>
+                <?php endif; ?>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+    </tbody>
+    </table>
     <?php endif; ?>
 </div>
 
