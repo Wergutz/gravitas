@@ -83,20 +83,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($_POST['trecho_id'])) throw new Exception('Trecho não informado.');
         if (empty($_POST['tipo_pavimento'])) throw new Exception('Selecione o tipo de pavimento.');
         if (empty($_POST['comprimento']) || empty($_POST['largura'])) throw new Exception('Informe comprimento e largura.');
-        if (empty($_FILES['croqui']['tmp_name'])) throw new Exception('Croqui é obrigatório.');
-        if (empty($_FILES['fotos']['tmp_name'][0])) throw new Exception('Envie ao menos uma foto.');
 
         $trechoId  = (int) $_POST['trecho_id'];
         $usuarioId = (int) ($_SESSION['usuario_id'] ?? 0);
 
         /* ---------------------------------------------------------------
            1) Fila dos arquivos recebidos
+
+           O croqui pode vir de dois campos — câmera ou arquivo. São nomes
+           distintos de propósito: com o mesmo nome, o campo vazio
+           sobrescreveria o preenchido.
+
+           As fotos vêm dos dois campos com o mesmo `fotos[]`, e o PHP já
+           junta tudo num array só.
         --------------------------------------------------------------- */
         $fila = [];
 
-        if (!empty($_FILES['croqui']['name'])) {
-            $fila[] = ['tipo' => 'croqui', 'f' => $_FILES['croqui']];
+        foreach (['croqui_camera', 'croqui'] as $campo) {
+            if (($_FILES[$campo]['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+                $fila[] = ['tipo' => 'croqui', 'f' => $_FILES[$campo]];
+                break;   // um croqui basta; a câmera tem preferência
+            }
         }
+
+        $temCroqui = (bool) $fila;
 
         $nFotos = count($_FILES['fotos']['name'] ?? []);
         for ($i = 0; $i < $nFotos; $i++) {
@@ -108,6 +118,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'error'    => $_FILES['fotos']['error'][$i],
             ]];
         }
+
+        $temFoto = count($fila) > ($temCroqui ? 1 : 0);
+
+        if (!$temCroqui) throw new Exception('Croqui é obrigatório.');
+        if (!$temFoto)   throw new Exception('Envie ao menos uma foto.');
 
         /* ---------------------------------------------------------------
            2) Validar TUDO antes de gravar QUALQUER COISA.
@@ -340,12 +355,37 @@ Trecho selecionado:<br>
 
 <div class="form-group">
 <label>Croqui</label>
-<input type="file" name="croqui" required>
+<div class="mu-envio">
+    <label class="mu-envio-op">
+        📷 Fotografar croqui
+        <input type="file" name="croqui_camera" accept="image/*" capture="environment">
+    </label>
+    <label class="mu-envio-op">
+        📁 Escolher arquivo
+        <input type="file" name="croqui" accept="image/*,application/pdf">
+    </label>
+</div>
+<small class="mu-dica">Pode fotografar o croqui em papel ou enviar o arquivo digitalizado.</small>
 </div>
 
 <div class="form-group">
-<label>Fotos</label>
-<input type="file" name="fotos[]" multiple required>
+<label>Fotos do serviço</label>
+<div class="mu-envio">
+    <label class="mu-envio-op mu-envio-camera">
+        📷 Tirar foto agora
+        <input type="file" name="fotos[]" accept="image/*" capture="environment" multiple>
+    </label>
+    <label class="mu-envio-op">
+        🖼️ Enviar da galeria
+        <input type="file" name="fotos[]" accept="image/*" multiple>
+    </label>
+</div>
+<small class="mu-dica">
+    <strong>Prefira “Enviar da galeria”</strong>, escolhendo a foto tirada pelo aplicativo
+    de câmera do celular. É o caminho que preserva data e localização — sem esses dados
+    a foto é recusada. Use “Tirar foto agora” só se o aparelho estiver comprovadamente
+    gravando a localização por este caminho.
+</small>
 </div>
 
 <div class="form-actions">
@@ -390,8 +430,51 @@ function calcular(){
 <script src="/marco_urbano2/assets/js/validacao-midia.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    var fotos = document.querySelector('input[name="fotos[]"]');
-    if (fotos && window.MUValidacao) { MUValidacao.ligar(fotos); }
+    /* Conferência no navegador, nos dois caminhos de envio de foto. */
+    document.querySelectorAll('input[name="fotos[]"]').forEach(function (inp) {
+        if (window.MUValidacao) { MUValidacao.ligar(inp); }
+    });
+
+    /* Retorno visual: sem isto o input fica escondido no label e a pessoa
+       não sabe se o arquivo foi mesmo anexado. */
+    document.querySelectorAll('.mu-envio-op input[type="file"]').forEach(function (inp) {
+        inp.addEventListener('change', function () {
+            var box = inp.closest('.mu-envio-op');
+            var n   = inp.files ? inp.files.length : 0;
+            if (!box) return;
+
+            var rotulo = box.querySelector('.mu-envio-rotulo');
+            if (!rotulo) {
+                rotulo = document.createElement('span');
+                rotulo.className = 'mu-envio-rotulo';
+                box.appendChild(rotulo);
+            }
+
+            if (n > 0) {
+                box.classList.add('tem-arquivo');
+                rotulo.textContent = n === 1 ? '— 1 arquivo' : '— ' + n + ' arquivos';
+            } else {
+                box.classList.remove('tem-arquivo');
+                rotulo.textContent = '';
+            }
+
+            /* Croqui: os dois campos são alternativas, não somam.
+               Escolher num deles limpa o outro. */
+            if (inp.name.indexOf('croqui') === 0 && n > 0) {
+                document.querySelectorAll('input[name="croqui"], input[name="croqui_camera"]')
+                    .forEach(function (outro) {
+                        if (outro === inp) return;
+                        outro.value = '';
+                        var b = outro.closest('.mu-envio-op');
+                        if (b) {
+                            b.classList.remove('tem-arquivo');
+                            var r = b.querySelector('.mu-envio-rotulo');
+                            if (r) { r.textContent = ''; }
+                        }
+                    });
+            }
+        });
+    });
 });
 </script>
 

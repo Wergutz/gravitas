@@ -38,7 +38,15 @@ const MU_RELATORIO = [
        Cuidado só com isto: mantenha as aspas e a vírgula no fim.
        ================================================================= */
 
-    // Período que esta medição cobre, como consta no contrato.
+    // PERÍODO — normalmente NÃO precisa preencher.
+    //
+    // O sistema apura sozinho, a partir dos trechos que entram no
+    // relatório: usa a data em que as fotos foram TIRADAS (EXIF), que é
+    // a evidência de quando o serviço aconteceu em campo. Sem EXIF, cai
+    // para a data em que a medição foi lançada.
+    //
+    // Preencha aqui SÓ se o contrato fixar um período diferente do que
+    // os dados mostram — neste caso, o valor daqui vence.
     // Exemplo: '01/07/2026 a 31/07/2026'
     'periodo'      => null,
 
