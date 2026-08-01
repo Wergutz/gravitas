@@ -234,6 +234,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
+<?php if (!empty($_GET['ok'])): ?>
+<div class="form-card" style="border:1px solid #22c55e;background:#052e16;">
+    <strong style="color:#bbf7d0;font-size:16px;">✅ Medição gravada.</strong>
+    <p style="color:#dcfce7;font-size:14px;margin-top:6px;line-height:1.5;">
+        As fotos passaram na conferência e o trecho já aparece como medido.
+        Selecione outro trecho abaixo para continuar.
+    </p>
+</div>
+<?php endif; ?>
+
 <?php if ($erro && !$recusados): ?>
 <div class="form-card" style="border:1px solid #ef4444;background:#2a0606;">
     <strong style="color:#fecaca;">Erro:</strong>
