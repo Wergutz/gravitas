@@ -373,3 +373,65 @@ body {
     .content{ padding: 16px; }
     .form-row{ flex-direction: column; }
 }
+
+/* =======================================================================
+   ENVIO DE MÍDIA — câmera ou galeria
+   -----------------------------------------------------------------------
+   Dois caminhos lado a lado. O input de arquivo fica escondido dentro do
+   <label>, que vira o botão — em celular, tocar no botão da câmera abre
+   a câmera direto (atributo capture).
+   ==================================================================== */
+.mu-envio{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.mu-envio-op{
+    flex: 1 1 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 12px;
+    border: 1px dashed #374151;
+    border-radius: 8px;
+    background: #0b1e33;
+    color: #e5e7eb;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color .15s, background .15s;
+}
+
+.mu-envio-op:hover{
+    border-color: #3CB86A;
+    background: #0e2740;
+}
+
+/* O input real fica invisível: quem recebe o toque é o label. */
+.mu-envio-op input[type="file"]{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+}
+
+/* Marca visual quando o campo já tem arquivo escolhido. */
+.mu-envio-op.tem-arquivo{
+    border-style: solid;
+    border-color: #22c55e;
+    background: #052e16;
+    color: #bbf7d0;
+}
+
+.mu-dica{
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #9ca3af;
+}

@@ -266,7 +266,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="form-group">
 <label>Adicionar novas fotos</label>
-<input type="file" name="fotos[]" multiple>
+<div class="mu-envio">
+    <label class="mu-envio-op mu-envio-camera">
+        📷 Tirar foto agora
+        <input type="file" name="fotos[]" accept="image/*" capture="environment" multiple>
+    </label>
+    <label class="mu-envio-op">
+        🖼️ Enviar da galeria
+        <input type="file" name="fotos[]" accept="image/*" multiple>
+    </label>
+</div>
+<small class="mu-dica">
+    <strong>Prefira “Enviar da galeria”</strong>, escolhendo a foto tirada pelo aplicativo
+    de câmera do celular — é o caminho que preserva data e localização.
+</small>
 </div>
 
 <div class="form-actions">
@@ -295,5 +308,23 @@ function addLinha(){
 }
 </script>
 
+
+<script src="/marco_urbano2/assets/js/validacao-midia.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('input[name="fotos[]"]').forEach(function (inp) {
+        if (window.MUValidacao) { MUValidacao.ligar(inp); }
+        inp.addEventListener('change', function () {
+            var box = inp.closest('.mu-envio-op');
+            var n = inp.files ? inp.files.length : 0;
+            if (!box) return;
+            var r = box.querySelector('.mu-envio-rotulo');
+            if (!r) { r = document.createElement('span'); r.className = 'mu-envio-rotulo'; box.appendChild(r); }
+            box.classList.toggle('tem-arquivo', n > 0);
+            r.textContent = n > 0 ? (n === 1 ? '\u2014 1 arquivo' : '\u2014 ' + n + ' arquivos') : '';
+        });
+    });
+});
+</script>
 </body>
 </html>

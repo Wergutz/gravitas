@@ -132,6 +132,74 @@ $listaMedicoes = implode(' e ', array_keys($medicoesSet));
 $listaBacias   = implode(', ', array_keys($bacias));
 $emissao       = mu_rel_pendente('emissao') ? date('d/m/Y') : mu_rel('emissao');
 
+/* =========================================
+   PERÍODO DA MEDIÇÃO — APURADO DOS PRÓPRIOS DADOS
+
+   Não é digitado: sai do que está registrado nos trechos do relatório.
+
+   A fonte preferida é a data em que a FOTO FOI TIRADA (EXIF), porque é
+   a evidência de quando o serviço aconteceu em campo — e é o que um
+   perito confere. Onde não houver EXIF (acervo anterior a esta regra),
+   cai para a data em que a medição foi lançada no sistema.
+
+   O campo `periodo` do config, se preenchido, vence: o contrato pode
+   fixar um período diferente do que as fotos mostram.
+========================================= */
+$periodoAuto   = null;
+$periodoOrigem = null;
+
+if ($trechosSelecionados) {
+    $ids = array_column($trechosSelecionados, 'id');
+    $ph  = implode(',', array_fill(0, count($ids), '?'));
+
+    // 1ª escolha: quando a foto foi tirada.
+    try {
+        $st = $pdo->prepare("
+            SELECT MIN(exif_datahora) AS ini, MAX(exif_datahora) AS fim
+            FROM midia_custodia
+            WHERE trecho_id IN ($ph)
+              AND tipo = 'foto'
+              AND exif_datahora IS NOT NULL
+        ");
+        $st->execute($ids);
+        $r = $st->fetch(PDO::FETCH_ASSOC);
+        if (!empty($r['ini'])) {
+            $periodoAuto   = [$r['ini'], $r['fim']];
+            $periodoOrigem = 'data de captura das fotos';
+        }
+    } catch (Throwable $e) {
+        // Tabela de custódia ainda não criada: segue para o fallback.
+    }
+
+    // 2ª escolha: quando a medição foi lançada.
+    if ($periodoAuto === null) {
+        $st = $pdo->prepare("
+            SELECT MIN(created_at) AS ini, MAX(created_at) AS fim
+            FROM pavimento_produzido
+            WHERE trecho_id IN ($ph)
+        ");
+        $st->execute($ids);
+        $r = $st->fetch(PDO::FETCH_ASSOC);
+        if (!empty($r['ini'])) {
+            $periodoAuto   = [$r['ini'], $r['fim']];
+            $periodoOrigem = 'lançamento da medição';
+        }
+    }
+}
+
+if (!mu_rel_pendente('periodo')) {
+    $periodoTexto  = mu_rel('periodo');          // config vence
+    $periodoOrigem = 'definido no contrato';
+} elseif ($periodoAuto !== null) {
+    $ini = date('d/m/Y', strtotime($periodoAuto[0]));
+    $fim = date('d/m/Y', strtotime($periodoAuto[1]));
+    $periodoTexto = ($ini === $fim) ? $ini : "$ini a $fim";
+} else {
+    $periodoTexto  = 'a confirmar';
+    $periodoOrigem = null;
+}
+$periodoPendente = ($periodoTexto === 'a confirmar');
+
 /** Formata número no padrão brasileiro. */
 function mu_num($v, int $casas = 2): string {
     return number_format((float) $v, $casas, ',', '.');
@@ -226,14 +294,33 @@ function mu_num($v, int $casas = 2): string {
     <button class="btn-primary" onclick="window.print()">🖨 Imprimir / Salvar PDF</button>
 </div>
 
-<?php if (mu_rel_pendente('periodo') || mu_rel_pendente('resp_tecnico') || mu_rel_pendente('art')): ?>
+<?php if ($periodoOrigem !== null && !$periodoPendente): ?>
+<div class="form-card no-print" style="border:1px solid #22c55e;background:#052e16;">
+    <strong style="color:#bbf7d0;">Período apurado pelo sistema: <?= htmlspecialchars($periodoTexto) ?></strong>
+    <p style="color:#dcfce7;font-size:13px;margin-top:6px;line-height:1.5;">
+        Fonte: <?= htmlspecialchars($periodoOrigem) ?>. Não é digitado — sai dos trechos
+        selecionados acima. Se o contrato fixar um período diferente, preencha
+        <code>periodo</code> em <code>app/config/relatorio.php</code> e ele passa a valer.
+    </p>
+</div>
+<?php endif; ?>
+
+<?php if ($periodoPendente || mu_rel_pendente('resp_tecnico') || mu_rel_pendente('art')): ?>
 <div class="form-card no-print" style="border:1px solid #f59e0b;background:#2a1a06;">
     <strong style="color:#fde68a;">Documento com campos pendentes</strong>
-    <p style="color:#fef3c7;font-size:13px;margin-top:6px;line-height:1.5;">
-        Período da medição, responsável técnico e ART ainda não foram preenchidos e saem
-        no PDF como “a confirmar”. Para preencher, edite
-        <code>marco_urbano2/app/config/relatorio.php</code> — não exige mexer em código.
-    </p>
+    <ul style="color:#fef3c7;font-size:13px;margin:8px 0 0 18px;line-height:1.6;">
+        <?php if ($periodoPendente): ?>
+        <li><strong>Período</strong> — os trechos selecionados não têm data de captura
+            nem data de lançamento registrada. Assim que houver medição lançada com foto,
+            o sistema apura sozinho.</li>
+        <?php endif; ?>
+        <?php if (mu_rel_pendente('resp_tecnico')): ?>
+        <li><strong>Responsável técnico</strong> — preencher em <code>app/config/relatorio.php</code>.</li>
+        <?php endif; ?>
+        <?php if (mu_rel_pendente('art')): ?>
+        <li><strong>ART</strong> — preencher em <code>app/config/relatorio.php</code>.</li>
+        <?php endif; ?>
+    </ul>
 </div>
 <?php endif; ?>
 
@@ -286,7 +373,7 @@ function mu_num($v, int $casas = 2): string {
     </tr>
     <tr>
       <th>Período</th>
-      <td<?= mu_rel_pendente('periodo') ? ' class="mu-conf"' : '' ?>><?= htmlspecialchars(mu_rel('periodo')) ?></td>
+      <td<?= $periodoPendente ? ' class="mu-conf"' : '' ?>><?= htmlspecialchars($periodoTexto) ?></td>
       <th>Emissão</th><td><?= htmlspecialchars($emissao) ?></td>
     </tr>
     <tr>
