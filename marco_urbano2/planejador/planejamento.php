@@ -2,11 +2,42 @@
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
+require_once __DIR__ . '/../app/helpers/texto.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 auth_required([3]); // Planejador
+
+$erro = null;
+
+/**
+ * Procura um planejamento do usuário com o mesmo nome, ignorando caixa,
+ * acento e espaço repetido.
+ *
+ * A comparação roda em PHP de propósito: o LOWER() do SQL não rebaixa
+ * acento da mesma forma em todo banco, e "MEDIÇÃO 27" passaria como nome
+ * diferente de "Medição 27".
+ *
+ * @return array{id:int, nome:string}|null
+ */
+function mu_planejamento_com_nome(PDO $pdo, int $usuarioId, string $nome): ?array
+{
+    $alvo = mu_normalizar_texto($nome);
+    if ($alvo === '') {
+        return null;
+    }
+
+    $st = $pdo->prepare('SELECT id, nome FROM planejamentos WHERE usuario_id = ?');
+    $st->execute([$usuarioId]);
+
+    foreach ($st->fetchAll(PDO::FETCH_ASSOC) as $p) {
+        if (mu_normalizar_texto($p['nome']) === $alvo) {
+            return ['id' => (int) $p['id'], 'nome' => (string) $p['nome']];
+        }
+    }
+    return null;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -27,7 +58,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $spreadsheet = IOFactory::load($_FILES['excel']['tmp_name']);
             $sheet = $spreadsheet->getActiveSheet();
 
+            /* O nome do planejamento é o nome da ABA da planilha. */
             $nomePlanejamento = trim($sheet->getTitle());
+
+            if ($nomePlanejamento === '') {
+                throw new Exception('A aba da planilha está sem nome — é dela que sai o nome do planejamento.');
+            }
+
+            /* Reimportar a mesma planilha criaria outro planejamento com o
+               mesmo nome, indistinguível do primeiro nas listas. */
+            if ($jaExiste = mu_planejamento_com_nome($pdo, (int) $_SESSION['usuario_id'], $nomePlanejamento)) {
+                throw new Exception(
+                    'Já existe um planejamento seu chamado “' . $jaExiste['nome'] . '” '
+                  . '(nº ' . $jaExiste['id'] . '). Renomeie a aba da planilha antes de importar '
+                  . '— é o nome da aba que vira o nome do planejamento.'
+                );
+            }
 
             $pdo->beginTransaction();
 
@@ -115,13 +161,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 throw new Exception('Nenhum trecho manual informado');
             }
 
+            /* Nome do planejamento: informado por quem cadastra. Antes era
+               fixo, e todo planejamento manual saía com o mesmo nome —
+               impossível distinguir um do outro nas listas. */
+            $nomePlanejamento = trim((string) ($_POST['nome_planejamento'] ?? ''));
+
+            if ($nomePlanejamento === '') {
+                throw new Exception('Dê um nome ao planejamento.');
+            }
+            if (mb_strlen($nomePlanejamento) > 150) {
+                $nomePlanejamento = mb_substr($nomePlanejamento, 0, 150);
+            }
+
+            /* Nome repetido derrota o propósito de nomear: barra antes de
+               gravar e diz qual já existe. */
+            if ($jaExiste = mu_planejamento_com_nome($pdo, (int) $_SESSION['usuario_id'], $nomePlanejamento)) {
+                throw new Exception(
+                    'Já existe um planejamento seu chamado “' . $jaExiste['nome'] . '” '
+                  . '(nº ' . $jaExiste['id'] . '). Escolha outro nome.'
+                );
+            }
+
             $pdo->beginTransaction();
 
             $stmt = $pdo->prepare("
                 INSERT INTO planejamentos (nome, usuario_id)
-                VALUES ('Planejamento Manual', ?)
+                VALUES (?, ?)
             ");
-            $stmt->execute([$_SESSION['usuario_id']]);
+            $stmt->execute([$nomePlanejamento, $_SESSION['usuario_id']]);
             $planejamentoId = $pdo->lastInsertId();
 
             foreach ($_POST['trechos'] as $t) {
@@ -152,9 +219,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
-        die('Erro ao salvar planejamento: ' . $e->getMessage());
+        /* Antes era die(): a página morria e quem estava cadastrando
+           perdia tudo que tinha digitado. Agora a mensagem aparece na
+           própria tela, com o formulário no lugar. */
+        $erro = $e->getMessage();
     }
 }
 ?>
@@ -188,6 +258,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <h1>Novo Planejamento</h1>
 
+<?php if (!empty($_GET['excel'])): ?>
+<div class="form-card" style="border:1px solid #22c55e;background:#052e16;">
+    <strong style="color:#bbf7d0;font-size:16px;">✅ Planilha importada.</strong>
+    <p style="color:#dcfce7;font-size:14px;margin-top:6px;">
+        O planejamento já aparece em <a href="/marco_urbano2/planejador/medicao.php"
+        style="color:#86efac;">Incluir Medições</a>.
+    </p>
+</div>
+<?php endif; ?>
+
+<?php if (!empty($_GET['manual'])): ?>
+<div class="form-card" style="border:1px solid #22c55e;background:#052e16;">
+    <strong style="color:#bbf7d0;font-size:16px;">✅ Planejamento cadastrado.</strong>
+    <p style="color:#dcfce7;font-size:14px;margin-top:6px;">
+        Já aparece em <a href="/marco_urbano2/planejador/medicao.php"
+        style="color:#86efac;">Incluir Medições</a>.
+    </p>
+</div>
+<?php endif; ?>
+
+<?php if ($erro): ?>
+<div class="form-card" style="border:1px solid #ef4444;background:#2a0606;">
+    <strong style="color:#fecaca;">Não foi possível salvar</strong>
+    <p style="color:#fee2e2;font-size:14px;margin-top:6px;line-height:1.5;">
+        <?= htmlspecialchars($erro) ?>
+    </p>
+    <p style="color:#fca5a5;font-size:13px;margin-top:6px;">Nada foi gravado.</p>
+</div>
+<?php endif; ?>
+
 <!-- ============ EXCEL ============ -->
 <form method="post" enctype="multipart/form-data">
 <div class="form-card">
@@ -196,6 +296,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label>Arquivo Excel</label>
         <input type="file" name="excel" accept=".xlsx,.xls" required>
     </div>
+    <small class="mu-dica">
+        O nome do planejamento vem do <strong>nome da aba</strong> da planilha.
+        Renomeie a aba antes de importar — dois planejamentos não podem ter o mesmo nome.
+    </small>
     <div class="form-actions">
         <button class="btn-primary" name="importar_excel">📥 Enviar Excel</button>
     </div>
@@ -204,6 +308,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!-- ============ MANUAL ============ -->
 <form method="post">
+
+<div class="form-card">
+    <h3>Cadastrar manualmente</h3>
+    <div class="form-group">
+        <label>Nome do planejamento</label>
+        <input
+            type="text"
+            name="nome_planejamento"
+            maxlength="150"
+            required
+            placeholder="Ex: Contrato 4147-2024 · Medição 27"
+            value="<?= htmlspecialchars($_POST['nome_planejamento'] ?? '') ?>"
+        >
+        <small class="mu-dica">
+            É por este nome que o planejamento aparece nas telas de medição e relatório.
+            Use algo que identifique o contrato ou o período — nomes repetidos não são aceitos.
+        </small>
+    </div>
+</div>
 
 <div id="trechos-container"></div>
 

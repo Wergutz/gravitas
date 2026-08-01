@@ -19,6 +19,8 @@
  * espalhada pede raio maior; distrito pequeno, menor.
  */
 
+require_once __DIR__ . '/../helpers/texto.php';
+
 const MU_MUNICIPIOS = [
 
     // Contrato 4147-2024 / TC 0147-2024 — CORSAN
@@ -37,11 +39,7 @@ const MU_RAIO_PADRAO = 15.0;
  */
 function mu_chave_municipio(string $nome): string
 {
-    $n = trim(mb_strtolower($nome, 'UTF-8'));
-    $de = ['á','à','ã','â','ä','é','ê','ë','í','ï','ó','ô','õ','ö','ú','ü','ç'];
-    $para = ['a','a','a','a','a','e','e','e','i','i','o','o','o','o','u','u','c'];
-    $n = str_replace($de, $para, $n);
-    return preg_replace('/\s+/', ' ', $n);
+    return mu_normalizar_texto($nome);
 }
 
 /**
