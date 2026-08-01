@@ -94,6 +94,8 @@ $resumo      = [];   // [medicao][tipo_pavimento] => ['trechos'=>n, 'area'=>m2]
 $totalPorTipo = [];  // [tipo_pavimento] => ['trechos'=>n, 'area'=>m2]
 $medicoesSet = [];
 $bacias      = [];
+$cidades     = [];
+$contratos   = [];
 
 foreach ($trechosSelecionados as $t) {
     $st = $pdo->prepare("SELECT * FROM pavimento_produzido WHERE trecho_id = ? ORDER BY id");
@@ -124,13 +126,43 @@ foreach ($trechosSelecionados as $t) {
     $totalPorTipo[$tipo]['area'] += $areaTrecho;
 
     $medicoesSet[$med] = true;
-    if (trim((string) $t['bacia']) !== '') { $bacias[$t['bacia']] = true; }
+    if (trim((string) $t['bacia']) !== '')    { $bacias[$t['bacia']] = true; }
+    if (trim((string) $t['cidade']) !== '')   { $cidades[$t['cidade']] = true; }
+    if (trim((string) $t['contrato']) !== '') { $contratos[$t['contrato']] = true; }
 }
 
 ksort($resumo);
 $listaMedicoes = implode(' e ', array_keys($medicoesSet));
 $listaBacias   = implode(', ', array_keys($bacias));
 $emissao       = mu_rel_pendente('emissao') ? date('d/m/Y') : mu_rel('emissao');
+
+/* =========================================
+   MUNICÍPIO E CONTRATO — VÊM DOS TRECHOS
+
+   Estavam fixos no config e saíam iguais em todo relatório, mesmo em
+   planejamento de outra cidade. Passam a ser lidos dos trechos que
+   entram no documento. Se todos são da mesma cidade, é ela; se houver
+   mais de uma, saem todas, porque omitir esconderia informação do
+   documento oficial.
+
+   O config continua valendo como sobreposição, para o caso de o
+   contrato exigir uma denominação diferente da digitada nos trechos.
+========================================= */
+$municipioDoc = trim((string) (MU_RELATORIO['municipio'] ?? ''));
+if ($cidades) {
+    $municipioDoc = implode(' · ', array_keys($cidades));
+}
+if ($municipioDoc === '') { $municipioDoc = '—'; }
+
+$contratoDoc = trim((string) (MU_RELATORIO['contrato'] ?? ''));
+if ($contratos) {
+    $contratoDoc = implode(' · ', array_keys($contratos));
+}
+if ($contratoDoc === '') { $contratoDoc = '—'; }
+
+/* Para o rodapé e a linha de local e data, uma cidade só. Com várias,
+   fica a primeira — assinar em duas cidades ao mesmo tempo não existe. */
+$municipioAssinatura = $cidades ? array_key_first($cidades) : $municipioDoc;
 
 /* =========================================
    PERÍODO DA MEDIÇÃO — APURADO DOS PRÓPRIOS DADOS
@@ -338,8 +370,8 @@ function mu_num($v, int $casas = 2): string {
     <img class="mu-logo" src="/marco_urbano2/assets/img/marco-urbano-logo.png" alt="Marco Urbano Urbanizadora">
     <div class="mu-header-doc">
       <strong>Relatório de Medição</strong>
-      Contrato <?= htmlspecialchars(MU_RELATORIO['contrato']) ?><br>
-      <?= htmlspecialchars(MU_RELATORIO['municipio']) ?>
+      Contrato <?= htmlspecialchars($contratoDoc) ?><br>
+      <?= htmlspecialchars($municipioDoc) ?>
     </div>
   </header>
 </td></tr></thead>
@@ -349,7 +381,7 @@ function mu_num($v, int $casas = 2): string {
     <span><?= htmlspecialchars(MU_RELATORIO['contratada']) ?> &nbsp;·&nbsp;
           CNPJ: <?= htmlspecialchars(MU_RELATORIO['cnpj']) ?> &nbsp;·&nbsp;
           <?= htmlspecialchars(MU_RELATORIO['crea']) ?></span>
-    <span class="mu-doc-id"><?= htmlspecialchars(MU_RELATORIO['titulo']) ?> · Contrato <?= htmlspecialchars(MU_RELATORIO['contrato']) ?></span>
+    <span class="mu-doc-id"><?= htmlspecialchars(MU_RELATORIO['titulo']) ?> · Contrato <?= htmlspecialchars($contratoDoc) ?></span>
   </footer>
 </td></tr></tfoot>
 
@@ -361,11 +393,11 @@ function mu_num($v, int $casas = 2): string {
   <table class="mu-ident">
     <tr>
       <th>Contratante</th><td><?= htmlspecialchars(MU_RELATORIO['contratante']) ?></td>
-      <th>Contrato</th><td><?= htmlspecialchars(MU_RELATORIO['contrato']) ?></td>
+      <th>Contrato</th><td><?= htmlspecialchars($contratoDoc) ?></td>
     </tr>
     <tr>
       <th>Contratada</th><td><?= htmlspecialchars(MU_RELATORIO['contratada']) ?></td>
-      <th>Município</th><td><?= htmlspecialchars(MU_RELATORIO['municipio']) ?></td>
+      <th>Município</th><td><?= htmlspecialchars($municipioDoc) ?></td>
     </tr>
     <tr>
       <th>Bacia</th><td><?= htmlspecialchars($listaBacias !== '' ? $listaBacias : '—') ?></td>
@@ -502,7 +534,7 @@ function mu_num($v, int $casas = 2): string {
   </section>
 
   <p class="mu-local-data">
-    <?= htmlspecialchars(MU_RELATORIO['municipio']) ?>, <?= htmlspecialchars($emissao) ?>.
+    <?= htmlspecialchars($municipioAssinatura) ?>, <?= htmlspecialchars($emissao) ?>.
   </p>
 
   <div class="mu-assin">
