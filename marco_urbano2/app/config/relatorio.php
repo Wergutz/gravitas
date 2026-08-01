@@ -18,7 +18,15 @@ const MU_RELATORIO = [
     'cnpj'         => '32.999.383/0001-40',
     'crea'         => 'CREA/RS: 271512',
 
-    /* --- obra --------------------------------------------------------- */
+    /* --- obra ---------------------------------------------------------
+       Contrato e município NÃO precisam ser mantidos aqui: o relatório
+       lê os dois dos trechos que entram no documento (campos
+       `trechos.contrato` e `trechos.cidade`). Antes eram fixos e todo
+       relatório saía com a mesma cidade, mesmo em planejamento de outro
+       município.
+
+       O que estiver abaixo só é usado quando os trechos não trazem a
+       informação — serve de reserva, não de fonte. */
     'contrato'     => '4147-2024 (TC 0147/2024)',
     'municipio'    => 'Barra do Quaraí / RS',
 
