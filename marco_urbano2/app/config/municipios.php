@@ -24,10 +24,32 @@ require_once __DIR__ . '/../helpers/texto.php';
 const MU_MUNICIPIOS = [
 
     // Contrato 4147-2024 / TC 0147-2024 — CORSAN
-    'Barra do Quaraí' => ['lat' => -30.2072, 'lon' => -57.5547, 'raio_km' => 15.0],
+    'Barra do Quaraí'      => ['lat' => -30.2072, 'lon' => -57.5547, 'raio_km' => 15.0],
 
     // Sede — usada em testes e homologação do sistema.
-    'Porto Alegre'    => ['lat' => -30.0346, 'lon' => -51.2177, 'raio_km' => 35.0],
+    'Porto Alegre'         => ['lat' => -30.0346, 'lon' => -51.2177, 'raio_km' => 35.0],
+
+    // Demais municípios do RS, para a conferência não ficar sem
+    // referência quando surgir contrato novo. Raio proporcional à
+    // extensão urbana de cada um.
+    'Pelotas'              => ['lat' => -31.7654, 'lon' => -52.3376, 'raio_km' => 25.0],
+    'Caxias do Sul'        => ['lat' => -29.1685, 'lon' => -51.1796, 'raio_km' => 25.0],
+    'Santa Maria'          => ['lat' => -29.6842, 'lon' => -53.8069, 'raio_km' => 25.0],
+    'Rio Grande'           => ['lat' => -32.0350, 'lon' => -52.0986, 'raio_km' => 30.0],
+    'Uruguaiana'           => ['lat' => -29.7547, 'lon' => -57.0883, 'raio_km' => 20.0],
+    'Canoas'               => ['lat' => -29.9177, 'lon' => -51.1839, 'raio_km' => 15.0],
+    'Novo Hamburgo'        => ['lat' => -29.6783, 'lon' => -51.1306, 'raio_km' => 15.0],
+    'São Leopoldo'         => ['lat' => -29.7603, 'lon' => -51.1472, 'raio_km' => 15.0],
+    'Gravataí'             => ['lat' => -29.9444, 'lon' => -50.9919, 'raio_km' => 20.0],
+    'Viamão'               => ['lat' => -30.0811, 'lon' => -51.0233, 'raio_km' => 25.0],
+    'Alvorada'             => ['lat' => -29.9897, 'lon' => -51.0808, 'raio_km' => 12.0],
+    'Passo Fundo'          => ['lat' => -28.2624, 'lon' => -52.4067, 'raio_km' => 20.0],
+    'Bagé'                 => ['lat' => -31.3314, 'lon' => -54.1069, 'raio_km' => 20.0],
+    'Santana do Livramento'=> ['lat' => -30.8908, 'lon' => -55.5328, 'raio_km' => 20.0],
+    'Quaraí'               => ['lat' => -30.3878, 'lon' => -56.4514, 'raio_km' => 15.0],
+    'Alegrete'             => ['lat' => -29.7830, 'lon' => -55.7911, 'raio_km' => 20.0],
+    'São Borja'            => ['lat' => -28.6606, 'lon' => -56.0044, 'raio_km' => 15.0],
+    'Itaqui'               => ['lat' => -29.1253, 'lon' => -56.5533, 'raio_km' => 15.0],
 ];
 
 /** Raio adotado quando o município não está no cadastro acima. */

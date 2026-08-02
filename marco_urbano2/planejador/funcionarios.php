@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
+require_once __DIR__ . '/../app/helpers/asset.php';
 require_once __DIR__ . '/../app/config/database.php';
 
 auth_required([3]); // Planejador
@@ -180,7 +181,7 @@ $funcionarios = $pdo->query("
 <meta charset="UTF-8">
 <title>Funcionários | VisionHub Locar</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css?v=1">
+<link rel="stylesheet" href="<?= mu_asset('/assets/css/planejador.css') ?>">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>

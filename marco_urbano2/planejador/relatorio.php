@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
+require_once __DIR__ . '/../app/helpers/asset.php';
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/config/relatorio.php';
 require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
@@ -244,8 +245,8 @@ function mu_num($v, int $casas = 2): string {
 <title>Relatório Oficial de Medição | Marco Urbano</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css?v=2">
-<link rel="stylesheet" href="/marco_urbano2/assets/css/relatorio-marco-urbano.css?v=1">
+<link rel="stylesheet" href="<?= mu_asset('/assets/css/planejador.css') ?>">
+<link rel="stylesheet" href="<?= mu_asset('/assets/css/relatorio-marco-urbano.css') ?>">
 </head>
 
 <body>

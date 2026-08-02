@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
+require_once __DIR__ . '/../app/helpers/asset.php';
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
 require_once __DIR__ . '/../app/helpers/validacao_midia.php';
@@ -146,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta charset="UTF-8">
 <title>Editar Medição | VisionHub Locar</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css?v=1">
+<link rel="stylesheet" href="<?= mu_asset('/assets/css/planejador.css') ?>">
 </head>
 <body>
 
@@ -309,7 +310,7 @@ function addLinha(){
 </script>
 
 
-<script src="/marco_urbano2/assets/js/validacao-midia.js"></script>
+<script src="<?= mu_asset('/assets/js/validacao-midia.js') ?>"></script>
 <script>
 /* Coordenada do município deste trecho — mesma referência do servidor. */
 var MU_OBRA = <?= json_encode(

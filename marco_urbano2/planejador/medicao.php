@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
+require_once __DIR__ . '/../app/helpers/asset.php';
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
 require_once __DIR__ . '/../app/helpers/validacao_midia.php';
@@ -205,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <meta charset="UTF-8">
 <title>Medição | VisionHub Locar</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css?v=1">
+<link rel="stylesheet" href="<?= mu_asset('/assets/css/planejador.css') ?>">
 </head>
 <body>
 
@@ -332,6 +333,34 @@ Trecho selecionado:<br>
 
 <input type="hidden" name="trecho_id" value="<?= $trechoSelecionado['id'] ?>">
 
+<?php
+/* Diz, antes do envio, contra qual cidade a foto será conferida. Sem
+   isto a conferência de distância pode simplesmente não rodar — quando
+   a cidade do trecho não tem coordenada — e quem lança não fica sabendo,
+   achando que passou na verificação. */
+$obraTrecho = mu_coordenada_municipio($trechoSelecionado['cidade'] ?? '');
+?>
+<?php if ($obraTrecho !== null): ?>
+<p style="margin:-4px 0 14px;font-size:13px;color:#86efac;">
+    📍 A localização das fotos será conferida contra
+    <strong><?= htmlspecialchars($obraTrecho['nome']) ?></strong>,
+    com tolerância de <?= number_format($obraTrecho['raio_km'], 0, ',', '.') ?> km.
+</p>
+<?php else: ?>
+<p style="margin:-4px 0 14px;padding:10px;border-left:3px solid #f59e0b;background:#2a1a06;
+          font-size:13px;color:#fef3c7;line-height:1.6;">
+    ⚠️ <strong>A localização das fotos não será conferida neste trecho.</strong>
+    A cidade cadastrada
+    <?php if (trim((string)($trechoSelecionado['cidade'] ?? '')) !== ''): ?>
+        (“<?= htmlspecialchars($trechoSelecionado['cidade']) ?>”)
+    <?php else: ?>
+        está em branco e
+    <?php endif; ?>
+    não tem coordenada em <code>app/config/municipios.php</code>.
+    As demais regras continuam valendo.
+</p>
+<?php endif; ?>
+
 <div class="form-group">
 <label>Tipo de Pavimento</label>
 <select name="tipo_pavimento" required>
@@ -437,7 +466,7 @@ function calcular(){
 
 <!-- Conferência no navegador: avisa antes de subir 12 MB para ser recusado.
      Conveniência apenas — quem decide é a validação do servidor. -->
-<script src="/marco_urbano2/assets/js/validacao-midia.js"></script>
+<script src="<?= mu_asset('/assets/js/validacao-midia.js') ?>"></script>
 <script>
 /* Coordenada do município DESTE trecho, para a conferência no navegador
    usar a mesma referência do servidor. Sem isto a tela acusaria "fora da

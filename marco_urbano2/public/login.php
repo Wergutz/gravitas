@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../app/helpers/asset.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_name('MU2_PAINEL');
     session_set_cookie_params(['path' => '/marco_urbano2/', 'samesite' => 'Lax', 'httponly' => true]);
@@ -14,7 +15,7 @@ unset($_SESSION['erro']);
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VisionHub Locar | Login</title>
 
-<link rel="stylesheet" href="/marco_urbano2/assets/css/login.css">
+<link rel="stylesheet" href="<?= mu_asset('/assets/css/login.css') ?>">
 
 </head>
 <body>
