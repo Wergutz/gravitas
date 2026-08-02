@@ -354,10 +354,13 @@ $obraTrecho = mu_coordenada_municipio($trechoSelecionado['cidade'] ?? '');
         A cidade do trecho está em branco.
     <?php else: ?>
         Não existe município chamado
-        “<?= htmlspecialchars($trechoSelecionado['cidade']) ?>” na base do IBGE —
+        “<?= htmlspecialchars($trechoSelecionado['cidade']) ?>”
+        <?= MU_UF_PADRAO ? 'no ' . htmlspecialchars(MU_UF_PADRAO) : 'na base do IBGE' ?> —
         confira se o nome está escrito corretamente no cadastro do trecho.
-        Se houver cidade com o mesmo nome em outro estado, informe a UF
-        (ex.: <em>Bom Jesus / RS</em>).
+        <?php if (MU_UF_PADRAO): ?>
+            Se o trecho for mesmo de outro estado, informe a UF junto
+            (ex.: <em>Chapecó / SC</em>).
+        <?php endif; ?>
     <?php endif; ?>
     As demais regras continuam valendo.
 </p>
