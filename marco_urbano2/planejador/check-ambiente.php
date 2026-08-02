@@ -224,6 +224,12 @@ $tudoOk = !in_array(false, array_column($itens, 'ok'), true);
         IBGE embutida no sistema — <strong><?= number_format($totalBase, 0, ',', '.') ?> municípios</strong>.
         Não é preciso cadastrar cidade: qualquer município digitado num trecho novo já tem
         coordenada, e a distância sai real.
+        <?php if (MU_UF_PADRAO): ?>
+            <br>A busca está restrita ao <strong><?= htmlspecialchars(MU_UF_PADRAO) ?></strong>,
+            onde nenhum nome de município se repete — então toda cidade é identificada sem
+            ambiguidade. Trecho de outro estado precisa da UF junto do nome
+            (ex.: <em>Chapecó / SC</em>).
+        <?php endif; ?>
         <?php if ($totalBase === 0): ?>
             <br><span style="color:#fca5a5;">⚠️ A base não foi encontrada em
             <code>app/config/municipios_ibge.csv</code> — a conferência de distância não roda.</span>

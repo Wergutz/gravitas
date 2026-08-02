@@ -19,17 +19,31 @@
  * ----------------------------
  * Aceita "Pelotas", "Pelotas / RS", "Pelotas - RS" e "Pelotas (RS)".
  * A comparação ignora acento, caixa e espaço repetido.
- *
- * 232 nomes se repetem entre estados (Bom Jesus existe em 5). Sem a UF
- * informada, todos os homônimos entram na conta e vale o mais próximo
- * da foto — recusar por ter escolhido o estado errado seria injusto com
- * quem digitou só o nome. Informar a UF no trecho remove a dúvida.
  */
 
 require_once __DIR__ . '/../helpers/texto.php';
 
 /** Arquivo da base do IBGE: nome,uf,lat,lon */
 const MU_BASE_IBGE = __DIR__ . '/municipios_ibge.csv';
+
+/**
+ * Estado onde a empresa atua.
+ *
+ * Restringir a busca tem efeito prático relevante: 28 nomes de
+ * municípios gaúchos existem também em outro estado (Bom Jesus, Alvorada,
+ * Cachoeirinha, entre outros), e dentro do RS nenhum nome se repete.
+ * Com a UF fixa, toda busca é inequívoca — e uma foto tirada em
+ * Bom Jesus/SC passa a ser corretamente recusada num trecho de
+ * Bom Jesus/RS, o que antes não acontecia.
+ *
+ * Continua possível informar outra UF no próprio cadastro do trecho
+ * ("Chapecó / SC"), que então prevalece.
+ *
+ * PARA ATUAR EM OUTRO ESTADO: troque a sigla, ou use null para liberar
+ * o país inteiro. A base já traz todos os 5.571 municípios — não é
+ * preciso gerar arquivo novo.
+ */
+const MU_UF_PADRAO = 'RS';
 
 /**
  * Tolerância padrão, em km, a partir do ponto central do município.
@@ -105,7 +119,11 @@ function mu_coordenada_municipio(?string $cidade): ?array
         return null;
     }
 
-    /* Varredura direta do CSV, com memória constante: a base tem 189 KB
+    /* UF a exigir: a informada no próprio trecho vence; sem ela, vale o
+       estado onde a empresa atua. Null nos dois libera o país inteiro. */
+    $ufExigida = $uf ?? MU_UF_PADRAO;
+
+    /* Varredura direta do CSV, com memória constante: a base tem 192 KB
        e só precisamos das linhas que casam com o nome. */
     $achados = [];
     $fh = fopen(MU_BASE_IBGE, 'r');
@@ -116,7 +134,7 @@ function mu_coordenada_municipio(?string $cidade): ?array
     while (($l = fgetcsv($fh)) !== false) {
         if (count($l) < 4) continue;
         if (mu_normalizar_texto($l[0]) !== $alvo) continue;
-        if ($uf !== null && strtoupper($l[1]) !== $uf) continue;
+        if ($ufExigida !== null && strtoupper($l[1]) !== strtoupper($ufExigida)) continue;
         $achados[] = ['nome' => $l[0], 'uf' => $l[1],
                       'lat' => (float) $l[2], 'lon' => (float) $l[3]];
     }
