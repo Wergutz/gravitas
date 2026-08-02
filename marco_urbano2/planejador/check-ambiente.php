@@ -210,27 +210,34 @@ $tudoOk = !in_array(false, array_column($itens, 'ok'), true);
 </div>
 
 <div class="form-card">
-    <h3>Municípios com obra cadastrada</h3>
-    <p style="font-size:13px;color:#9ca3af;line-height:1.6;margin-bottom:12px;">
-        A foto é recusada quando o GPS dela está longe do município <strong>do trecho</strong>.
-        Se um trecho estiver numa cidade que não aparece aqui, a distância não é conferida —
-        e a foto passa pelas demais regras. Para incluir, edite
-        <code>app/config/municipios.php</code>.
+    <h3>Base de municípios</h3>
+    <?php
+    $totalBase = 0;
+    if (is_file(MU_BASE_IBGE) && ($fh = fopen(MU_BASE_IBGE, 'r'))) {
+        fgetcsv($fh);
+        while (fgetcsv($fh) !== false) { $totalBase++; }
+        fclose($fh);
+    }
+    ?>
+    <p style="font-size:13px;color:#9ca3af;line-height:1.6;">
+        A distância é conferida contra o município <strong>do trecho</strong>, usando a base do
+        IBGE embutida no sistema — <strong><?= number_format($totalBase, 0, ',', '.') ?> municípios</strong>.
+        Não é preciso cadastrar cidade: qualquer município digitado num trecho novo já tem
+        coordenada, e a distância sai real.
+        <?php if ($totalBase === 0): ?>
+            <br><span style="color:#fca5a5;">⚠️ A base não foi encontrada em
+            <code>app/config/municipios_ibge.csv</code> — a conferência de distância não roda.</span>
+        <?php endif; ?>
     </p>
-    <table class="table" style="width:100%;">
-    <thead><tr><th>Município</th><th>Coordenada de referência</th><th>Raio aceito</th></tr></thead>
-    <tbody>
-    <?php foreach (MU_MUNICIPIOS as $nome => $c): ?>
-        <tr>
-            <td><strong><?= htmlspecialchars($nome) ?></strong></td>
-            <td style="font-family:monospace;font-size:13px;">
-                <?= number_format($c['lat'], 4, '.', '') ?>, <?= number_format($c['lon'], 4, '.', '') ?>
-            </td>
-            <td><?= number_format($c['raio_km'] ?? MU_RAIO_PADRAO, 0, ',', '.') ?> km</td>
-        </tr>
-    <?php endforeach; ?>
-    </tbody>
-    </table>
+    <p style="font-size:13px;color:#9ca3af;line-height:1.6;margin-top:8px;">
+        Tolerância padrão de <?= number_format(MU_RAIO_PADRAO, 0, ',', '.') ?> km do centro do
+        município. Ajustes por cidade, quando o padrão não serve, ficam em
+        <code>app/config/municipios.php</code>:
+        <?php foreach (MU_MUNICIPIOS as $nome => $c): ?>
+            <br>· <strong><?= htmlspecialchars($nome) ?></strong> —
+            <?= number_format($c['raio_km'] ?? MU_RAIO_PADRAO, 0, ',', '.') ?> km
+        <?php endforeach; ?>
+    </p>
 
     <?php
     /* Cidade gravada em cada trecho — é contra ela que a distância é
@@ -275,7 +282,8 @@ $tudoOk = !in_array(false, array_column($itens, 'ok'), true);
                     </span>
                 <?php else: ?>
                     <span style="color:#fcd34d;">
-                        ⚠️ sem coordenada cadastrada — a distância não é conferida nestes trechos
+                        ⚠️ não encontrado na base do IBGE — confira a grafia no cadastro
+                        do trecho; a distância não é conferida nestes trechos
                     </span>
                 <?php endif; ?>
             </td>
