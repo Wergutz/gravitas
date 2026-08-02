@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
+require_once __DIR__ . '/../app/helpers/asset.php';
 auth_required([3]); // Planejador
 ?>
 <!DOCTYPE html>
@@ -10,7 +11,7 @@ auth_required([3]); // Planejador
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- CSS ÚNICO OFICIAL -->
-<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css?v=1">
+<link rel="stylesheet" href="<?= mu_asset('/assets/css/planejador.css') ?>">
 </head>
 <body>
 

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
+require_once __DIR__ . '/../app/helpers/asset.php';
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/helpers/midia_url.php';
 
@@ -25,7 +26,7 @@ $trechos = $trechos->fetchAll(PDO::FETCH_ASSOC);
 <head>
 <meta charset="UTF-8">
 <title>Visualizar Planejamento</title>
-<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css">
+<link rel="stylesheet" href="<?= mu_asset('/assets/css/planejador.css') ?>">
 </head>
 <body>
 

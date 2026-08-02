@@ -9,6 +9,7 @@
  * Pode ficar no ar: é só leitura e não expõe caminho nem credencial.
  */
 require_once __DIR__ . '/../app/helpers/auth.php';
+require_once __DIR__ . '/../app/helpers/asset.php';
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/config/municipios.php';
 
@@ -107,7 +108,7 @@ $tudoOk = !in_array(false, array_column($itens, 'ok'), true);
 <meta charset="UTF-8">
 <title>Checagem de Ambiente | Marco Urbano</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="/marco_urbano2/assets/css/planejador.css?v=2">
+<link rel="stylesheet" href="<?= mu_asset('/assets/css/planejador.css') ?>">
 </head>
 <body>
 <div class="app">
