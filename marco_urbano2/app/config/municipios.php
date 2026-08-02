@@ -1,76 +1,91 @@
 <?php
 /**
- * Coordenadas dos municípios onde há obra.
+ * Coordenada do município da obra.
  *
  * A regra FORA_DA_OBRA compara o GPS da foto com a coordenada do
- * município DO PRÓPRIO TRECHO (campo `trechos.cidade`) — não com um
- * ponto fixo. Assim o mesmo sistema atende contratos em cidades
- * diferentes sem precisar mexer em código.
+ * município DO PRÓPRIO TRECHO (campo `trechos.cidade`).
  *
- * PARA INCLUIR UM MUNICÍPIO NOVO
- * ------------------------------
- * 1. Abra o Google Maps, clique com o botão direito no centro da cidade
- *    e copie o par de números que aparece (ex.: -30.0346, -51.2177).
- * 2. Acrescente uma linha abaixo, no mesmo formato.
- * 3. O nome precisa bater com o que está gravado em `trechos.cidade`
- *    (a comparação ignora maiúsculas e acentos).
+ * A busca é feita na base do IBGE embutida em municipios_ibge.csv, com
+ * os 5.571 municípios brasileiros. Não é preciso cadastrar cidade
+ * nenhuma: qualquer município digitado num trecho novo já tem
+ * coordenada, e a distância sai real.
  *
- * O `raio_km` é a folga aceita a partir desse ponto. Cidade grande e
- * espalhada pede raio maior; distrito pequeno, menor.
+ * A base é local de propósito. Consultar serviço de geocodificação pela
+ * internet criaria dependência externa num ponto que decide se a prova
+ * entra ou não — se o serviço cair ou mudar de política, o lançamento
+ * para. Base embutida sempre responde igual.
+ *
+ * COMO A CIDADE É INTERPRETADA
+ * ----------------------------
+ * Aceita "Pelotas", "Pelotas / RS", "Pelotas - RS" e "Pelotas (RS)".
+ * A comparação ignora acento, caixa e espaço repetido.
+ *
+ * 232 nomes se repetem entre estados (Bom Jesus existe em 5). Sem a UF
+ * informada, todos os homônimos entram na conta e vale o mais próximo
+ * da foto — recusar por ter escolhido o estado errado seria injusto com
+ * quem digitou só o nome. Informar a UF no trecho remove a dúvida.
  */
 
 require_once __DIR__ . '/../helpers/texto.php';
 
-const MU_MUNICIPIOS = [
-
-    // Contrato 4147-2024 / TC 0147-2024 — CORSAN
-    'Barra do Quaraí'      => ['lat' => -30.2072, 'lon' => -57.5547, 'raio_km' => 15.0],
-
-    // Sede — usada em testes e homologação do sistema.
-    'Porto Alegre'         => ['lat' => -30.0346, 'lon' => -51.2177, 'raio_km' => 35.0],
-
-    // Demais municípios do RS, para a conferência não ficar sem
-    // referência quando surgir contrato novo. Raio proporcional à
-    // extensão urbana de cada um.
-    'Pelotas'              => ['lat' => -31.7654, 'lon' => -52.3376, 'raio_km' => 25.0],
-    'Caxias do Sul'        => ['lat' => -29.1685, 'lon' => -51.1796, 'raio_km' => 25.0],
-    'Santa Maria'          => ['lat' => -29.6842, 'lon' => -53.8069, 'raio_km' => 25.0],
-    'Rio Grande'           => ['lat' => -32.0350, 'lon' => -52.0986, 'raio_km' => 30.0],
-    'Uruguaiana'           => ['lat' => -29.7547, 'lon' => -57.0883, 'raio_km' => 20.0],
-    'Canoas'               => ['lat' => -29.9177, 'lon' => -51.1839, 'raio_km' => 15.0],
-    'Novo Hamburgo'        => ['lat' => -29.6783, 'lon' => -51.1306, 'raio_km' => 15.0],
-    'São Leopoldo'         => ['lat' => -29.7603, 'lon' => -51.1472, 'raio_km' => 15.0],
-    'Gravataí'             => ['lat' => -29.9444, 'lon' => -50.9919, 'raio_km' => 20.0],
-    'Viamão'               => ['lat' => -30.0811, 'lon' => -51.0233, 'raio_km' => 25.0],
-    'Alvorada'             => ['lat' => -29.9897, 'lon' => -51.0808, 'raio_km' => 12.0],
-    'Passo Fundo'          => ['lat' => -28.2624, 'lon' => -52.4067, 'raio_km' => 20.0],
-    'Bagé'                 => ['lat' => -31.3314, 'lon' => -54.1069, 'raio_km' => 20.0],
-    'Santana do Livramento'=> ['lat' => -30.8908, 'lon' => -55.5328, 'raio_km' => 20.0],
-    'Quaraí'               => ['lat' => -30.3878, 'lon' => -56.4514, 'raio_km' => 15.0],
-    'Alegrete'             => ['lat' => -29.7830, 'lon' => -55.7911, 'raio_km' => 20.0],
-    'São Borja'            => ['lat' => -28.6606, 'lon' => -56.0044, 'raio_km' => 15.0],
-    'Itaqui'               => ['lat' => -29.1253, 'lon' => -56.5533, 'raio_km' => 15.0],
-];
-
-/** Raio adotado quando o município não está no cadastro acima. */
-const MU_RAIO_PADRAO = 15.0;
+/** Arquivo da base do IBGE: nome,uf,lat,lon */
+const MU_BASE_IBGE = __DIR__ . '/municipios_ibge.csv';
 
 /**
- * Normaliza o nome do município para comparar sem depender de acento,
- * caixa ou espaço sobrando.
+ * Tolerância padrão, em km, a partir do ponto central do município.
+ *
+ * Generosa de propósito: município brasileiro pode ser extenso, e uma
+ * recusa indevida trava o lançamento sem que haja quem libere. 30 km
+ * ainda separa com folga uma foto da obra de uma foto tirada em outra
+ * cidade, que é o que a regra existe para pegar.
  */
+const MU_RAIO_PADRAO = 30.0;
+
+/**
+ * Ajustes por município, quando o padrão não serve.
+ * Só entram aqui os casos com motivo — o resto sai da base do IBGE.
+ */
+const MU_MUNICIPIOS = [
+    // Obra do contrato 4147-2024: perímetro pequeno e bem delimitado,
+    // então vale apertar em relação ao padrão.
+    'Barra do Quaraí' => ['raio_km' => 15.0],
+
+    // Região metropolitana: a obra pode encostar em municípios vizinhos.
+    'Porto Alegre'    => ['raio_km' => 35.0],
+];
+
+/** Mantido para compatibilidade com quem já chamava esta função. */
 function mu_chave_municipio(string $nome): string
 {
     return mu_normalizar_texto($nome);
 }
 
 /**
- * Coordenada do município da obra.
+ * Separa a UF quando ela vem junto do nome.
  *
- * @return array{lat:float, lon:float, raio_km:float}|null
- *         null quando o município não está cadastrado — nesse caso a
- *         regra de distância não roda, porque não há contra o que
- *         comparar. As demais regras continuam valendo.
+ * @return array{0:string, 1:?string} nome e UF (ou null)
+ */
+function mu_separar_uf(string $cidade): array
+{
+    $c = trim($cidade);
+
+    // "Pelotas (RS)"
+    if (preg_match('/^(.*?)\s*\(\s*([A-Za-z]{2})\s*\)$/u', $c, $m)) {
+        return [trim($m[1]), strtoupper($m[2])];
+    }
+    // "Pelotas / RS"  |  "Pelotas - RS"  |  "Pelotas, RS"
+    if (preg_match('/^(.*?)\s*[\/\-,]\s*([A-Za-z]{2})$/u', $c, $m)) {
+        return [trim($m[1]), strtoupper($m[2])];
+    }
+    return [$c, null];
+}
+
+/**
+ * Coordenada do município.
+ *
+ * @return array{lat:float, lon:float, raio_km:float, nome:string, uf:?string,
+ *               homonimos:array}|null
+ *         null só quando a cidade está em branco ou não existe na base.
  */
 function mu_coordenada_municipio(?string $cidade): ?array
 {
@@ -79,16 +94,57 @@ function mu_coordenada_municipio(?string $cidade): ?array
         return null;
     }
 
-    $alvo = mu_chave_municipio($cidade);
-    foreach (MU_MUNICIPIOS as $nome => $c) {
-        if (mu_chave_municipio($nome) === $alvo) {
-            return [
-                'lat'     => (float) $c['lat'],
-                'lon'     => (float) $c['lon'],
-                'raio_km' => (float) ($c['raio_km'] ?? MU_RAIO_PADRAO),
-                'nome'    => $nome,
-            ];
+    [$nome, $uf] = mu_separar_uf($cidade);
+    $alvo = mu_normalizar_texto($nome);
+    if ($alvo === '') {
+        return null;
+    }
+
+    if (!is_file(MU_BASE_IBGE)) {
+        error_log('[MU] base de municípios não encontrada: ' . MU_BASE_IBGE);
+        return null;
+    }
+
+    /* Varredura direta do CSV, com memória constante: a base tem 189 KB
+       e só precisamos das linhas que casam com o nome. */
+    $achados = [];
+    $fh = fopen(MU_BASE_IBGE, 'r');
+    if (!$fh) {
+        return null;
+    }
+    fgetcsv($fh); // cabeçalho
+    while (($l = fgetcsv($fh)) !== false) {
+        if (count($l) < 4) continue;
+        if (mu_normalizar_texto($l[0]) !== $alvo) continue;
+        if ($uf !== null && strtoupper($l[1]) !== $uf) continue;
+        $achados[] = ['nome' => $l[0], 'uf' => $l[1],
+                      'lat' => (float) $l[2], 'lon' => (float) $l[3]];
+    }
+    fclose($fh);
+
+    if (!$achados) {
+        return null;
+    }
+
+    $primeiro = $achados[0];
+
+    /* Ajuste manual de raio, se houver para este município. */
+    $raio = MU_RAIO_PADRAO;
+    foreach (MU_MUNICIPIOS as $n => $cfg) {
+        if (mu_normalizar_texto($n) === $alvo) {
+            $raio = (float) ($cfg['raio_km'] ?? MU_RAIO_PADRAO);
+            break;
         }
     }
-    return null;
+
+    return [
+        'lat'       => $primeiro['lat'],
+        'lon'       => $primeiro['lon'],
+        'raio_km'   => $raio,
+        'nome'      => $primeiro['nome'] . ' / ' . $primeiro['uf'],
+        'uf'        => $primeiro['uf'],
+        // Homônimos em outros estados, para a distância considerar o
+        // mais próximo em vez de recusar por causa do estado.
+        'homonimos' => $achados,
+    ];
 }

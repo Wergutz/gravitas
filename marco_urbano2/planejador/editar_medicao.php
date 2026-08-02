@@ -316,8 +316,18 @@ function addLinha(){
 var MU_OBRA = <?= json_encode(
     (function () use ($trecho) {
         $c = mu_coordenada_municipio($trecho['cidade'] ?? '');
-        return $c ? ['obraLat' => $c['lat'], 'obraLon' => $c['lon'],
-                     'raioKm' => $c['raio_km'], 'obraNome' => $c['nome']] : null;
+        if (!$c) return null;
+        return [
+            'obraLat'  => $c['lat'],
+            'obraLon'  => $c['lon'],
+            'raioKm'   => $c['raio_km'],
+            'obraNome' => $c['nome'],
+            'obraPontos' => array_map(fn($h) => [
+                'lat'  => $h['lat'],
+                'lon'  => $h['lon'],
+                'nome' => $h['nome'] . ' / ' . $h['uf'],
+            ], $c['homonimos'] ?? []),
+        ];
     })(),
     JSON_UNESCAPED_UNICODE
 ) ?>;

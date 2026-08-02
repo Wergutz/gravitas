@@ -350,13 +350,15 @@ $obraTrecho = mu_coordenada_municipio($trechoSelecionado['cidade'] ?? '');
 <p style="margin:-4px 0 14px;padding:10px;border-left:3px solid #f59e0b;background:#2a1a06;
           font-size:13px;color:#fef3c7;line-height:1.6;">
     ⚠️ <strong>A localização das fotos não será conferida neste trecho.</strong>
-    A cidade cadastrada
-    <?php if (trim((string)($trechoSelecionado['cidade'] ?? '')) !== ''): ?>
-        (“<?= htmlspecialchars($trechoSelecionado['cidade']) ?>”)
+    <?php if (trim((string)($trechoSelecionado['cidade'] ?? '')) === ''): ?>
+        A cidade do trecho está em branco.
     <?php else: ?>
-        está em branco e
+        Não existe município chamado
+        “<?= htmlspecialchars($trechoSelecionado['cidade']) ?>” na base do IBGE —
+        confira se o nome está escrito corretamente no cadastro do trecho.
+        Se houver cidade com o mesmo nome em outro estado, informe a UF
+        (ex.: <em>Bom Jesus / RS</em>).
     <?php endif; ?>
-    não tem coordenada em <code>app/config/municipios.php</code>.
     As demais regras continuam valendo.
 </p>
 <?php endif; ?>
@@ -475,8 +477,20 @@ var MU_OBRA = <?= json_encode(
     (function () use ($trechoSelecionado) {
         if (!$trechoSelecionado) return null;
         $c = mu_coordenada_municipio($trechoSelecionado['cidade'] ?? '');
-        return $c ? ['obraLat' => $c['lat'], 'obraLon' => $c['lon'],
-                     'raioKm' => $c['raio_km'], 'obraNome' => $c['nome']] : null;
+        if (!$c) return null;
+        return [
+            'obraLat'  => $c['lat'],
+            'obraLon'  => $c['lon'],
+            'raioKm'   => $c['raio_km'],
+            'obraNome' => $c['nome'],
+            /* Homônimos em outros estados, para a tela usar a mesma
+               regra do servidor: vale o mais próximo da foto. */
+            'obraPontos' => array_map(fn($h) => [
+                'lat'  => $h['lat'],
+                'lon'  => $h['lon'],
+                'nome' => $h['nome'] . ' / ' . $h['uf'],
+            ], $c['homonimos'] ?? []),
+        ];
     })(),
     JSON_UNESCAPED_UNICODE
 ) ?>;

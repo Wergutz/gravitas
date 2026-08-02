@@ -26,6 +26,10 @@
     obraLat: null,
     obraLon: null,
     obraNome: '',
+    /* Municípios homônimos em outros estados. Quando a cidade do trecho
+       existe em mais de um estado, vale o mais próximo da foto — mesma
+       regra do servidor, para a tela não discordar dele. */
+    obraPontos: null,
     raioKm: 15,
     megapixelsMin: 6.0,
     diasMaxAtras: 120
@@ -142,10 +146,19 @@
     } else if (CFG.obraLat !== null && CFG.obraLon !== null) {
       /* Só confere distância quando a página informou a coordenada do
          município do trecho. Sem ela não há contra o que comparar. */
-      var d = distanciaKm(exif.lat, exif.lon, CFG.obraLat, CFG.obraLon);
+      var pontos = (CFG.obraPontos && CFG.obraPontos.length)
+        ? CFG.obraPontos
+        : [{ lat: CFG.obraLat, lon: CFG.obraLon, nome: CFG.obraNome }];
+
+      var d = null, nome = CFG.obraNome;
+      for (var i = 0; i < pontos.length; i++) {
+        var di = distanciaKm(exif.lat, exif.lon, pontos[i].lat, pontos[i].lon);
+        if (d === null || di < d) { d = di; nome = pontos[i].nome || nome; }
+      }
+
       if (d > CFG.raioKm) {
         e.push('A foto foi tirada a ' + d.toFixed(1).replace('.', ',') + ' km de ' +
-               (CFG.obraNome || 'onde o trecho está cadastrado') + '.');
+               (nome || 'onde o trecho está cadastrado') + '.');
       }
     }
     if (exif.data) {

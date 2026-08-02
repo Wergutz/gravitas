@@ -215,7 +215,20 @@ function mu_validar_midia(
         $obra = mu_coordenada_municipio($cidadeTrecho);
 
         if ($obra !== null) {
-            $dist = mu_distancia_km($exif['lat'], $exif['lon'], $obra['lat'], $obra['lon']);
+            /* Nome que existe em mais de um estado: vale o mais próximo
+               da foto. Recusar porque quem digitou não pôs a UF, e o
+               primeiro homônimo da lista fica longe, seria injusto. */
+            $dist = null;
+            foreach (($obra['homonimos'] ?: [$obra]) as $cand) {
+                $d = mu_distancia_km($exif['lat'], $exif['lon'], $cand['lat'], $cand['lon']);
+                if ($dist === null || $d < $dist) {
+                    $dist = $d;
+                    if (isset($cand['uf'])) {
+                        $obra['nome'] = $cand['nome'] . ' / ' . $cand['uf'];
+                    }
+                }
+            }
+
             if ($dist > $obra['raio_km']) {
                 $erros[] = mu_erro('FORA_DA_OBRA',
                     'A foto foi tirada a ' . number_format($dist, 1, ',', '.') . ' km de ' . $obra['nome'] . '.',
