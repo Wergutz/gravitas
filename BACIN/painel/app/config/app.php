@@ -5,4 +5,4 @@ define('EXECUTOR_BASE', '/BACIN/executor'); // app do executor
 define('MASTER_BASE',   '/BACIN/master');   // painel do cliente master
 define('REPAV_BASE',    '/BACIN/executor-repav'); // app executor de repavimentação
 define('APP_NAME',      'Painel de Controle');
-define('APP_CLIENT',    'BACIN');
+define('APP_CLIENT',    'BACIN TERRAPLANAGEM');

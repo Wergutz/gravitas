@@ -1,15 +1,15 @@
 <!--
-  Logotipo provisório do BACIN — versão para fundo claro.
-  Substituir por icon-bacin.svg (ou .png, ajustando as referências nas views)
-  assim que a marca definitiva do cliente estiver disponível.
+  BACIN TERRAPLANAGEM — marca provisória, versão para fundo claro.
+
+  APROXIMAÇÃO nas cores e na forma da marca real (hexágono vermelho/preto);
+  NÃO é o logotipo oficial. Substituir este arquivo pela arte definitiva
+  assim que ela estiver disponível — todas as telas já apontam para cá.
+  Se a arte vier em PNG, salvar como icon-bacin.png e trocar a extensão
+  nas referências (grep -rn icon-bacin BACIN).
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="BACIN">
-  <title>BACIN</title>
-  <circle cx="100" cy="100" r="88" fill="none" stroke="#1A2D4F" stroke-width="9"/>
-  <circle cx="100" cy="100" r="72" fill="#1A2D4F"/>
-  <text x="100" y="101" fill="#FFFFFF"
-        font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
-        font-size="62" font-weight="800" letter-spacing="1"
-        text-anchor="middle" dominant-baseline="central">B</text>
-  <circle cx="158" cy="42" r="13" fill="#C9A227"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="BACIN Terraplanagem">
+  <title>BACIN Terraplanagem</title>
+  <polygon points="100,12 176,56 176,144 100,188 24,144 24,56"
+           fill="none" stroke="#231F20" stroke-width="11" stroke-linejoin="round"/>
+  <polygon points="62,50 62,150 130,100" fill="#E1251B"/>
 </svg>

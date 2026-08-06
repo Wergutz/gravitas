@@ -1,4 +1,4 @@
-# BACIN — instância do cliente
+# BACIN TERRAPLANAGEM — instância do cliente
 
 Réplica completa da instância `CHERONCAMARGO`: mesmos apps, mesmas telas e mesmas
 funcionalidades, com caminhos, sessão, banco e marca próprios.
@@ -44,19 +44,32 @@ Configurado em `*/app/config/app.php`, `*/app/config/database.php`, nos `.htacce
 4. O deploy (`.github/workflows/deploy.yml`) já copia `principal/BACIN` para
    `$BASE/BACIN` e cria as pastas de upload.
 
-## Pendências de identidade visual
+## Pendência: logotipo oficial
 
-Os logotipos são **provisórios**: `painel/assets/img/icon-bacin.svg` (fundo claro) e
-`painel/assets/img/icon-bacin-white.svg` (fundo escuro), um monograma na paleta do
-sistema. Basta substituir esses dois arquivos pela marca definitiva — todas as telas
-já apontam para eles. Se a marca vier em PNG, trocar a extensão nas referências
-(`grep -rn icon-bacin BACIN`).
+Os arquivos de marca hoje são **provisórios** — uma aproximação geométrica nas cores
+da empresa (hexágono preto `#231F20` + vermelho `#E1251B`), **não** a arte oficial:
+
+- `painel/assets/img/icon-bacin.svg` — fundo claro (relatórios impressos)
+- `painel/assets/img/icon-bacin-white.svg` — fundo escuro (cabeçalhos navy)
+
+Para colocar a marca definitiva, salvar a arte nesses dois caminhos:
+
+- versão colorida sobre fundo claro → `icon-bacin.png`
+- versão para fundo escuro (traço em branco, vermelho preservado) → `icon-bacin-white.png`
+
+e trocar a extensão nas 11 referências: `grep -rln icon-bacin BACIN | xargs sed -i
+'s/icon-bacin\.svg/icon-bacin.png/g; s/icon-bacin-white\.svg/icon-bacin-white.png/g'`
+— sem esquecer a referência em `login/index.php`, fora deste diretório.
+
+Recomendado: PNG quadrado com fundo transparente, 800×800, só o símbolo do hexágono
+(sem o texto "BACIN TERRAPLANAGEM" nem o telefone), porque o nome já é escrito ao lado
+do ícone nos cabeçalhos e ficaria duplicado.
 
 Nome exibido e subtítulo do seletor de login estão em:
 
-- `APP_CLIENT` em cada `app/config/app.php` (atualmente `BACIN`)
+- `APP_CLIENT` em cada `app/config/app.php` (atualmente `BACIN TERRAPLANAGEM`)
 - `label` / `sub` na entrada `bacin` de `login/index.php`
-  (atualmente `BACIN` / `Terraplanagem, Saneamento e Pavimentação`)
+  (atualmente `BACIN` / `Terraplanagem`)
 
 A landing page `index.html` reaproveita as imagens Gravitas de `img/`, igual à
 instância CHERONCAMARGO.
