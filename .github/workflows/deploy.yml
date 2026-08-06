@@ -3,6 +3,9 @@ name: Deploy → gravitas.net.br
 on:
   push:
     branches: [main, claude/loving-clarke-3K1Tq]
+  # Permite disparar o deploy na mão pela aba Actions (botão "Run workflow"),
+  # sem precisar de um commit novo. Útil quando um deploy falha ou fica preso.
+  workflow_dispatch:
 
 jobs:
   deploy:
