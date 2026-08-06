@@ -26,23 +26,30 @@ Configurado em `*/app/config/app.php`, `*/app/config/database.php`, nos `.htacce
 
 1. Criar no painel da hospedagem o banco **`u278289683_BACIN`** e o usuário de mesmo
    nome, com a senha usada pelos demais sistemas.
-2. Rodar as migrações no banco novo, nesta ordem:
-   - `painel/database/migrations/PA4_fase1_modelo_dados.sql`
-   - `painel/database/migrations/PA4_fase1_fk_patch.sql`
-   - `painel/database/migrations/PA5_fase1_modelo_dados.sql`
-   - `painel/database/migrations/PA5_fase3_integracoes.sql`
-   - `database/migrations/PA7_repavimentacao.sql`
-   - `database/migrations/PA9_auditoria.sql`
-   - `database/migrations/PA10_trecho_materiais.sql`
-   - `database/migrations/PA11_importacao.sql`
-   - `database/migrations/PA12_equipamentos_manutencao.sql`
-   - `database/migrations/PA13_fix_funcionario_documentos.sql`
-   - `painel/database/migrations/PA19_topografo.sql`
+2. Rodar `database/estrutura_completa.sql` — cria as 61 tabelas com índices,
+   AUTO_INCREMENT e chaves estrangeiras, em uma execução só.
 3. Rodar `painel/database/migrations/BC_usuarios_iniciais.sql` para criar os usuários
    iniciais. Senha temporária: **`Bacin@2026`** — todos entram com
    `force_password_change = 1` e trocam a senha no primeiro acesso.
 4. O deploy (`.github/workflows/deploy.yml`) já copia `principal/BACIN` para
    `$BASE/BACIN` e cria as pastas de upload.
+
+### Não use as migrações `PA*` para montar um banco novo
+
+As migrações em `database/migrations/` e `painel/database/migrations/` são
+**incrementais** e pressupõem um esquema base que nunca foi versionado neste
+repositório. Executadas sozinhas em um banco vazio, criam 41 das 61 tabelas e
+quebram com `#1146 - tabela não existe` no primeiro `ALTER TABLE` de uma tabela
+ausente. Faltam nelas, entre outras: `usuarios`, `funcionarios`, `equipes`,
+`equipamentos_pesados`, `equipamentos_leves`, `planejamentos` e `execucoes`.
+
+Elas continuam válidas como histórico e para aplicar mudanças pontuais em bancos
+já existentes — só não servem como ponto de partida.
+
+Se a importação parar no meio e deixar tabelas pela metade, apague todas as tabelas
+do banco (phpMyAdmin → selecionar todas → Apagar, ou `DROP DATABASE` e recriar)
+antes de rodar `estrutura_completa.sql` de novo — ele não tem `DROP TABLE IF EXISTS`
+e vai reclamar de tabela já existente.
 
 ## Pendência: logotipo oficial
 
