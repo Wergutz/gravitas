@@ -51,26 +51,28 @@ do banco (phpMyAdmin → selecionar todas → Apagar, ou `DROP DATABASE` e recri
 antes de rodar `estrutura_completa.sql` de novo — ele não tem `DROP TABLE IF EXISTS`
 e vai reclamar de tabela já existente.
 
-## Pendência: logotipo oficial
+## Logotipo
 
-Os arquivos de marca hoje são **provisórios** — uma aproximação geométrica nas cores
-da empresa (hexágono preto `#231F20` + vermelho `#E1251B`), **não** a arte oficial:
+Marca oficial, em vetor, extraída do PDF fornecido pelo cliente:
 
-- `painel/assets/img/icon-bacin.svg` — fundo claro (relatórios impressos)
-- `painel/assets/img/icon-bacin-white.svg` — fundo escuro (cabeçalhos navy)
+- `painel/assets/img/icon-bacin.svg` — fundo claro (relatórios impressos, troca de senha)
+- `painel/assets/img/icon-bacin-white.svg` — fundo escuro (cabeçalhos navy dos apps)
 
-Para colocar a marca definitiva, salvar a arte nesses dois caminhos:
+Cores da marca: vermelho **`#d9251b`**, preto **`#1d1917`**.
 
-- versão colorida sobre fundo claro → `icon-bacin.png`
-- versão para fundo escuro (traço em branco, vermelho preservado) → `icon-bacin-white.png`
+As duas versões saem do mesmo vetor. Na versão para fundo escuro o preto vira branco e
+os vazados do desenho (a caçamba) ficam **transparentes**, em vez de preenchidos com
+uma cor sólida — assim a marca funciona sobre o gradiente da sidebar
+(`#0b1c2d` → `#071422`) e sobre qualquer outro fundo escuro, sem virar um retângulo
+de cor chapada.
 
-e trocar a extensão nas 11 referências: `grep -rln icon-bacin BACIN | xargs sed -i
-'s/icon-bacin\.svg/icon-bacin.png/g; s/icon-bacin-white\.svg/icon-bacin-white.png/g'`
-— sem esquecer a referência em `login/index.php`, fora deste diretório.
+O arquivo traz só o símbolo do hexágono, sem o texto "BACIN TERRAPLANAGEM" e sem o
+telefone, porque o nome já é escrito ao lado do ícone nos cabeçalhos — e a esse
+tamanho (30–35 px) o telefone seria ilegível.
 
-Recomendado: PNG quadrado com fundo transparente, 800×800, só o símbolo do hexágono
-(sem o texto "BACIN TERRAPLANAGEM" nem o telefone), porque o nome já é escrito ao lado
-do ícone nos cabeçalhos e ficaria duplicado.
+São 11 referências dentro de `BACIN/`, mais uma em `login/index.php` (o ícone do
+seletor de sistemas do superadmin), fora deste diretório. Para trocar a arte de novo,
+basta substituir os dois `.svg` mantendo os nomes.
 
 Nome exibido e subtítulo do seletor de login estão em:
 
