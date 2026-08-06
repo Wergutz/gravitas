@@ -34,6 +34,10 @@ jobs:
             mkdir -p $BASE/CHERONCAMARGO
             cp -rT $BASE/principal/CHERONCAMARGO $BASE/CHERONCAMARGO
             mkdir -p $BASE/CHERONCAMARGO/topografo/uploads/os/topo
+            mkdir -p $BASE/principal/BACIN/painel/uploads/os/topo
+            mkdir -p $BASE/BACIN
+            cp -rT $BASE/principal/BACIN $BASE/BACIN
+            mkdir -p $BASE/BACIN/topografo/uploads/os/topo
             mkdir -p $BASE/marco_urbano2
             cp -rT $BASE/principal/marco_urbano2 $BASE/marco_urbano2
             mkdir -p $BASE/login

@@ -1,0 +1,15 @@
+<!--
+  Logotipo provisório do BACIN — versão para fundo escuro (navy do painel).
+  Substituir por icon-bacin-white.svg (ou .png, ajustando as referências nas views)
+  assim que a marca definitiva do cliente estiver disponível.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="BACIN">
+  <title>BACIN</title>
+  <circle cx="100" cy="100" r="88" fill="none" stroke="#FFFFFF" stroke-width="9"/>
+  <circle cx="100" cy="100" r="72" fill="none" stroke="#FFFFFF" stroke-width="3" opacity="0.45"/>
+  <text x="100" y="101" fill="#FFFFFF"
+        font-family="Inter, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        font-size="62" font-weight="800" letter-spacing="1"
+        text-anchor="middle" dominant-baseline="central">B</text>
+  <circle cx="158" cy="42" r="13" fill="#C9A227"/>
+</svg>
