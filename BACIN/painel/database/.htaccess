@@ -1,0 +1,14 @@
+# Scripts de banco não devem ser baixáveis pela web — eles expõem o
+# esquema completo do sistema. Esta pasta serve só ao versionamento;
+# os arquivos são executados no phpMyAdmin, nunca pelo navegador.
+Options -Indexes
+
+<FilesMatch "\.sql$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
