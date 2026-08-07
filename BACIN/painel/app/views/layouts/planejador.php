@@ -29,7 +29,7 @@ function navAtivoExato(string $route, string $exact): string {
     <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="brand">
-            <img src="/BACIN/painel/assets/img/icon-bacin-white.svg" alt="BACIN">
+            <img src="/BACIN/painel/assets/img/icon-bacin-white.svg?v=2" alt="BACIN">
             <div>
                 <b>BACIN</b>
                 <small>PAINEL DE CONTROLE</small>

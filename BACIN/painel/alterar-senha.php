@@ -122,7 +122,7 @@ h1{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:4px}
 <body>
 <div class="card">
   <div class="brand">
-    <img src="/BACIN/painel/assets/img/icon-bacin.svg" alt="BACIN">
+    <img src="/BACIN/painel/assets/img/icon-bacin.svg?v=2" alt="BACIN">
     <b>BACIN</b>
   </div>
 

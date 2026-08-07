@@ -320,7 +320,7 @@ if (!empty($_SESSION['sa_ok'])) {
             <?php elseif ($cfg['id'] === 'cheron_camargo'): ?>
             <img src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="" aria-hidden="true">
             <?php elseif ($cfg['id'] === 'bacin'): ?>
-            <img src="/BACIN/painel/assets/img/icon-bacin.svg" alt="" aria-hidden="true">
+            <img src="/BACIN/painel/assets/img/icon-bacin.svg?v=2" alt="" aria-hidden="true">
             <?php else: ?>
             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <rect x="4" y="4" width="92" height="92" rx="26" fill="none" stroke="#3CB86A" stroke-width="3"/>

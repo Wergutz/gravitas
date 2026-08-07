@@ -54,7 +54,7 @@
 
 <!-- Capa -->
 <div class="capa">
-  <img src="/BACIN/painel/assets/img/icon-bacin-white.svg" alt="BACIN">
+  <img src="/BACIN/painel/assets/img/icon-bacin-white.svg?v=2" alt="BACIN">
   <div class="capa-txt">
     <h1>Relatório Fotográfico</h1>
     <div class="sub">

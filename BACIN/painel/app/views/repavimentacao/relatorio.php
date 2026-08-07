@@ -136,7 +136,7 @@ table.totais tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1
     <!-- Cabeçalho -->
     <div class="rpt-header">
         <div class="marca-area">
-            <img src="/BACIN/painel/assets/img/icon-bacin.svg" alt="BACIN">
+            <img src="/BACIN/painel/assets/img/icon-bacin.svg?v=2" alt="BACIN">
             <div class="marca-txt">
                 <b>BACIN</b>
                 <small>Saneamento Básico</small>

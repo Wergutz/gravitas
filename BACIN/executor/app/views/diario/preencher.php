@@ -37,7 +37,7 @@ foreach ($fotos as $f) {
 <!-- Topo -->
 <div class="top">
   <div class="top-row">
-    <img class="logo" src="/BACIN/painel/assets/img/icon-bacin-white.svg" alt="BACIN">
+    <img class="logo" src="/BACIN/painel/assets/img/icon-bacin-white.svg?v=2" alt="BACIN">
     <div class="nm">BACIN<small>DIÁRIO <?= date('d/m', strtotime($diario['data'])) ?></small></div>
     <a href="<?= EXECUTOR_BASE ?>/" style="margin-left:auto;color:#9FB4D6;font-size:11px;text-decoration:none">← Início</a>
   </div>

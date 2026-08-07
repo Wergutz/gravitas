@@ -83,7 +83,7 @@ table.trch tfoot td{background:#f8f9fb;font-weight:700;border-top:1.5px solid #d
     <!-- Cabeçalho -->
     <div class="rpt-header">
         <div class="marca-area">
-            <img src="/BACIN/painel/assets/img/icon-bacin.svg" alt="BACIN">
+            <img src="/BACIN/painel/assets/img/icon-bacin.svg?v=2" alt="BACIN">
             <div class="marca-txt">
                 <b>BACIN</b>
                 <small>Painel de Controle</small>
