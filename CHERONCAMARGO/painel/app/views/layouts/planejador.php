@@ -50,7 +50,10 @@ function navAtivoExato(string $route, string $exact): string {
                 Usuários &amp; Acessos
             </a>
 
-            <?php else: ?>
+            <?php endif; ?>
+
+            <?php /* menu operacional: todos menos o Master Gravitas (3), que só gere usuários */ ?>
+            <?php if ($nivelLayout !== 3): ?>
 
             <a href="<?= APP_BASE ?>/" class="<?= ($currentRoute === '/' || $currentRoute === '') ? 'ativo' : '' ?>">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
