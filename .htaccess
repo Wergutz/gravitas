@@ -5,3 +5,18 @@ Options -Indexes
     Allow from all
 </Files>
 
+# Scripts de banco não devem ser baixáveis pela web — eles expõem o esquema
+# completo do sistema e, em alguns casos, hashes de senha. Ficam versionados
+# aqui só para serem executados no phpMyAdmin, nunca pelo navegador.
+# Esta regra vale para esta pasta e todas as subpastas, cobrindo tanto os
+# .sql soltos na raiz quanto database/migrations/ e painel/database/migrations/.
+<FilesMatch "\.sql$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
