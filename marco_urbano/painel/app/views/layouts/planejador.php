@@ -46,7 +46,7 @@ function navAtivoExato(string $route, string $exact): string {
 
         <?php $nivelLayout = (int)($_SESSION['nivel'] ?? 0); ?>
         <nav class="nav">
-            <?php if ($nivelLayout === 3): ?>
+            <?php if (in_array($nivelLayout, [1, 3], true)): ?>
 
             <a href="<?= APP_BASE ?>/admin/usuarios" class="<?= navAtivo($currentRoute, '/admin') ?>">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -114,7 +114,7 @@ function navAtivoExato(string $route, string $exact): string {
                 Trechos &amp; OS
             </a>
 
-            <?php if ($nivelLayout === 4): ?>
+            <?php if (in_array($nivelLayout, [1, 4], true)): ?>
             <a href="<?= APP_BASE ?>/topografia" class="<?= navAtivo($currentRoute, '/topografia') ?>">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/><line x1="12" y1="3" x2="12" y2="8"/>
