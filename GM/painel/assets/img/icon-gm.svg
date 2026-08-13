@@ -1,0 +1,34 @@
+<!--
+  GM SERVIÇOS — logotipo, versão para FUNDO CLARO.
+  Usado nos relatórios impressos e na tela de troca de senha.
+
+  Redesenhado em vetor a partir da arte enviada pelo cliente.
+  Cores da marca: verde-escuro #1E8A3E, verde-claro #A9D18E.
+
+  A marca original traz ainda "SERVIÇOS" dentro da faixa e "Projetos e
+  Construções" curvado no arco inferior do círculo. Os dois textos ficaram
+  de fora: o ícone é renderizado a 32-41 px nos cabeçalhos e relatórios, e
+  nesse tamanho eles viram um borrão. O nome já aparece escrito ao lado do
+  ícone em todas as telas. Sobra o essencial: o círculo, o monograma e o
+  gesto da faixa-seta.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200"
+     role="img" aria-label="GM SERVIÇOS">
+  <title>GM SERVIÇOS</title>
+
+  <!-- disco da marca -->
+  <circle cx="100" cy="104" r="92" fill="#A9D18E"/>
+
+  <!-- faixa diagonal com ponta de seta, subindo da esquerda para a direita -->
+  <g transform="rotate(-12 100 100)">
+    <path d="M34 46 H170 V28 L204 64 L170 100 V82 H34 Z"
+          fill="#ffffff" stroke="#1E8A3E" stroke-width="6"
+          stroke-linejoin="round" stroke-linecap="round"/>
+  </g>
+
+  <!-- monograma -->
+  <text x="100" y="164" text-anchor="middle"
+        font-family="'Arial Black','Arial Bold',Arial,Helvetica,sans-serif"
+        font-weight="900" font-size="86" textLength="128"
+        lengthAdjust="spacingAndGlyphs" fill="#1E8A3E">GM</text>
+</svg>

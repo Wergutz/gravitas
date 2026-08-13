@@ -112,6 +112,33 @@ $sistemas = [
             ['dest' => '/BACIN/topografo/',      'label' => 'Topógrafo',               'sub' => 'Importação e OS de topografia'],
         ],
     ],
+    [
+        'id'          => 'gm',
+        'db'          => 'u278289683_GM',
+        'user'        => 'u278289683_GM',
+        'pass'        => 'geb91/RS',
+        'session'     => 'GM_PAINEL',
+        'cookie_path' => '/GM/',
+        'label'       => 'GM SERVIÇOS',
+        'sub'         => 'Projetos e Construções',
+        'alterar_senha' => '/GM/painel/alterar-senha.php',
+        'destinos'    => [
+            1 => '/GM/painel/',
+            3 => '/GM/painel/',
+            4 => '/GM/painel/',
+            5 => '/GM/executor/',
+            6 => '/GM/master/',
+            7 => '/GM/executor-repav/',
+            8 => '/GM/topografo/',
+        ],
+        'apps'        => [
+            ['dest' => '/GM/painel/',        'label' => 'Planejador',              'sub' => 'Gestão, relatórios e diários'],
+            ['dest' => '/GM/master/',         'label' => 'Visão Executiva',         'sub' => 'Dashboard do cliente master'],
+            ['dest' => '/GM/executor/',       'label' => 'App do Executor',         'sub' => 'Frente de serviço em campo'],
+            ['dest' => '/GM/executor-repav/', 'label' => 'Executor Repavimentação', 'sub' => 'Medição e controle de pavimento'],
+            ['dest' => '/GM/topografo/',      'label' => 'Topógrafo',               'sub' => 'Importação e OS de topografia'],
+        ],
+    ],
 ];
 
 // Sessão GV_LOGIN: CSRF + rate limiting + estado do seletor
@@ -321,6 +348,8 @@ if (!empty($_SESSION['sa_ok'])) {
             <img src="/CHERONCAMARGO/painel/assets/img/icon-cheron-camargo.png" alt="" aria-hidden="true">
             <?php elseif ($cfg['id'] === 'bacin'): ?>
             <img src="/BACIN/painel/assets/img/icon-bacin.svg?v=2" alt="" aria-hidden="true">
+            <?php elseif ($cfg['id'] === 'gm'): ?>
+            <img src="/GM/painel/assets/img/icon-gm.svg" alt="" aria-hidden="true">
             <?php else: ?>
             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
               <rect x="4" y="4" width="92" height="92" rx="26" fill="none" stroke="#3CB86A" stroke-width="3"/>

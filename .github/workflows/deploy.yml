@@ -41,6 +41,10 @@ jobs:
             mkdir -p $BASE/BACIN
             cp -rT $BASE/principal/BACIN $BASE/BACIN
             mkdir -p $BASE/BACIN/topografo/uploads/os/topo
+            mkdir -p $BASE/principal/GM/painel/uploads/os/topo
+            mkdir -p $BASE/GM
+            cp -rT $BASE/principal/GM $BASE/GM
+            mkdir -p $BASE/GM/topografo/uploads/os/topo
             mkdir -p $BASE/marco_urbano2
             cp -rT $BASE/principal/marco_urbano2 $BASE/marco_urbano2
             mkdir -p $BASE/login
