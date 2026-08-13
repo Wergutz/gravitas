@@ -122,7 +122,7 @@ h1{font-size:20px;font-weight:800;color:var(--navy);margin-bottom:4px}
 <body>
 <div class="card">
   <div class="brand">
-    <img src="/GM/painel/assets/img/icon-gm.svg" alt="GM SERVIÇOS">
+    <img src="/GM/painel/assets/img/icon-gm.png" alt="GM SERVIÇOS">
     <b>GM SERVIÇOS</b>
   </div>
 

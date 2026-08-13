@@ -53,61 +53,99 @@ e vai reclamar de tabela já existente.
 
 ## Logotipo
 
-Marca redesenhada em vetor a partir da arte enviada pelo cliente:
+Marca **oficial** do cliente, em dois recortes:
 
-- `painel/assets/img/icon-gm.svg` — fundo claro (relatórios impressos, troca de senha)
-- `painel/assets/img/icon-gm-white.svg` — fundo escuro (cabeçalhos navy dos apps)
+- `painel/assets/img/icon-gm.png` — **compacta**: círculo + `GM` + faixa branca com
+  `SERVIÇOS` e a seta. É a que o sistema usa, nos 12 pontos listados abaixo.
+- `painel/assets/img/icon-gm-full.png` — **completa**: a mesma marca com a assinatura
+  curva `Projetos e Construções` no arco inferior. **Não é referenciada por nenhuma
+  tela** (ver "Por que a completa não é usada"); fica aqui como o arquivo da marca
+  inteira, para peças em tamanho grande.
 
-Cores da marca: verde-escuro **`#1E8A3E`**, verde-claro **`#A9D18E`**.
+Ambos: PNG com canal alfa, 512×512, fundo transparente.
 
-### O que ficou de fora, e por quê
+Cores da marca, amostradas da arte: verde-escuro **`#13823D`** (19, 130, 61) e
+verde-claro do círculo **`#B8DD97`** (184, 221, 151), este com um leve gradiente.
 
-O ícone é renderizado a **32–41 px** em todos os pontos onde aparece
-(`.brand img` 32–35 px nos cabeçalhos, `.marca-area img` 41 px nos relatórios).
-Nesse tamanho, sobram cerca de 4 px de altura para uma linha de texto — ou seja,
-um borrão. Por isso a arte foi reduzida ao essencial:
+### Origem: raster, não vetor
 
-- **`SERVIÇOS`**, que na marca original vai escrito dentro da faixa diagonal, saiu.
-  Ficou só o gesto da faixa com a ponta de seta.
-- **`Projetos e Construções`**, o texto curvado no arco inferior do círculo, saiu
-  pelo mesmo motivo.
+O PDF enviado pelo cliente **não é vetorial** — é uma página A4 com um único JPEG
+512×512 embutido (zero fontes, um `/DCTDecode`). Não havia vetor para extrair, ao
+contrário do que se fez na instância BACIN. O que existe é o bitmap: fundo branco
+removido por flood fill a partir das bordas, com feather nas bordas antialiased para
+não deixar halo, recortado no bounding box e centralizado em quadrado.
 
-O nome completo já é escrito ao lado do ícone em todas as telas, então nada se perde.
-Sobram o disco, o monograma **GM** e a faixa-seta — legíveis a 32 px.
+Consequência prática: **512×512 é o teto de resolução**. Ampliar além disso amolece.
+Nos tamanhos em que o sistema usa (28–64 px) sobra resolução de sobra, inclusive para
+tela retina e para impressão.
 
-### Diferença entre as duas versões
+### Um arquivo só serve para fundo claro e escuro
 
-A versão para fundo escuro não é só "o verde vira branco": o disco verde-claro vira
-um **anel** (contorno, miolo transparente) e a faixa fica com preenchimento
-transparente. Sem isso, o monograma branco cairia sobre o verde-claro `#A9D18E` —
-contraste de ~1,7:1, que some a 32 px. Com o miolo vazado, o fundo escuro atravessa,
-o branco lê perfeitamente e o anel mantém a cor da marca presente. Nada de retângulo
-ou fundo chapado: a marca funciona sobre o gradiente da sidebar
-(`#0b1c2d` → `#071422`) e sobre qualquer outro fundo escuro.
+Não existe mais variante `-white`, e não precisa: como o fundo é transparente e o
+desenho é um disco verde-claro fechado, o mesmo arquivo se resolve sobre branco e
+sobre o navy dos cabeçalhos (`#0b1c2d` → `#071422`). Testado a 28, 30, 32, 35, 41, 64
+e 96 px sobre os dois fundos.
+
+### Por que a completa não é usada
+
+A escolha entre as duas é por **tamanho de renderização**, não por cor de fundo. Os
+tamanhos reais, tirados do CSS, são estes:
+
+| Onde | Regra CSS | Tamanho |
+|---|---|---|
+| Cabeçalho do executor / repav | `.top img.logo` | 30 px |
+| Troca de senha | `.brand img` (inline) | 32 px |
+| Sidebar do painel, topo do app, dashboard master | `.brand img` / `header img` | 35 px |
+| Cabeçalho dos relatórios impressos | `.marca-area img` | 41 px |
+| Capa do relatório fotográfico | `.capa img` | 64 px |
+| Seletor de sistemas do superadmin | `.sistema-header img` | 28 px |
+
+O maior é 64 px. A assinatura `Projetos e Construções` só fica legível a partir de
+~96 px — a 64 px ela é uma mancha, e a marca completa ainda encolhe o círculo e o
+`GM` para abrir espaço para ela. Por isso **os 12 pontos usam a compacta**, inclusive
+os relatórios impressos e a tela de troca de senha. O nome completo já vem escrito ao
+lado do ícone em todas as telas, então nada se perde.
+
+Se algum dia surgir um ponto de uso grande (capa de proposta, landing, apresentação),
+é aí que entra `icon-gm-full.png`.
 
 ### Onde o logotipo é referenciado
 
 São **11 referências dentro de `GM/`**, mais uma em `login/index.php` (o ícone do
-seletor de sistemas do superadmin), fora deste diretório:
+seletor de sistemas do superadmin), fora deste diretório. Todas apontam para
+`icon-gm.png`:
 
-| Arquivo | Versão |
+| Arquivo | Tamanho renderizado |
 |---|---|
-| `painel/alterar-senha.php` | clara |
-| `painel/app/views/caminhamentos/relatorio_materiais.php` | clara |
-| `painel/app/views/caminhamentos/relatorio_medicao.php` | clara |
-| `painel/app/views/repavimentacao/relatorio.php` | clara |
-| `painel/app/index.php` | escura |
-| `painel/app/views/layouts/planejador.php` | escura |
-| `painel/app/views/diarios/relatorio_fotos.php` | escura |
-| `master/app/views/dashboard.php` | escura |
-| `executor/app/views/home.php` | escura |
-| `executor/app/views/diario/preencher.php` | escura |
-| `executor-repav/app/views/home.php` | escura |
-| `login/index.php` (fora de `GM/`) | clara |
+| `painel/alterar-senha.php` | 32 px |
+| `painel/app/index.php` | 35 px |
+| `painel/app/views/layouts/planejador.php` | 35 px |
+| `painel/app/views/caminhamentos/relatorio_materiais.php` | 41 px |
+| `painel/app/views/caminhamentos/relatorio_medicao.php` | 41 px |
+| `painel/app/views/repavimentacao/relatorio.php` | 41 px |
+| `painel/app/views/diarios/relatorio_fotos.php` | 64 px |
+| `master/app/views/dashboard.php` | 35 px |
+| `executor/app/views/home.php` | 30 px |
+| `executor/app/views/diario/preencher.php` | 30 px |
+| `executor-repav/app/views/home.php` | 30 px |
+| `login/index.php` (fora de `GM/`) | 28 px |
 
-Para trocar a arte, basta substituir os dois `.svg` mantendo os nomes. Se o cliente
-mandar a marca em alta e o navegador insistir no arquivo antigo, acrescente `?v=2`
-nas referências (foi o que se fez na instância BACIN).
+### Peso dos arquivos
+
+Os PNG passaram por `pngquant` (paleta, alfa preservado): 184 KB → **70 KB** na
+compacta e 229 KB → **81 KB** na completa. A compacta é carregada em toda página de
+todos os apps, inclusive no app do executor, que roda em campo com dados móveis — daí
+a preocupação. A diferença visual medida contra o original é de 2–5 níveis de 255 nos
+tamanhos de uso e 1,2 de RMS a 512 px: imperceptível.
+
+### Se um dia chegar o vetor
+
+Se o cliente mandar a marca em SVG/AI/EPS de verdade, é só gerar os `.svg` e trocar as
+referências nos mesmos 12 pontos da tabela acima — a estrutura não muda. Ganha-se
+nitidez em qualquer tamanho e o peso cai para poucos KB.
+
+Para trocar a arte mantendo os nomes dos arquivos: se o navegador insistir no arquivo
+antigo, acrescente `?v=2` nas referências (foi o que se fez na instância BACIN).
 
 ## Nome exibido
 

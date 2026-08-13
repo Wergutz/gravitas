@@ -34,7 +34,7 @@ function svgIcon(string $path): string {
 
 <aside class="sidebar">
   <div class="brand">
-    <img src="/GM/painel/assets/img/icon-gm-white.svg" alt="GM SERVIÇOS">
+    <img src="/GM/painel/assets/img/icon-gm.png" alt="GM SERVIÇOS">
     <div><b>GM SERVIÇOS</b><small>VISÃO EXECUTIVA</small></div>
   </div>
   <nav class="nav">

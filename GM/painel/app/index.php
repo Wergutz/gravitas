@@ -44,7 +44,7 @@ $perfil = ($_SESSION['gv_perfil'] ?? 'empresa') === 'usuario' ? 'Usuário' : 'Em
 </head>
 <body>
 <header>
-  <img src="/GM/painel/assets/img/icon-gm-white.svg" alt="GM SERVIÇOS">
+  <img src="/GM/painel/assets/img/icon-gm.png" alt="GM SERVIÇOS">
   <span class="nm">GM SERVIÇOS</span>
   <span class="tag">Painel · <?php echo $perfil; ?></span>
   <a class="sair" href="../auth/logout.php">Sair</a>

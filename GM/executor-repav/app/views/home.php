@@ -22,7 +22,7 @@ $temAsfalto = !empty(array_filter($pavimentos, fn($p) => str_contains(strtolower
 
   <div class="top">
     <div class="top-row">
-      <img class="logo" src="/GM/painel/assets/img/icon-gm-white.svg" alt="GM SERVIÇOS">
+      <img class="logo" src="/GM/painel/assets/img/icon-gm.png" alt="GM SERVIÇOS">
       <div class="nm">GM SERVIÇOS<small>EXECUTOR · REPAVIMENTAÇÃO</small></div>
       <div class="eq">
         <b><?= htmlspecialchars($_SESSION['nome']) ?></b>

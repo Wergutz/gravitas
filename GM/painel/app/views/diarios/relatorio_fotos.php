@@ -54,7 +54,7 @@
 
 <!-- Capa -->
 <div class="capa">
-  <img src="/GM/painel/assets/img/icon-gm-white.svg" alt="GM SERVIÇOS">
+  <img src="/GM/painel/assets/img/icon-gm.png" alt="GM SERVIÇOS">
   <div class="capa-txt">
     <h1>Relatório Fotográfico</h1>
     <div class="sub">

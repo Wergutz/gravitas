@@ -83,7 +83,7 @@ table.trch tfoot td{background:#f8f9fb;font-weight:700;border-top:1.5px solid #d
     <!-- Cabeçalho -->
     <div class="rpt-header">
         <div class="marca-area">
-            <img src="/GM/painel/assets/img/icon-gm.svg" alt="GM SERVIÇOS">
+            <img src="/GM/painel/assets/img/icon-gm.png" alt="GM SERVIÇOS">
             <div class="marca-txt">
                 <b>GM SERVIÇOS</b>
                 <small>Painel de Controle</small>

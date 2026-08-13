@@ -136,7 +136,7 @@ table.totais tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1
     <!-- Cabeçalho -->
     <div class="rpt-header">
         <div class="marca-area">
-            <img src="/GM/painel/assets/img/icon-gm.svg" alt="GM SERVIÇOS">
+            <img src="/GM/painel/assets/img/icon-gm.png" alt="GM SERVIÇOS">
             <div class="marca-txt">
                 <b>GM SERVIÇOS</b>
                 <small>Projetos e Construções</small>
