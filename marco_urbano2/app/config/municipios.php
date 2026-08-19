@@ -48,25 +48,29 @@ const MU_UF_PADRAO = 'RS';
 /**
  * Tolerância padrão, em km, a partir do ponto central do município.
  *
- * Generosa de propósito: município brasileiro pode ser extenso, e uma
- * recusa indevida trava o lançamento sem que haja quem libere. 30 km
- * ainda separa com folga uma foto da obra de uma foto tirada em outra
- * cidade, que é o que a regra existe para pegar.
+ * A comparação é sempre contra o CENTRO do município, porque o trecho
+ * não guarda coordenada própria. A tolerância precisa então cobrir a
+ * extensão da cidade inteira mais a folga da obra — e errar para o lado
+ * de aceitar, já que recusa indevida trava o lançamento sem que haja
+ * quem libere.
+ *
+ * 50 km continua separando com folga a foto da obra de uma foto tirada
+ * em outra cidade, que é o que a regra existe para pegar: os casos reais
+ * de desvio ficam na casa das centenas de quilômetros.
  */
-const MU_RAIO_PADRAO = 30.0;
+const MU_RAIO_PADRAO = 50.0;
 
 /**
  * Ajustes por município, quando o padrão não serve.
- * Só entram aqui os casos com motivo — o resto sai da base do IBGE.
+ *
+ * Vazio de propósito: os ajustes que existiam aqui (Barra do Quaraí em
+ * 15 km, Porto Alegre em 35 km) eram MAIS apertados que o padrão atual,
+ * e mantê-los deixaria justamente a obra ativa fora do aumento pedido.
+ *
+ * Para apertar ou afrouxar uma cidade específica, acrescente:
+ *     'Nome do Município' => ['raio_km' => 20.0],
  */
-const MU_MUNICIPIOS = [
-    // Obra do contrato 4147-2024: perímetro pequeno e bem delimitado,
-    // então vale apertar em relação ao padrão.
-    'Barra do Quaraí' => ['raio_km' => 15.0],
-
-    // Região metropolitana: a obra pode encostar em municípios vizinhos.
-    'Porto Alegre'    => ['raio_km' => 35.0],
-];
+const MU_MUNICIPIOS = [];
 
 /** Mantido para compatibilidade com quem já chamava esta função. */
 function mu_chave_municipio(string $nome): string
