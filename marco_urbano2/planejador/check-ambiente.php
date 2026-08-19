@@ -236,13 +236,20 @@ $tudoOk = !in_array(false, array_column($itens, 'ok'), true);
         <?php endif; ?>
     </p>
     <p style="font-size:13px;color:#9ca3af;line-height:1.6;margin-top:8px;">
-        Tolerância padrão de <?= number_format(MU_RAIO_PADRAO, 0, ',', '.') ?> km do centro do
-        município. Ajustes por cidade, quando o padrão não serve, ficam em
-        <code>app/config/municipios.php</code>:
-        <?php foreach (MU_MUNICIPIOS as $nome => $c): ?>
-            <br>· <strong><?= htmlspecialchars($nome) ?></strong> —
-            <?= number_format($c['raio_km'] ?? MU_RAIO_PADRAO, 0, ',', '.') ?> km
-        <?php endforeach; ?>
+        Tolerância de <strong><?= number_format(MU_RAIO_PADRAO, 0, ',', '.') ?> km</strong>
+        a partir do centro do município. A comparação é com o centro da cidade, não com o
+        ponto exato do trecho — o cadastro do trecho não guarda coordenada. Serve para
+        pegar foto de outra cidade, não foto do outro lado da mesma cidade.
+        <?php if (MU_MUNICIPIOS): ?>
+            <br>Cidades com tolerância própria:
+            <?php foreach (MU_MUNICIPIOS as $nome => $c): ?>
+                <br>· <strong><?= htmlspecialchars($nome) ?></strong> —
+                <?= number_format($c['raio_km'] ?? MU_RAIO_PADRAO, 0, ',', '.') ?> km
+            <?php endforeach; ?>
+        <?php else: ?>
+            <br>Vale para todas as cidades. Para tratar alguma de forma diferente,
+            edite <code>app/config/municipios.php</code>.
+        <?php endif; ?>
     </p>
 
     <?php
