@@ -27,6 +27,32 @@ require_once __DIR__ . '/upload_pericial.php';
 require_once __DIR__ . '/../config/municipios.php';
 
 /* ===========================================================================
+ *  MODO DE APLICAÇÃO DAS REGRAS
+ * ======================================================================== */
+
+/**
+ * As regras recusam o lançamento, ou apenas avisam?
+ *
+ *   true  — reprovou, não entra. Nada é gravado, nem as medidas.
+ *   false — nada é bloqueado. A medição sempre grava, os problemas
+ *           aparecem na tela como ressalva, e a mídia que não passaria
+ *           é marcada em midia_custodia com validade_pericial = 0.
+ *
+ * Está em false a pedido da contratada, para não travar o lançamento em
+ * campo. A consequência precisa estar dita: foto sem GPS, sem data, vinda
+ * de aplicativo de mensagem ou reaproveitada de outro trecho passa a
+ * entrar no acervo. Ela continua rastreada — o hash e o metadado seguem
+ * sendo registrados — mas não se sustenta sozinha numa perícia.
+ *
+ * A marcação `validade_pericial` é o que impede a perda dessa
+ * informação: dá para separar depois, no banco, o que é prova completa
+ * do que é registro com ressalva.
+ *
+ * Para voltar a bloquear, troque para true. Nada mais precisa mudar.
+ */
+const MU_VALIDACAO_BLOQUEIA = false;
+
+/* ===========================================================================
  *  CONFIGURAÇÃO DAS REGRAS
  * ======================================================================== */
 
@@ -125,8 +151,16 @@ function mu_validar_midia(
             $mime === 'image/png'
                 ? 'PNG normalmente é captura de tela ou imagem editada. Envie a foto original, em JPEG, direto da galeria do celular que a tirou.'
                 : 'Formato recebido: ' . $mime . '. Envie a foto original do celular (JPEG ou HEIC).');
-        // Sem tipo válido não adianta seguir com as outras regras.
-        return ['ok' => false, 'erros' => $erros, 'avisos' => $avisos, 'dados' => compact('mime','larg','alt','bytes')];
+        /* Sem tipo válido não adianta seguir com as outras regras — mas o
+           retorno precisa respeitar o modo de aplicação como os demais,
+           senão este caminho continuaria bloqueando sozinho. */
+        return [
+            'ok'       => !MU_VALIDACAO_BLOQUEIA,
+            'pericial' => false,
+            'erros'    => $erros,
+            'avisos'   => $avisos,
+            'dados'    => compact('mime', 'larg', 'alt', 'bytes'),
+        ];
     }
 
     /* --- 2. passou pelo WhatsApp? -------------------------------------- */
@@ -262,13 +296,24 @@ function mu_validar_midia(
           . '. Cada trecho precisa das suas próprias fotos. Envie as fotos deste trecho.');
     }
 
-    /* --- 8. resultado --------------------------------------------------- */
-    /* Qualquer erro reprova. Avisos não reprovam, só informam. */
+    /* --- 8. resultado ---------------------------------------------------
+       Duas perguntas diferentes, que antes eram a mesma:
+
+         `pericial` — a mídia passa em todas as regras? É o que define se
+                      ela se sustenta sozinha numa perícia.
+         `ok`       — o lançamento pode prosseguir? Depende do modo: com
+                      MU_VALIDACAO_BLOQUEIA em false, sempre pode.
+
+       Separar as duas é o que permite afrouxar o lançamento sem perder o
+       registro de qual mídia entrou com ressalva. */
+    $pericial = ($erros === []);
+
     return [
-        'ok'     => $erros === [],
-        'erros'  => $erros,
-        'avisos' => $avisos,
-        'dados'  => [
+        'ok'       => $pericial || !MU_VALIDACAO_BLOQUEIA,
+        'pericial' => $pericial,
+        'erros'    => $erros,
+        'avisos'   => $avisos,
+        'dados'    => [
             'mime'   => $mime,
             'larg'   => $larg,
             'alt'    => $alt,
