@@ -10,7 +10,6 @@ auth_required([3]);
 
 $erro      = null;
 $recusados = [];   // arquivos barrados (só quando MU_VALIDACAO_BLOQUEIA)
-$ressalvas = [];   // gravados, mas sem valor probatório pleno
 $avisos    = [];   // observações que não impedem o lançamento
 
 /* ===============================
@@ -136,12 +135,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         /* ---------------------------------------------------------------
            2) Conferir TUDO antes de gravar QUALQUER COISA.
 
-              Com MU_VALIDACAO_BLOQUEIA em false nada é recusado: os
-              problemas viram ressalva na tela, e a mídia que não passaria
-              é gravada com validade_pericial = 0, para continuar sendo
-              possível separar prova completa de registro com ressalva.
+              Com MU_VALIDACAO_BLOQUEIA em false nada é recusado.
         --------------------------------------------------------------- */
-        foreach ($fila as $i => $item) {
+        foreach ($fila as $item) {
             $v = mu_validar_midia(
                 $item['f']['tmp_name'],
                 (string) $item['f']['name'],
@@ -151,13 +147,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $pdo
             );
 
-            /* Marca o item para gravar com ou sem validade pericial. */
-            $fila[$i]['pericial'] = $v['pericial'];
-
             if (!$v['ok']) {
                 $recusados[] = ['arquivo' => $item['f']['name'], 'erros' => $v['erros']];
-            } elseif (!$v['pericial']) {
-                $ressalvas[] = ['arquivo' => $item['f']['name'], 'erros' => $v['erros']];
             }
 
             foreach ($v['avisos'] as $a) {
@@ -167,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         /* ---------------------------------------------------------------
            3) No modo bloqueante, um reprovado e nada é gravado — nem as
-              medidas do trecho. Fora dele, segue e grava com ressalva.
+              medidas do trecho. Fora dele, segue direto.
         --------------------------------------------------------------- */
         if ($recusados) {
             throw new Exception('Lançamento recusado: há arquivo sem valor probatório.');
@@ -198,8 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         foreach ($fila as $item) {
             $reg = mu_arquivar_midia(
-                $item['f'], $trechoId, $item['tipo'], null, $usuarioId ?: null, $pdo,
-                $item['pericial'] ?? true
+                $item['f'], $trechoId, $item['tipo'], null, $usuarioId ?: null, $pdo
             );
 
             if ($item['tipo'] === 'croqui') {
@@ -212,12 +202,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         $pdo->commit();
-
-        /* As ressalvas precisam sobreviver ao redirecionamento: sem isso
-           a medição gravaria com foto sem valor probatório e ninguém
-           ficaria sabendo. */
-        $_SESSION['flash_ressalvas'] = $ressalvas;
-
         header("Location: medicao.php?planejamento_id=".$_GET['planejamento_id']."&ok=1");
         exit;
 
@@ -262,52 +246,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 </div>
 
-<?php
-/* Ressalvas do lançamento anterior, vindas pelo redirecionamento. */
-$ressalvasGravadas = $_SESSION['flash_ressalvas'] ?? [];
-unset($_SESSION['flash_ressalvas']);
-?>
-
-<?php if (!empty($_GET['ok']) && !$ressalvasGravadas): ?>
+<?php if (!empty($_GET['ok'])): ?>
 <div class="form-card" style="border:1px solid #22c55e;background:#052e16;">
     <strong style="color:#bbf7d0;font-size:16px;">✅ Medição gravada.</strong>
     <p style="color:#dcfce7;font-size:14px;margin-top:6px;line-height:1.5;">
-        As fotos passaram na conferência e o trecho já aparece como medido.
+        O trecho já aparece como medido.
         Selecione outro trecho abaixo para continuar.
-    </p>
-</div>
-<?php endif; ?>
-
-<?php if (!empty($_GET['ok']) && $ressalvasGravadas): ?>
-<div class="form-card" style="border:1px solid #f59e0b;background:#2a1a06;">
-    <strong style="color:#fde68a;font-size:16px;">⚠️ Medição gravada, com ressalva.</strong>
-    <p style="color:#fef3c7;font-size:14px;margin-top:6px;line-height:1.5;">
-        O trecho já aparece como medido, mas <strong>a mídia abaixo não tem valor
-        probatório pleno</strong> — ficou registrada como tal. Se estas fotos forem
-        usadas numa perícia, não se sustentam sozinhas.
-    </p>
-
-    <?php foreach ($ressalvasGravadas as $r): ?>
-        <div style="margin-top:12px;padding-left:12px;border-left:3px solid #f59e0b;">
-            <div style="color:#fff;font-weight:600;font-size:14px;word-break:break-all;">
-                <?= htmlspecialchars($r['arquivo']) ?>
-            </div>
-            <?php foreach ($r['erros'] as $e): ?>
-                <div style="margin-top:6px;">
-                    <div style="color:#fde68a;font-weight:600;font-size:13px;">
-                        <?= htmlspecialchars($e['titulo']) ?>
-                    </div>
-                    <div style="color:#e5e7eb;font-size:13px;line-height:1.5;">
-                        <?= htmlspecialchars($e['como_corrigir']) ?>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endforeach; ?>
-
-    <p style="color:#fcd34d;font-size:13px;margin-top:14px;line-height:1.5;">
-        Se conseguir a foto original do celular que a tirou, refaça o lançamento por
-        <strong>Editar medição</strong> — a foto boa entra sem ressalva.
     </p>
 </div>
 <?php endif; ?>

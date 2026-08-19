@@ -10,7 +10,6 @@ auth_required([3]);
 
 $erro      = null;
 $recusados = [];
-$ressalvas = [];
 $avisos    = [];
 
 /* ===============================
@@ -81,20 +80,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         /* --- confere tudo antes de gravar qualquer coisa ----------------
-           Com MU_VALIDACAO_BLOQUEIA em false nada é recusado: a mídia que
-           não passaria entra marcada com validade_pericial = 0. */
-        foreach ($fila as $i => $item) {
+           Com MU_VALIDACAO_BLOQUEIA em false nada é recusado. */
+        foreach ($fila as $item) {
             $v = mu_validar_midia(
                 $item['f']['tmp_name'], (string) $item['f']['name'],
                 $item['tipo'], (int) $trecho['id'], null, $pdo
             );
 
-            $fila[$i]['pericial'] = $v['pericial'];
-
             if (!$v['ok']) {
                 $recusados[] = ['arquivo' => $item['f']['name'], 'erros' => $v['erros']];
-            } elseif (!$v['pericial']) {
-                $ressalvas[] = ['arquivo' => $item['f']['name'], 'erros' => $v['erros']];
             }
 
             foreach ($v['avisos'] as $a) {
@@ -103,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         /* No modo bloqueante, um reprovado e nada muda — nem a correção
-           das medidas. Fora dele, segue e grava com ressalva. */
+           das medidas. Fora dele, segue direto. */
         if ($recusados) {
             throw new Exception('Correção recusada: há arquivo sem valor probatório.');
         }
@@ -135,15 +129,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         foreach ($fila as $item) {
             $reg = mu_arquivar_midia(
-                $item['f'], (int) $trecho['id'], 'foto', null, $usuarioId ?: null, $pdo,
-                $item['pericial'] ?? true
+                $item['f'], (int) $trecho['id'], 'foto', null, $usuarioId ?: null, $pdo
             );
             $pdo->prepare("INSERT INTO trecho_fotos (trecho_id, arquivo) VALUES (?, ?)")
                 ->execute([$trecho['id'], $reg['caminho']]);
         }
 
         $pdo->commit();
-        $_SESSION['flash_ressalvas'] = $ressalvas;
         header("Location: medicao.php?planejamento_id=".$trecho['planejamento_id']."&ok=1");
         exit;
 

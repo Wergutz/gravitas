@@ -219,15 +219,15 @@ $tudoOk = !in_array(false, array_column($itens, 'ok'), true);
     <p style="font-size:13px;line-height:1.6;color:<?= MU_VALIDACAO_BLOQUEIA ? '#dcfce7' : '#fef3c7' ?>;">
         <?php if (MU_VALIDACAO_BLOQUEIA): ?>
             Mídia que não passa nas regras é recusada, e nada é gravado — nem as medidas
-            do trecho. Todo o acervo tem valor probatório pleno.
+            do trecho.
         <?php else: ?>
             <strong>Nenhuma regra recusa o lançamento.</strong> Foto sem GPS, sem data,
             vinda de aplicativo de mensagem ou reaproveitada de outro trecho entra no
-            acervo. A medição sempre grava, e os problemas aparecem como ressalva na tela.
+            acervo. A medição sempre grava.
             <br><br>
-            A mídia que não passaria fica registrada com
-            <code>validade_pericial = 0</code> em <code>midia_custodia</code>, então
-            continua sendo possível separar prova completa de registro com ressalva.
+            O arquivo continua sendo guardado intocado, com SHA-256 calculado no
+            recebimento e o metadado que houver registrado — a cadeia de custódia não
+            depende desta chave.
             <br><br>
             Para voltar a bloquear: <code>MU_VALIDACAO_BLOQUEIA = true</code> em
             <code>app/helpers/validacao_midia.php</code>.
@@ -235,18 +235,13 @@ $tudoOk = !in_array(false, array_column($itens, 'ok'), true);
     </p>
 
     <?php
-    /* Quanto do acervo entrou com ressalva — a conta que importa se um
-       dia a fiscalização pedir os originais. */
     try {
-        $tot  = (int) $pdo->query("SELECT COUNT(*) FROM midia_custodia")->fetchColumn();
-        $semV = (int) $pdo->query("SELECT COUNT(*) FROM midia_custodia WHERE validade_pericial = 0")->fetchColumn();
+        $tot = (int) $pdo->query("SELECT COUNT(*) FROM midia_custodia")->fetchColumn();
         if ($tot > 0):
     ?>
         <p style="font-size:13px;margin-top:10px;color:#e5e7eb;">
-            Acervo atual: <strong><?= number_format($tot, 0, ',', '.') ?></strong> arquivos,
-            dos quais <strong style="color:<?= $semV ? '#fca5a5' : '#86efac' ?>;">
-            <?= number_format($semV, 0, ',', '.') ?></strong> sem valor probatório pleno
-            (<?= $tot ? number_format($semV / $tot * 100, 0, ',', '.') : 0 ?>%).
+            Acervo atual: <strong><?= number_format($tot, 0, ',', '.') ?></strong>
+            arquivos em custódia.
         </p>
     <?php endif; } catch (Throwable $e) { /* tabela ainda não criada */ } ?>
 </div>
