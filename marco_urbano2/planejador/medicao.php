@@ -122,8 +122,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $temFoto = count($fila) > ($temCroqui ? 1 : 0);
 
-        if (!$temCroqui) throw new Exception('Croqui é obrigatório.');
-        if (!$temFoto)   throw new Exception('Envie ao menos uma foto.');
+        /* Trecho sem pavimentação não tem pavimento a repor, logo não há
+           área cotada a desenhar: nesse caso o croqui é dispensado. Nos
+           demais tipos continua obrigatório. */
+        if (!$temCroqui && exige_croqui($_POST['tipo_pavimento'])) {
+            throw new Exception(
+                'Croqui é obrigatório para ' . tipo_pavimento_label($_POST['tipo_pavimento']) . '.'
+            );
+        }
+        if (!$temFoto) throw new Exception('Envie ao menos uma foto.');
 
         /* ---------------------------------------------------------------
            2) Validar TUDO antes de gravar QUALQUER COISA.
@@ -368,10 +375,12 @@ $obraTrecho = mu_coordenada_municipio($trechoSelecionado['cidade'] ?? '');
 
 <div class="form-group">
 <label>Tipo de Pavimento</label>
-<select name="tipo_pavimento" required>
+<select name="tipo_pavimento" id="tipo_pavimento" required>
 <option value="">Selecione</option>
 <?php foreach (TIPOS_PAVIMENTO as $valor => $label): ?>
-<option value="<?= $valor ?>"><?= htmlspecialchars($label) ?></option>
+<option value="<?= $valor ?>" <?= exige_croqui($valor) ? '' : 'data-sem-croqui="1"' ?>>
+    <?= htmlspecialchars($label) ?>
+</option>
 <?php endforeach; ?>
 </select>
 </div>
@@ -397,8 +406,8 @@ $obraTrecho = mu_coordenada_municipio($trechoSelecionado['cidade'] ?? '');
 
 <hr style="margin:15px 0;">
 
-<div class="form-group">
-<label>Croqui</label>
+<div class="form-group" id="grupo-croqui">
+<label>Croqui <span id="croqui-exigencia"></span></label>
 <div class="mu-envio">
     <label class="mu-envio-op">
         📷 Fotografar croqui
@@ -409,7 +418,7 @@ $obraTrecho = mu_coordenada_municipio($trechoSelecionado['cidade'] ?? '');
         <input type="file" name="croqui" accept="image/*,application/pdf">
     </label>
 </div>
-<small class="mu-dica">Pode fotografar o croqui em papel ou enviar o arquivo digitalizado.</small>
+<small class="mu-dica" id="croqui-dica">Pode fotografar o croqui em papel ou enviar o arquivo digitalizado.</small>
 </div>
 
 <div class="form-group">
@@ -503,6 +512,38 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('input[name="fotos[]"]').forEach(function (inp) {
         if (window.MUValidacao) { MUValidacao.ligar(inp, MU_OBRA || {}); }
     });
+
+    /* O croqui é dispensado em trecho sem pavimentação: não há área
+       reposta a cotar. A tela diz isso na hora da escolha, para não
+       descobrir só ao tentar salvar. */
+    var selPav  = document.getElementById('tipo_pavimento');
+    var marca   = document.getElementById('croqui-exigencia');
+    var dica    = document.getElementById('croqui-dica');
+    var dicaOrig = dica ? dica.textContent : '';
+
+    function atualizarCroqui() {
+        if (!selPav || !marca) return;
+        var op = selPav.options[selPav.selectedIndex];
+        var dispensado = !!(op && op.getAttribute('data-sem-croqui'));
+
+        if (dispensado) {
+            marca.textContent = '(opcional)';
+            marca.style.color = '#86efac';
+            if (dica) {
+                dica.textContent = 'Neste tipo de pavimento o croqui não é exigido — não há '
+                                 + 'área reposta a cotar. Se tiver o desenho, pode enviar mesmo assim.';
+            }
+        } else {
+            marca.textContent = selPav.value ? '(obrigatório)' : '';
+            marca.style.color = '#fca5a5';
+            if (dica) { dica.textContent = dicaOrig; }
+        }
+    }
+
+    if (selPav) {
+        selPav.addEventListener('change', atualizarCroqui);
+        atualizarCroqui();
+    }
 
     /* Retorno visual: sem isto o input fica escondido no label e a pessoa
        não sabe se o arquivo foi mesmo anexado. */
