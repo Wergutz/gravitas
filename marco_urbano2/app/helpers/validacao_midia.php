@@ -34,19 +34,16 @@ require_once __DIR__ . '/../config/municipios.php';
  * As regras recusam o lançamento, ou apenas avisam?
  *
  *   true  — reprovou, não entra. Nada é gravado, nem as medidas.
- *   false — nada é bloqueado. A medição sempre grava, os problemas
- *           aparecem na tela como ressalva, e a mídia que não passaria
- *           é marcada em midia_custodia com validade_pericial = 0.
+ *   false — nada é bloqueado. A medição sempre grava.
  *
  * Está em false a pedido da contratada, para não travar o lançamento em
  * campo. A consequência precisa estar dita: foto sem GPS, sem data, vinda
  * de aplicativo de mensagem ou reaproveitada de outro trecho passa a
- * entrar no acervo. Ela continua rastreada — o hash e o metadado seguem
- * sendo registrados — mas não se sustenta sozinha numa perícia.
+ * entrar no acervo, sem distinção das demais.
  *
- * A marcação `validade_pericial` é o que impede a perda dessa
- * informação: dá para separar depois, no banco, o que é prova completa
- * do que é registro com ressalva.
+ * O que continua valendo em qualquer modo: o arquivo é guardado
+ * intocado, o SHA-256 é calculado no recebimento e o metadado que houver
+ * é lido e persistido. A cadeia de custódia não depende desta chave.
  *
  * Para voltar a bloquear, troque para true. Nada mais precisa mudar.
  */
@@ -155,11 +152,10 @@ function mu_validar_midia(
            retorno precisa respeitar o modo de aplicação como os demais,
            senão este caminho continuaria bloqueando sozinho. */
         return [
-            'ok'       => !MU_VALIDACAO_BLOQUEIA,
-            'pericial' => false,
-            'erros'    => $erros,
-            'avisos'   => $avisos,
-            'dados'    => compact('mime', 'larg', 'alt', 'bytes'),
+            'ok'     => !MU_VALIDACAO_BLOQUEIA,
+            'erros'  => $erros,
+            'avisos' => $avisos,
+            'dados'  => compact('mime', 'larg', 'alt', 'bytes'),
         ];
     }
 
@@ -297,23 +293,13 @@ function mu_validar_midia(
     }
 
     /* --- 8. resultado ---------------------------------------------------
-       Duas perguntas diferentes, que antes eram a mesma:
-
-         `pericial` — a mídia passa em todas as regras? É o que define se
-                      ela se sustenta sozinha numa perícia.
-         `ok`       — o lançamento pode prosseguir? Depende do modo: com
-                      MU_VALIDACAO_BLOQUEIA em false, sempre pode.
-
-       Separar as duas é o que permite afrouxar o lançamento sem perder o
-       registro de qual mídia entrou com ressalva. */
-    $pericial = ($erros === []);
-
+       `erros` continua listando tudo o que a mídia tem de errado. O que
+       o modo decide é só se isso impede o lançamento. */
     return [
-        'ok'       => $pericial || !MU_VALIDACAO_BLOQUEIA,
-        'pericial' => $pericial,
-        'erros'    => $erros,
-        'avisos'   => $avisos,
-        'dados'    => [
+        'ok'     => ($erros === []) || !MU_VALIDACAO_BLOQUEIA,
+        'erros'  => $erros,
+        'avisos' => $avisos,
+        'dados'  => [
             'mime'   => $mime,
             'larg'   => $larg,
             'alt'    => $alt,
