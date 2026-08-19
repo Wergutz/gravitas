@@ -61,19 +61,13 @@ const MU_DERIVADAS = [1600, 440];
  * @return array      registro de custódia gravado
  * @throws RuntimeException
  */
-/**
- * @param bool $validadePericial A mídia passou em todas as regras? Fica
- *        registrado em midia_custodia, para separar depois prova
- *        completa de registro com ressalva. Ver MU_VALIDACAO_BLOQUEIA.
- */
 function mu_arquivar_midia(
     array $arquivo,
     int $trechoId,
     string $tipo,
     ?int $medicaoId,
     ?int $usuarioId,
-    PDO $pdo,
-    bool $validadePericial = true
+    PDO $pdo
 ): array {
 
     /* --- 1.1 validação do upload ------------------------------------ */
@@ -156,12 +150,12 @@ function mu_arquivar_midia(
               (trecho_id, medicao_id, tipo, nome_original, caminho_original,
                mime_real, bytes, largura, altura, sha256, tem_exif,
                exif_datahora, exif_gps_lat, exif_gps_lon, exif_dispositivo,
-               exif_bruto, enviado_por, enviado_em, ip_envio, validade_pericial)
+               exif_bruto, enviado_por, enviado_em, ip_envio)
             VALUES
               (:trecho, :medicao, :tipo, :nome, :caminho,
                :mime, :bytes, :larg, :alt, :sha, :temexif,
                :dt, :lat, :lon, :disp,
-               :bruto, :user, NOW(), :ip, :pericial)
+               :bruto, :user, NOW(), :ip)
             ON DUPLICATE KEY UPDATE id = id';
 
     $st = $pdo->prepare($sql);
@@ -184,7 +178,6 @@ function mu_arquivar_midia(
         ':bruto'   => $exif['bruto'],
         ':user'    => $usuarioId,
         ':ip'      => mb_substr((string) ($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45),
-        ':pericial' => $validadePericial ? 1 : 0,
     ]);
 
     /* --- 1.7 cópias de exibição, derivadas do original --------------- */
