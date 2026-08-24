@@ -86,7 +86,7 @@ function stepFeito(int $s, array $foStep, array $pres, array $cargas, array $are
 <meta name="robots" content="noindex,nofollow">
 <meta name="csrf" content="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
 <title>Diário de Repavimentação · GM SERVIÇOS</title>
-<link rel="stylesheet" href="<?= REPAV_BASE ?>/assets/css/repav.css">
+<link rel="stylesheet" href="<?= REPAV_BASE ?>/assets/css/repav.css?v=<?= @filemtime(__DIR__ . '/../../../assets/css/repav.css') ?: '1' ?>">
 </head>
 <body>
 <div class="phone">

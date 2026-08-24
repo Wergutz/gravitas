@@ -29,7 +29,7 @@ foreach ($fotos as $f) {
 <meta name="robots" content="noindex,nofollow">
 <meta name="csrf" content="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
 <title>Diário <?= date('d/m/Y', strtotime($diario['data'])) ?> · GM SERVIÇOS</title>
-<link rel="stylesheet" href="<?= EXECUTOR_BASE ?>/assets/css/executor.css">
+<link rel="stylesheet" href="<?= EXECUTOR_BASE ?>/assets/css/executor.css?v=<?= @filemtime(__DIR__ . '/../../../assets/css/executor.css') ?: '1' ?>">
 </head>
 <body>
 <div class="phone">

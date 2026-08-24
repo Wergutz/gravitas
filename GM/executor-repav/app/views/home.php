@@ -15,7 +15,7 @@ $temAsfalto = !empty(array_filter($pavimentos, fn($p) => str_contains(strtolower
 <meta name="robots" content="noindex,nofollow">
 <meta name="csrf" content="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
 <title>Repavimentação · GM SERVIÇOS</title>
-<link rel="stylesheet" href="<?= REPAV_BASE ?>/assets/css/repav.css">
+<link rel="stylesheet" href="<?= REPAV_BASE ?>/assets/css/repav.css?v=<?= @filemtime(__DIR__ . '/../../assets/css/repav.css') ?: '1' ?>">
 </head>
 <body>
 <div class="phone">

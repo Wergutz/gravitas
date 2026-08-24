@@ -94,7 +94,7 @@ button,a{font-family:inherit;cursor:pointer}
 /* só o número troca o trecho — alvo de 30px, tocável com luva */
 a.o.troca{width:30px;height:30px;text-decoration:none;border:1.5px solid var(--line);
      background:#fff;color:var(--ink);-webkit-tap-highlight-color:transparent;transition:none}
-a.o.troca:active{background:var(--bg)}
+a.o.troca:active{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
 a.o.troca.on{background:var(--ok);border-color:var(--ok);color:#fff}
 a.o.troca:focus-visible{outline:2px solid var(--ok);outline-offset:2px}
 
