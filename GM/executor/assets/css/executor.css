@@ -35,6 +35,15 @@ button,a{font-family:inherit;cursor:pointer}
 .hoje .atraso{display:inline-flex;align-items:center;font-size:11px;
      background:#e0a53d2e;color:#F0C578;border-radius:999px;padding:3px 9px;font-weight:700}
 
+/* seletor de equipe — só aparece quando o executor responde por mais de uma */
+.equipes{margin-top:10px;display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;
+     -webkit-overflow-scrolling:touch;scrollbar-width:none}
+.equipes::-webkit-scrollbar{display:none}
+.equipes a{flex:0 0 auto;font-size:11.5px;font-weight:700;text-decoration:none;
+     padding:6px 12px;border-radius:999px;white-space:nowrap;
+     background:#ffffff1a;color:#C7D2E5;border:1px solid #ffffff21}
+.equipes a.on{background:#fff;color:#1A2D4F;border-color:#fff}
+
 .scroll{flex:1;overflow-y:auto;padding:14px 14px 90px}
 
 /* progresso */

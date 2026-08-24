@@ -18,7 +18,8 @@ class RepavController {
         csrf_token_repav();
 
         $autorId  = (int)$_SESSION['usuario_id'];
-        $equipeId = $this->equipeDoAutor($autorId);
+        $equipes  = $this->equipesDoAutor($autorId);
+        $equipeId = $this->equipeAtiva($equipes);
 
         $caminhamento  = null;
         $trechoAtual   = null;
@@ -92,7 +93,7 @@ class RepavController {
         csrf_verify_repav();
 
         $autorId  = (int)$_SESSION['usuario_id'];
-        $equipeId = $this->equipeDoAutor($autorId);
+        $equipeId = $this->equipeAtiva($this->equipesDoAutor($autorId));
         $trechoId = (int)($_POST['trecho_id'] ?? 0);
 
         if (!$equipeId || !$trechoId) {
@@ -503,15 +504,62 @@ class RepavController {
     // ─────────────────────────────────────────────────────────
     // Helpers privados
     // ─────────────────────────────────────────────────────────
-    private function equipeDoAutor(int $autorId): ?int {
+    /**
+     * Todas as equipes ativas sob responsabilidade do executor.
+     * Um executor pode responder por mais de uma frente.
+     */
+    private function equipesDoAutor(int $autorId): array {
         $stmt = $this->db->prepare("
-            SELECT id FROM equipes
+            SELECT id, nome FROM equipes
             WHERE responsavel_id = ? AND ativo = 1
-            ORDER BY id ASC LIMIT 1
+            ORDER BY nome ASC
         ");
         $stmt->execute([$autorId]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row ? (int)$row['id'] : null;
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Equipe em que o executor está trabalhando agora.
+     * Ordem: troca pedida na tela → escolha anterior da sessão → padrão.
+     * Só devolve equipe que consta da lista recebida.
+     */
+    private function equipeAtiva(array $equipes): ?int {
+        if (!$equipes) return null;
+
+        $ids = array_map(static fn($e) => (int)$e['id'], $equipes);
+
+        $pedida = isset($_GET['equipe']) ? (int)$_GET['equipe'] : 0;
+        if ($pedida && in_array($pedida, $ids, true)) {
+            $_SESSION['equipe_ativa_repav'] = $pedida;
+            return $pedida;
+        }
+
+        $guardada = (int)($_SESSION['equipe_ativa_repav'] ?? 0);
+        if ($guardada && in_array($guardada, $ids, true)) {
+            return $guardada;
+        }
+
+        $padrao = $this->equipePadrao($ids);
+        $_SESSION['equipe_ativa_repav'] = $padrao;
+        return $padrao;
+    }
+
+    /**
+     * Sem escolha do executor, abre na equipe com a frente aberta mais antiga.
+     */
+    private function equipePadrao(array $ids): int {
+        $marcadores = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $this->db->prepare("
+            SELECT equipe_id
+            FROM caminhamentos_repav
+            WHERE equipe_id IN ({$marcadores})
+              AND status IN ('publicado','execucao')
+            ORDER BY data_execucao ASC
+            LIMIT 1
+        ");
+        $stmt->execute($ids);
+        $achou = $stmt->fetchColumn();
+        return $achou ? (int)$achou : $ids[0];
     }
 
     private function carregarDiario(int $id): ?array {
@@ -521,9 +569,12 @@ class RepavController {
     }
 
     private function verificarPermissao(array $diario): void {
-        $autorId  = (int)$_SESSION['usuario_id'];
-        $equipeId = $this->equipeDoAutor($autorId);
-        if ((int)$diario['equipe_id'] !== $equipeId && (int)$diario['autor_id'] !== $autorId) {
+        $autorId = (int)$_SESSION['usuario_id'];
+        $ids = array_map(
+            static fn($e) => (int)$e['id'],
+            $this->equipesDoAutor($autorId)
+        );
+        if (!in_array((int)$diario['equipe_id'], $ids, true) && (int)$diario['autor_id'] !== $autorId) {
             http_response_code(403); echo "Acesso negado."; exit;
         }
     }

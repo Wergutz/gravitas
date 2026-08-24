@@ -42,6 +42,17 @@ $temAsfalto = !empty(array_filter($pavimentos, fn($p) => str_contains(strtolower
       <?php endif; ?>
       <span class="gps" id="gps-status">📍 verificando…</span>
     </div>
+
+    <?php if (count($equipes) > 1): ?>
+    <div class="equipes">
+      <?php foreach ($equipes as $eq): ?>
+      <a href="<?= REPAV_BASE ?>/?equipe=<?= (int)$eq['id'] ?>"
+         class="<?= (int)$eq['id'] === (int)$equipeId ? 'on' : '' ?>">
+        <?= htmlspecialchars($eq['nome']) ?>
+      </a>
+      <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
   </div>
 
   <div class="scroll">
