@@ -27,12 +27,13 @@ class RepavController {
         $diarioHoje    = null;
 
         if ($equipeId) {
+            // Sem corte por data: frente atrasada continua na frente do executor
+            // até ser concluída. A ordem crescente traz a mais antiga primeiro.
             $stmt = $this->db->prepare("
                 SELECT id, data_execucao, status
                 FROM caminhamentos_repav
                 WHERE equipe_id = ?
                   AND status IN ('publicado','execucao')
-                  AND data_execucao >= CURDATE()
                 ORDER BY data_execucao ASC
                 LIMIT 1
             ");

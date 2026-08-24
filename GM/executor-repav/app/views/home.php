@@ -29,8 +29,17 @@ $temAsfalto = !empty(array_filter($pavimentos, fn($p) => str_contains(strtolower
         <?= $diaSem ?>, <?= $hoje ?>
       </div>
     </div>
+    <?php
+      $diasAtraso = 0;
+      if ($caminhamento) {
+          $diasAtraso = (int)floor((strtotime(date('Y-m-d')) - strtotime($caminhamento['data_execucao'])) / 86400);
+      }
+    ?>
     <div class="hoje">
       <span>📅 <?= $caminhamento ? date('d/m/Y', strtotime($caminhamento['data_execucao'])) : 'Sem programação' ?></span>
+      <?php if ($diasAtraso > 0): ?>
+      <span class="atraso"><?= $diasAtraso === 1 ? '1 dia de atraso' : $diasAtraso . ' dias de atraso' ?></span>
+      <?php endif; ?>
       <span class="gps" id="gps-status">📍 verificando…</span>
     </div>
   </div>

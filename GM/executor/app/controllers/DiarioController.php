@@ -27,12 +27,14 @@ class DiarioController {
         $filaTrechos  = [];
 
         if ($equipeId) {
+            // Sem corte por data: caminhamento atrasado continua na frente do
+            // executor até ser concluído. A ordem crescente faz o mais antigo
+            // aparecer primeiro — termina-se o atraso antes da obra de hoje.
             $stmt = $this->db->prepare("
                 SELECT c.id, c.data_execucao, c.status
                 FROM caminhamentos c
                 WHERE c.equipe_id = ?
                   AND c.status IN ('publicado','execucao')
-                  AND c.data_execucao >= CURDATE()
                 ORDER BY c.data_execucao ASC
                 LIMIT 1
             ");
