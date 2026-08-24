@@ -184,32 +184,41 @@ $pct       = (int)round($stepAtual / 21 * 100);
         <span class="ic i-ok" style="font-size:18px">📈</span>
         <div>
           <b>Caminhamento</b>
-          <span>próximos trechos da programação</span>
+          <span>toque no trecho que vai executar</span>
         </div>
       </div>
       <div style="margin-top:10px">
         <?php foreach ($filaTrechos as $idx => $tc):
-          $ehHoje = ($tc['id'] == ($trechoAtual['id'] ?? -1));
+          $ehAtual   = ($tc['id'] == ($trechoAtual['id'] ?? -1));
           $concluido = $tc['ct_status'] === 'concluido';
+          $rotulo = htmlspecialchars($tc['pv_montante'] ?? '') . ' → ' . htmlspecialchars($tc['pv_jusante'] ?? '');
+          $medida = $tc['extensao']
+              ? '<span style="color:var(--muted);font-size:11px"> · ' . number_format($tc['extensao'], 0, ',', '.') . ' m</span>'
+              : '';
         ?>
+        <?php if ($concluido): ?>
         <div class="next">
-          <span class="o" style="<?= $ehHoje ? 'background:var(--ok-bg);color:var(--ok)' : ($concluido ? 'background:#e0e0e0;color:#aaa' : '') ?>">
+          <span class="o" style="background:#e0e0e0;color:#aaa"><?= $tc['ordem'] ?></span>
+          <span style="color:var(--muted);text-decoration:line-through"><?= $rotulo ?><?= $medida ?></span>
+          <span style="margin-left:auto;font-size:10px;color:var(--muted)">✅</span>
+        </div>
+        <?php else: ?>
+        <a class="next escolher<?= $ehAtual ? ' on' : '' ?>"
+           href="<?= EXECUTOR_BASE ?>/?trecho=<?= (int)$tc['id'] ?>">
+          <span class="o" style="<?= $ehAtual ? 'background:var(--ok-bg);color:var(--ok)' : '' ?>">
             <?= $tc['ordem'] ?>
           </span>
-          <span style="<?= $concluido ? 'color:var(--muted);text-decoration:line-through' : '' ?>">
-            <?= htmlspecialchars($tc['pv_montante'] ?? '') ?> → <?= htmlspecialchars($tc['pv_jusante'] ?? '') ?>
-            <?php if ($tc['extensao']): ?>
-            <span style="color:var(--muted);font-size:11px"> · <?= number_format($tc['extensao'], 0, ',', '.') ?> m</span>
-            <?php endif; ?>
-          </span>
-          <?php if ($ehHoje): ?>
-          <b style="margin-left:auto;color:var(--ok);font-size:11px">hoje</b>
-          <?php elseif ($concluido): ?>
-          <span style="margin-left:auto;font-size:10px;color:var(--muted)">✅</span>
+          <span><?= $rotulo ?><?= $medida ?></span>
+          <?php if ($ehAtual): ?>
+          <b style="margin-left:auto;color:var(--ok);font-size:11px">atual</b>
+          <?php else: ?>
+          <span style="margin-left:auto;color:var(--muted);font-size:15px">›</span>
           <?php endif; ?>
-        </div>
+        </a>
+        <?php endif; ?>
         <?php endforeach; ?>
       </div>
+      <p class="dica">A ordem é uma sugestão. Se um trecho estiver sem acesso, escolha outro e faça este depois.</p>
     </div>
     <?php endif; ?>
 

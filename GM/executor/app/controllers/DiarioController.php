@@ -56,13 +56,7 @@ class DiarioController {
                 $stmtFila->execute([$caminhamento['id']]);
                 $filaTrechos = $stmtFila->fetchAll(PDO::FETCH_ASSOC);
 
-                // Primeiro trecho ainda não concluído = trecho atual
-                foreach ($filaTrechos as $tc) {
-                    if ($tc['ct_status'] !== 'concluido') {
-                        $trechoAtual = $tc;
-                        break;
-                    }
-                }
+                $trechoAtual = $this->trechoAtivo($filaTrechos, (int)$caminhamento['id']);
 
                 // OS PDF do trecho atual
                 if ($trechoAtual) {
@@ -464,6 +458,47 @@ class DiarioController {
         $padrao = $this->equipePadrao($ids);
         $_SESSION['equipe_ativa'] = $padrao;
         return $padrao;
+    }
+
+    /**
+     * Trecho que o executor vai lançar agora.
+     *
+     * A sequência do caminhamento é a ordem sugerida, não uma obrigação: rua
+     * interditada, acesso bloqueado ou frente parada mudam a ordem no dia. O
+     * executor escolhe qualquer trecho pendente e o sistema respeita.
+     *
+     * Ordem: escolha feita na tela → escolha anterior, se ainda pendente →
+     * primeiro pendente da sequência.
+     */
+    private function trechoAtivo(array $fila, int $camId): ?array {
+        $pendentes = array_values(array_filter(
+            $fila,
+            static fn($t) => $t['ct_status'] !== 'concluido'
+        ));
+        if (!$pendentes) return null;
+
+        $pegar = static function (array $lista, int $id): ?array {
+            foreach ($lista as $t) {
+                if ((int)$t['id'] === $id) return $t;
+            }
+            return null;
+        };
+
+        // Escolha explícita: só vale para trecho pendente deste caminhamento.
+        $pedido = isset($_GET['trecho']) ? (int)$_GET['trecho'] : 0;
+        if ($pedido && ($t = $pegar($pendentes, $pedido))) {
+            $_SESSION['trecho_ativo'][$camId] = $pedido;
+            return $t;
+        }
+
+        // Escolha anterior — descartada assim que o trecho é concluído.
+        $guardado = (int)($_SESSION['trecho_ativo'][$camId] ?? 0);
+        if ($guardado && ($t = $pegar($pendentes, $guardado))) {
+            return $t;
+        }
+
+        unset($_SESSION['trecho_ativo'][$camId]);
+        return $pendentes[0];
     }
 
     /**

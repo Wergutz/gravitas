@@ -53,12 +53,7 @@ class RepavController {
                 $stmtFila->execute([$caminhamento['id']]);
                 $filaTrechos = $stmtFila->fetchAll(PDO::FETCH_ASSOC);
 
-                foreach ($filaTrechos as $tc) {
-                    if ($tc['ct_status'] !== 'concluido') {
-                        $trechoAtual = $tc;
-                        break;
-                    }
-                }
+                $trechoAtual = $this->trechoAtivo($filaTrechos, (int)$caminhamento['id']);
 
                 if ($trechoAtual) {
                     $stmtPav = $this->db->prepare("
@@ -504,6 +499,42 @@ class RepavController {
     // ─────────────────────────────────────────────────────────
     // Helpers privados
     // ─────────────────────────────────────────────────────────
+    /**
+     * Trecho que o executor vai medir agora.
+     *
+     * A sequência do caminhamento é a ordem sugerida, não uma obrigação: rua
+     * interditada ou acesso bloqueado mudam a ordem no dia. O executor escolhe
+     * qualquer trecho pendente e o sistema respeita.
+     */
+    private function trechoAtivo(array $fila, int $camId): ?array {
+        $pendentes = array_values(array_filter(
+            $fila,
+            static fn($t) => $t['ct_status'] !== 'concluido'
+        ));
+        if (!$pendentes) return null;
+
+        $pegar = static function (array $lista, int $id): ?array {
+            foreach ($lista as $t) {
+                if ((int)$t['id'] === $id) return $t;
+            }
+            return null;
+        };
+
+        $pedido = isset($_GET['trecho']) ? (int)$_GET['trecho'] : 0;
+        if ($pedido && ($t = $pegar($pendentes, $pedido))) {
+            $_SESSION['trecho_ativo_repav'][$camId] = $pedido;
+            return $t;
+        }
+
+        $guardado = (int)($_SESSION['trecho_ativo_repav'][$camId] ?? 0);
+        if ($guardado && ($t = $pegar($pendentes, $guardado))) {
+            return $t;
+        }
+
+        unset($_SESSION['trecho_ativo_repav'][$camId]);
+        return $pendentes[0];
+    }
+
     /**
      * Todas as equipes ativas sob responsabilidade do executor.
      * Um executor pode responder por mais de uma frente.

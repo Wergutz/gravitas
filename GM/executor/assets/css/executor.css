@@ -91,6 +91,13 @@ button,a{font-family:inherit;cursor:pointer}
 .next:first-child{border-top:0}
 .next .o{width:22px;height:22px;border-radius:99px;background:var(--bg);color:var(--muted);
      display:grid;place-items:center;font-size:11px;font-weight:800;flex:0 0 auto}
+/* trecho escolhível: alvo grande, o executor toca com luva */
+a.next.escolher{color:inherit;text-decoration:none;padding:11px 8px;margin:0 -8px;
+     border-radius:9px;-webkit-tap-highlight-color:transparent}
+a.next.escolher:active{background:var(--bg)}
+a.next.escolher.on{background:var(--ok-bg)}
+a.next.escolher:focus-visible{outline:2px solid var(--ok);outline-offset:-2px}
+.dica{margin:9px 0 0;font-size:11px;line-height:1.45;color:var(--muted)}
 
 /* passos do diário */
 .step{background:#fff;border:1px solid var(--line);border-radius:13px;margin-bottom:9px;overflow:hidden}
