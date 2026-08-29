@@ -46,6 +46,7 @@ body{font-family:"Inter",-apple-system,Helvetica,Arial,sans-serif;font-size:12px
 .fotos-grid{margin-bottom:16px}
 table.linha-fotos{width:100%;table-layout:fixed;border-collapse:collapse}
 table.linha-fotos tr{break-inside:avoid;page-break-inside:avoid}
+table.linha-fotos th{padding:0;border:none;text-align:left;font-weight:400}
 table.linha-fotos td{vertical-align:top;padding:0 5px 10px;border:none}
 table.linha-fotos td:first-child{padding-left:0}
 table.linha-fotos td:last-child{padding-right:0}
@@ -100,12 +101,19 @@ table.linha-fotos td:last-child{padding-right:0}
   foreach ($fotosPorStep as $step => $stepFotos):
     $label = $stepLabels[$step] ?? 'Etapa ' . $step;
 ?>
-  <div class="step-secao">Etapa <?= (int)$step ?> — <?= htmlspecialchars($label) ?></div>
   <div class="fotos-grid">
-    <?php /* De tres em tres: cada linha vira uma <tr> que nunca se parte
-             entre duas paginas, e a foto sai sempre inteira. */
-    foreach (array_chunk($stepFotos, 3) as $linhaFotos): ?>
-    <table class="linha-fotos"><tr>
+    <table class="linha-fotos">
+    <?php /* O titulo da etapa e o CABECALHO da tabela da galeria: assim
+             ele nunca fica sozinho no fim de uma pagina, separado das
+             fotos, e ainda se repete quando a etapa continua na pagina
+             seguinte. As fotos saem de tres em tres, e cada linha e uma
+             <tr> que nunca se parte -- a foto sai sempre inteira. */ ?>
+    <thead><tr><th colspan="3">
+      <div class="step-secao">Etapa <?= (int)$step ?> — <?= htmlspecialchars($label) ?></div>
+    </th></tr></thead>
+    <tbody>
+    <?php foreach (array_chunk($stepFotos, 3) as $linhaFotos): ?>
+    <tr>
     <?php foreach ($linhaFotos as $f):
         $thumb = !empty($f['thumb']) ? $f['thumb'] : null;
         $imgSrc = $thumb ? htmlspecialchars($uploadsBase . '/thumbs/' . $thumb) : null;
@@ -125,8 +133,10 @@ table.linha-fotos td:last-child{padding-right:0}
     </div></td>
     <?php endforeach; ?>
     <?php for ($v = count($linhaFotos); $v < 3; $v++): ?><td></td><?php endfor; ?>
-    </tr></table>
+    </tr>
     <?php endforeach; ?>
+    </tbody>
+    </table>
   </div>
 <?php endforeach; endif; ?>
 
