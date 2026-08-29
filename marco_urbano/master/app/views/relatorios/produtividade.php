@@ -34,7 +34,14 @@ tfoot td.n{text-align:right}
 .rodape{margin-top:24px;border-top:1px solid #E4E8EF;padding-top:10px;display:flex;justify-content:space-between;font-size:10px;color:#6B7686}
 .btn-print{display:inline-flex;align-items:center;gap:6px;background:#1A2D4F;color:#fff;border:0;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:14px}
 .btn-csv{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#1A2D4F;border:1px solid #1A2D4F;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:14px;margin-left:6px}
-@media print{.no-print{display:none!important}body{padding:8px 12px}}
+@media print{
+  /* Paginacao de tabela: cabecalho repete a cada pagina e nenhuma linha
+     e partida ao meio. Sem isto, a tabela continua na pagina seguinte
+     sem dizer o que e cada coluna. */
+  thead{display:table-header-group}
+  tfoot{display:table-footer-group}
+  tr{break-inside:avoid;page-break-inside:avoid}
+.no-print{display:none!important}body{padding:8px 12px}}
 </style>
 </head>
 <body>

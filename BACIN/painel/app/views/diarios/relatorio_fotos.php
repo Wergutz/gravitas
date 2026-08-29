@@ -28,17 +28,32 @@
   .sec-tit{font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:800;
     color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:8px}
   .sec-tit::after{content:'';flex:1;height:1px;background:var(--line)}
-  .galeria{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;padding-bottom:24px}
-  .foto-card{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  /* Galeria: cada linha de tres fotos e uma linha de tabela que nunca
+     se parte entre duas paginas. Antes era um grid sem protecao de
+     quebra nenhuma, e o cartao saia cortado ao meio na impressao. */
+  .galeria{padding-bottom:24px}
+  table.linha-fotos{width:100%;table-layout:fixed;border-collapse:collapse}
+  table.linha-fotos tr{break-inside:avoid;page-break-inside:avoid}
+  table.linha-fotos td{vertical-align:top;padding:0 6px 12px;border:none}
+  table.linha-fotos td:first-child{padding-left:0}
+  table.linha-fotos td:last-child{padding-right:0}
+  .foto-card{border:1px solid var(--line);border-radius:10px;overflow:hidden;
+    break-inside:avoid;page-break-inside:avoid}
   .foto-card img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
   .foto-card .meta{padding:6px 8px;font-size:10.5px;color:var(--muted);line-height:1.4}
   .foto-card .meta b{display:block;font-size:11.5px;color:var(--ink)}
   .sem-fotos{color:var(--muted);font-size:12.5px;font-style:italic;padding-bottom:20px}
   @media print{
+  /* Paginacao de tabela: cabecalho repete a cada pagina e nenhuma linha
+     e partida ao meio. Sem isto, a tabela continua na pagina seguinte
+     sem dizer o que e cada coluna. */
+  thead{display:table-header-group}
+  tfoot{display:table-footer-group}
+  tr{break-inside:avoid;page-break-inside:avoid}
+
     .no-print{display:none}
     body{font-size:11px}
     .capa{padding:28px 32px 24px}
-    .galeria{grid-template-columns:repeat(3,1fr);gap:8px}
     .sec{padding:20px 32px 0}
     .foto-card img{aspect-ratio:4/3}
     @page{size:A4;margin:10mm}
@@ -78,8 +93,11 @@
   <div class="sec-tit">Passo <?= $step ?> — <?= htmlspecialchars($nome) ?></div>
   <?php if ($fotosStep): ?>
   <div class="galeria">
-    <?php foreach ($fotosStep as $foto): ?>
-    <div class="foto-card">
+    <?php /* De tres em tres, para a linha caber inteira numa pagina. */
+    foreach (array_chunk($fotosStep, 3) as $linhaFotos): ?>
+    <table class="linha-fotos"><tr>
+    <?php foreach ($linhaFotos as $foto): ?>
+    <td><div class="foto-card">
       <img src="<?= $executorUploads ?>/<?= htmlspecialchars($foto['arquivo']) ?>"
            alt="<?= htmlspecialchars($foto['tipo'] ?? '') ?>">
       <div class="meta">
@@ -89,7 +107,10 @@
         <?php endif; ?>
         🕐 <?= date('d/m/Y H:i', strtotime($foto['timestamp_servidor'])) ?>
       </div>
-    </div>
+    </div></td>
+    <?php endforeach; ?>
+    <?php for ($v = count($linhaFotos); $v < 3; $v++): ?><td></td><?php endfor; ?>
+    </tr></table>
     <?php endforeach; ?>
   </div>
   <?php else: ?>

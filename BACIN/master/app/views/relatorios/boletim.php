@@ -36,6 +36,13 @@ tfoot td.n{text-align:right}
          border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:14px;margin-left:6px}
 .no-print{margin-bottom:14px}
 @media print{
+  /* Paginacao de tabela: cabecalho repete a cada pagina e nenhuma linha
+     e partida ao meio. Sem isto, a tabela continua na pagina seguinte
+     sem dizer o que e cada coluna. */
+  thead{display:table-header-group}
+  tfoot{display:table-footer-group}
+  tr{break-inside:avoid;page-break-inside:avoid}
+
   .no-print{display:none!important}
   body{padding:8px 12px}
   .rel-topo{padding-bottom:8px;margin-bottom:12px}

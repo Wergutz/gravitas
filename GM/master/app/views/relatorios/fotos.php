@@ -39,8 +39,17 @@ body{font-family:"Inter",-apple-system,Helvetica,Arial,sans-serif;font-size:12px
 .logotipo{font-size:13px;font-weight:900;letter-spacing:3px;color:#1A2D4F;text-align:right}
 .sub-logo{font-size:8.5px;letter-spacing:1.5px;color:#6B7686;font-weight:600}
 .step-secao{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;font-weight:800;color:#1A2D4F;margin:16px 0 8px;padding-bottom:5px;border-bottom:2px solid #1A2D4F}
-.fotos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-.foto-card{border:1px solid #E4E8EF;border-radius:8px;overflow:hidden;break-inside:avoid}
+/* Galeria: cada linha de tres fotos e uma linha de tabela indivisivel.
+   O break-inside estava no cartao, que era item de grid -- e em item de
+   grid varios motores de impressao ignoram a regra e cortam a foto ao
+   meio entre duas paginas. Num relatorio isso nao pode acontecer. */
+.fotos-grid{margin-bottom:16px}
+table.linha-fotos{width:100%;table-layout:fixed;border-collapse:collapse}
+table.linha-fotos tr{break-inside:avoid;page-break-inside:avoid}
+table.linha-fotos td{vertical-align:top;padding:0 5px 10px;border:none}
+table.linha-fotos td:first-child{padding-left:0}
+table.linha-fotos td:last-child{padding-right:0}
+.foto-card{border:1px solid #E4E8EF;border-radius:8px;overflow:hidden;break-inside:avoid;page-break-inside:avoid}
 .foto-card img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
 .foto-info{padding:6px 8px;background:#F4F6FA}
 .foto-info .equipe{font-weight:700;font-size:11px;color:#1A2D4F}
@@ -50,9 +59,15 @@ body{font-family:"Inter",-apple-system,Helvetica,Arial,sans-serif;font-size:12px
 .btn-print{display:inline-flex;align-items:center;gap:6px;background:#1A2D4F;color:#fff;border:0;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:14px}
 .btn-voltar{display:inline-flex;align-items:center;gap:6px;background:#fff;color:#1A2D4F;border:1px solid #1A2D4F;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:14px;margin-left:6px}
 @media print{
+  /* Paginacao de tabela: cabecalho repete a cada pagina e nenhuma linha
+     e partida ao meio. Sem isto, a tabela continua na pagina seguinte
+     sem dizer o que e cada coluna. */
+  thead{display:table-header-group}
+  tfoot{display:table-footer-group}
+  tr{break-inside:avoid;page-break-inside:avoid}
+
   .no-print{display:none!important}
   body{padding:8px 10px}
-  .fotos-grid{grid-template-columns:repeat(3,1fr);gap:8px}
   @page{size:A4;margin:12mm}
 }
 </style>
@@ -87,13 +102,17 @@ body{font-family:"Inter",-apple-system,Helvetica,Arial,sans-serif;font-size:12px
 ?>
   <div class="step-secao">Etapa <?= (int)$step ?> — <?= htmlspecialchars($label) ?></div>
   <div class="fotos-grid">
-    <?php foreach ($stepFotos as $f):
+    <?php /* De tres em tres: cada linha vira uma <tr> que nunca se parte
+             entre duas paginas, e a foto sai sempre inteira. */
+    foreach (array_chunk($stepFotos, 3) as $linhaFotos): ?>
+    <table class="linha-fotos"><tr>
+    <?php foreach ($linhaFotos as $f):
         $thumb = !empty($f['thumb']) ? $f['thumb'] : null;
         $imgSrc = $thumb ? htmlspecialchars($uploadsBase . '/thumbs/' . $thumb) : null;
     ?>
-    <div class="foto-card">
+    <td><div class="foto-card">
       <?php if ($imgSrc): ?>
-        <img src="<?= $imgSrc ?>" alt="Foto etapa <?= (int)$step ?>" loading="lazy">
+        <img src="<?= $imgSrc ?>" alt="Foto etapa <?= (int)$step ?>" loading="eager">
       <?php else: ?>
         <div style="aspect-ratio:4/3;background:#F4F6FA;display:grid;place-items:center;color:#6B7686;font-size:11px">Sem imagem</div>
       <?php endif; ?>
@@ -103,7 +122,10 @@ body{font-family:"Inter",-apple-system,Helvetica,Arial,sans-serif;font-size:12px
           <div class="coord"><?= number_format($f['lat'],6) ?>, <?= number_format($f['lng'],6) ?></div>
         <?php endif; ?>
       </div>
-    </div>
+    </div></td>
+    <?php endforeach; ?>
+    <?php for ($v = count($linhaFotos); $v < 3; $v++): ?><td></td><?php endfor; ?>
+    </tr></table>
     <?php endforeach; ?>
   </div>
 <?php endforeach; endif; ?>
