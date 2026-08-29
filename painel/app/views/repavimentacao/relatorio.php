@@ -104,8 +104,15 @@ table.totais tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1
 /* Fotos */
 .fotos-secao{margin-bottom:14px}
 .fotos-titulo-tipo{font-size:9px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:1px;margin:8px 0 4px}
-.fotos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:6px}
-.foto-item{text-align:center}
+/* Cada linha de quatro fotos e uma linha de tabela indivisivel: em item
+   de grid o break-inside e ignorado por varios motores de impressao, e a
+   foto saia partida entre duas paginas. */
+.fotos-grid{width:100%;table-layout:fixed;border-collapse:collapse;margin-bottom:6px}
+.fotos-grid tr{break-inside:avoid;page-break-inside:avoid}
+.fotos-grid td{vertical-align:top;padding:0 3px 6px;border:none}
+.fotos-grid td:first-child{padding-left:0}
+.fotos-grid td:last-child{padding-right:0}
+.foto-item{text-align:center;break-inside:avoid;page-break-inside:avoid}
 .foto-item img{width:100%;border-radius:3px;border:1px solid #ddd;display:block}
 .foto-item span{font-size:8.5px;color:#666;margin-top:2px;display:block}
 /* Assinatura */
@@ -116,6 +123,13 @@ table.totais tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1
 /* Rodapé */
 .rpt-footer{margin-top:20px;border-top:1px solid #ccc;padding-top:6px;display:flex;justify-content:space-between;font-size:8.5px;color:#888}
 @media print{
+  /* Paginacao de tabela: cabecalho repete a cada pagina e nenhuma linha
+     e partida ao meio. Sem isto, a tabela continua na pagina seguinte
+     sem dizer o que e cada coluna. */
+  thead{display:table-header-group}
+  tfoot{display:table-footer-group}
+  tr{break-inside:avoid;page-break-inside:avoid}
+
     body{background:#fff}
     .toolbar{display:none!important}
     .pagina{margin:0;box-shadow:none;padding:12mm 12mm 16mm}
@@ -267,16 +281,20 @@ table.totais tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1
             if (empty($fotos_por_tipo[$tipo_f])) continue;
         ?>
             <div class="fotos-titulo-tipo"><?= $tipo_labels[$tipo_f] ?> (<?= count($fotos_por_tipo[$tipo_f]) ?>)</div>
-            <div class="fotos-grid">
-                <?php foreach ($fotos_por_tipo[$tipo_f] as $foto): ?>
-                    <div class="foto-item">
+            <?php /* De quatro em quatro, para a linha caber inteira. */
+            foreach (array_chunk($fotos_por_tipo[$tipo_f], 4) as $linhaFotos): ?>
+            <table class="fotos-grid"><tr>
+                <?php foreach ($linhaFotos as $foto): ?>
+                    <td><div class="foto-item">
                         <img src="<?= APP_BASE ?>/uploads/repavimentacao/<?= htmlspecialchars($foto['arquivo']) ?>"
                              alt="<?= htmlspecialchars($tipo_labels[$tipo_f]) ?>"
                              onerror="this.style.display='none'">
                         <span><?= htmlspecialchars($tipo_labels[$tipo_f]) ?></span>
-                    </div>
+                    </div></td>
                 <?php endforeach; ?>
-            </div>
+                <?php for ($v = count($linhaFotos); $v < 4; $v++): ?><td></td><?php endfor; ?>
+            </tr></table>
+            <?php endforeach; ?>
         <?php endforeach; ?>
     </div>
     <?php endif; ?>

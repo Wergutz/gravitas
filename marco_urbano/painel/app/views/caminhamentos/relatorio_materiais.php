@@ -63,6 +63,13 @@ table.trch tfoot td{background:#f8f9fb;font-weight:700;border-top:1.5px solid #d
 .linha-data{text-align:center;margin-top:16px;font-size:10px;color:#555;page-break-inside:avoid}
 .rpt-footer{margin-top:20px;border-top:1px solid #ccc;padding-top:6px;display:flex;justify-content:space-between;font-size:8.5px;color:#888}
 @media print{
+  /* Paginacao de tabela: cabecalho repete a cada pagina e nenhuma linha
+     e partida ao meio. Sem isto, a tabela continua na pagina seguinte
+     sem dizer o que e cada coluna. */
+  thead{display:table-header-group}
+  tfoot{display:table-footer-group}
+  tr{break-inside:avoid;page-break-inside:avoid}
+
     body{background:#fff}
     .toolbar{display:none!important}
     .pagina{margin:0;box-shadow:none;padding:12mm 12mm 16mm}

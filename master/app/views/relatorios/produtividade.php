@@ -42,6 +42,13 @@ tr.tot td{background:#1A2D4F;color:#fff;font-weight:700}
 .r1{background:#E0A53D22;color:#C68C28}.r2{background:#6B768622;color:#6B7686}.r3{background:#C0392B12;color:#B23A2C}
 .rodape{padding:10px 18px;border-top:1px solid #E4E8EF;display:flex;justify-content:space-between;font-size:10px;color:#6B7686;margin-top:4px}
 @media print{
+  /* Paginacao de tabela: cabecalho repete a cada pagina e nenhuma linha
+     e partida ao meio. Sem isto, a tabela continua na pagina seguinte
+     sem dizer o que e cada coluna. */
+  thead{display:table-header-group}
+  tfoot{display:table-footer-group}
+  tr{break-inside:avoid;page-break-inside:avoid}
+
   .no-print{display:none!important}
   body{background:#fff;padding:8px}
   .doc{border:0;border-radius:0}

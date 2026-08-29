@@ -38,8 +38,16 @@ body{font-family:Inter,-apple-system,Segoe UI,Arial,sans-serif;color:#1E2738;bac
 .mini{display:flex;gap:20px;flex-wrap:wrap;font-size:12px;color:#6B7686;margin-bottom:14px}
 .mini b{color:#1E2738}
 .sec{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#6B7686;font-weight:700;margin:16px 0 6px}
-.fotos{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:18px}
-.foto{border:1px solid #E4E8EF;border-radius:8px;overflow:hidden}
+/* Galeria: cada linha de tres fotos e uma linha de tabela indivisivel.
+   Antes era um grid sem nenhuma protecao de quebra, e o cartao da foto
+   podia ser partido entre duas paginas na impressao. */
+.fotos{margin-bottom:18px}
+table.linha-fotos{width:100%;table-layout:fixed;border-collapse:collapse}
+table.linha-fotos tr{break-inside:avoid;page-break-inside:avoid}
+table.linha-fotos td{vertical-align:top;padding:0 7px 14px;border:none}
+table.linha-fotos td:first-child{padding-left:0}
+table.linha-fotos td:last-child{padding-right:0}
+.foto{border:1px solid #E4E8EF;border-radius:8px;overflow:hidden;break-inside:avoid;page-break-inside:avoid}
 .foto .ph{position:relative;height:150px;background:#F4F6FA;display:grid;place-items:center;overflow:hidden}
 .foto .ph img{width:100%;height:100%;object-fit:cover;display:block}
 .foto .ph .noimg{color:#aab1bd;font-size:32px}
@@ -56,10 +64,16 @@ body{font-family:Inter,-apple-system,Segoe UI,Arial,sans-serif;color:#1E2738;bac
 .dot{width:11px;height:11px;border-radius:3px;display:inline-block}
 .rodape{padding:10px 18px;border-top:1px solid #E4E8EF;display:flex;justify-content:space-between;font-size:10px;color:#6B7686;margin-top:4px}
 @media print{
+  /* Paginacao de tabela: cabecalho repete a cada pagina e nenhuma linha
+     e partida ao meio. Sem isto, a tabela continua na pagina seguinte
+     sem dizer o que e cada coluna. */
+  thead{display:table-header-group}
+  tfoot{display:table-footer-group}
+  tr{break-inside:avoid;page-break-inside:avoid}
+
   .no-print{display:none!important}
   body{background:#fff;padding:8px}
   .doc{border:0;border-radius:0}
-  .fotos{grid-template-columns:repeat(3,1fr)}
   @page{size:A4;margin:12mm}
 }
 </style>
@@ -98,7 +112,11 @@ body{font-family:Inter,-apple-system,Segoe UI,Arial,sans-serif;color:#1E2738;bac
     ?>
     <div class="step-sec">Passo <?= (int)$step ?> — <?= htmlspecialchars($label) ?></div>
     <div class="fotos">
-      <?php foreach ($stepFotos as $f):
+      <?php /* De tres em tres: cada linha vira uma <tr> que nunca se
+               parte entre duas paginas, e a foto sai sempre inteira. */
+      foreach (array_chunk($stepFotos, 3) as $linhaFotos): ?>
+      <table class="linha-fotos"><tr>
+      <?php foreach ($linhaFotos as $f):
           $thumb  = !empty($f['thumb']) ? $f['thumb'] : null;
           $imgSrc = $thumb ? htmlspecialchars($uploadsBase . '/thumbs/' . $thumb) : null;
           $stamp  = '';
@@ -111,10 +129,10 @@ body{font-family:Inter,-apple-system,Segoe UI,Arial,sans-serif;color:#1E2738;bac
               $stamp .= ($stamp ? ' · ' : '') . number_format($f['lat'], 4) . ', ' . number_format($f['lng'], 4);
           }
       ?>
-      <div class="foto">
+      <td><div class="foto">
         <div class="ph">
           <?php if ($imgSrc): ?>
-            <img src="<?= $imgSrc ?>" alt="Passo <?= (int)$step ?>" loading="lazy">
+            <img src="<?= $imgSrc ?>" alt="Passo <?= (int)$step ?>" loading="eager">
           <?php else: ?>
             <span class="noimg">📷</span>
           <?php endif; ?>
@@ -126,7 +144,10 @@ body{font-family:Inter,-apple-system,Segoe UI,Arial,sans-serif;color:#1E2738;bac
           <b>Passo <?= (int)$step ?> — <?= htmlspecialchars($label) ?></b>
           <span><?= htmlspecialchars($f['equipe']) ?></span>
         </div>
-      </div>
+      </div></td>
+      <?php endforeach; ?>
+      <?php for ($v = count($linhaFotos); $v < 3; $v++): ?><td></td><?php endfor; ?>
+      </tr></table>
       <?php endforeach; ?>
     </div>
     <?php endforeach; endif; ?>

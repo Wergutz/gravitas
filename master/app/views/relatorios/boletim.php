@@ -5,9 +5,13 @@ $repavPeriodo = $repavPeriodo ?? null;
 $trechosBoletim = $trechosBoletim ?? [];
 $metrosExec = array_sum(array_column($trechosBoletim, 'extensao_executada'));
 $contrato   = !empty($trechosBoletim) ? ($trechosBoletim[0]['contrato'] ?? '—') : '—';
+/* Os parênteses do ramo "senão" são obrigatórios: no PHP 8 um
+   `a ? b : c ?: d` sem parênteses é erro fatal de sintaxe, e era isso que
+   impedia este boletim de abrir. O comportamento pretendido é o de
+   sempre — uma bacia só, ela; várias, todas; nenhuma, travessão. */
 $baciaLabel = count(array_unique(array_column($trechosBoletim, 'bacia'))) === 1
     ? ($trechosBoletim[0]['bacia'] ?? '—')
-    : implode(', ', array_unique(array_filter(array_column($trechosBoletim, 'bacia')))) ?: '—';
+    : (implode(', ', array_unique(array_filter(array_column($trechosBoletim, 'bacia')))) ?: '—');
 ?><!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -45,6 +49,13 @@ tr.tot td{background:#1A2D4F;color:#fff;font-weight:700}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .rodape{padding:10px 18px;border-top:1px solid #E4E8EF;display:flex;justify-content:space-between;font-size:10px;color:#6B7686;margin-top:4px}
 @media print{
+  /* Paginacao de tabela: cabecalho repete a cada pagina e nenhuma linha
+     e partida ao meio. Sem isto, a tabela continua na pagina seguinte
+     sem dizer o que e cada coluna. */
+  thead{display:table-header-group}
+  tfoot{display:table-footer-group}
+  tr{break-inside:avoid;page-break-inside:avoid}
+
   .no-print{display:none!important}
   body{background:#fff;padding:8px}
   .doc{border:0;border-radius:0}
