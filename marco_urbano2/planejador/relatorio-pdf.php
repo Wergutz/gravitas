@@ -260,6 +260,14 @@ table.mu-ident td{ font-weight: bold; }
 
 /* ---- trecho -------------------------------------------------------- */
 .mu-trecho{ margin-bottom: 7mm; }
+/* Cada trecho comeca em pagina propria (menos o primeiro, que fica logo
+   abaixo da identificacao do documento). Sem isto, o cabecalho verde e a
+   tabela de medicao caiam no fim de uma pagina e as fotos do mesmo
+   trecho iam para a seguinte -- titulo separado das fotos, com um vazio
+   grande no meio. Comecando no topo, identificacao e registro
+   fotografico ficam sempre juntos. */
+.mu-trecho.mu-nova-pagina{ page-break-before: always; }
+.mu-resumo{ page-break-before: always; }
 table.mu-trecho-head{
   width: 100%;
   border-collapse: collapse;
@@ -363,7 +371,7 @@ table.mu-galeria td{
 }
 
 /* ---- resumo e assinatura ------------------------------------------- */
-.mu-resumo{ margin-top: 8mm; }
+.mu-resumo{ margin-top: 0; }
 table.mu-resumo-tab{
   width: 100%;
   border-collapse: collapse;
@@ -453,11 +461,12 @@ p.mu-local-data{ text-align: right; font-size: 9.5pt; margin-top: 10mm; }
   </tr>
 </table>
 
-<?php foreach ($dados as $d):
+<?php $primeiroTrecho = true;
+foreach ($dados as $d):
     $t = $d['t'];
     $rotuloTrecho = $t['pv_montante'] . ' → ' . $t['pv_jusante'];
 ?>
-<div class="mu-trecho">
+<div class="mu-trecho<?= $primeiroTrecho ? '' : ' mu-nova-pagina' ?>"><?php $primeiroTrecho = false; ?>
   <table class="mu-trecho-head"><tr>
     <td>Trecho <?= htmlspecialchars($rotuloTrecho) ?></td>
     <td class="dir"><?= htmlspecialchars(trim((string) $t['medicao'])) ?></td>

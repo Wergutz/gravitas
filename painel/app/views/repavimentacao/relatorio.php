@@ -109,6 +109,7 @@ table.totais tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1
    foto saia partida entre duas paginas. */
 .fotos-grid{width:100%;table-layout:fixed;border-collapse:collapse;margin-bottom:6px}
 .fotos-grid tr{break-inside:avoid;page-break-inside:avoid}
+.fotos-grid th{padding:0;border:none;text-align:left;font-weight:400}
 .fotos-grid td{vertical-align:top;padding:0 3px 6px;border:none}
 .fotos-grid td:first-child{padding-left:0}
 .fotos-grid td:last-child{padding-right:0}
@@ -280,10 +281,18 @@ table.totais tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1
         foreach (['antes','durante','depois','croqui'] as $tipo_f):
             if (empty($fotos_por_tipo[$tipo_f])) continue;
         ?>
-            <div class="fotos-titulo-tipo"><?= $tipo_labels[$tipo_f] ?> (<?= count($fotos_por_tipo[$tipo_f]) ?>)</div>
-            <?php /* De quatro em quatro, para a linha caber inteira. */
-            foreach (array_chunk($fotos_por_tipo[$tipo_f], 4) as $linhaFotos): ?>
-            <table class="fotos-grid"><tr>
+            <table class="fotos-grid">
+            <?php /* O titulo do tipo e o CABECALHO da tabela: assim nunca
+                     fica sozinho no fim de uma pagina, separado das fotos,
+                     e se repete quando o tipo continua na pagina seguinte.
+                     As fotos saem de quatro em quatro e cada linha e uma
+                     <tr> que nunca se parte. */ ?>
+            <thead><tr><th colspan="4">
+              <div class="fotos-titulo-tipo"><?= $tipo_labels[$tipo_f] ?> (<?= count($fotos_por_tipo[$tipo_f]) ?>)</div>
+            </th></tr></thead>
+            <tbody>
+            <?php foreach (array_chunk($fotos_por_tipo[$tipo_f], 4) as $linhaFotos): ?>
+            <tr>
                 <?php foreach ($linhaFotos as $foto): ?>
                     <td><div class="foto-item">
                         <img src="<?= APP_BASE ?>/uploads/repavimentacao/<?= htmlspecialchars($foto['arquivo']) ?>"
@@ -293,8 +302,10 @@ table.totais tfoot td{font-weight:800;background:#f0f3f8;border-top:2px solid #1
                     </div></td>
                 <?php endforeach; ?>
                 <?php for ($v = count($linhaFotos); $v < 4; $v++): ?><td></td><?php endfor; ?>
-            </tr></table>
+            </tr>
             <?php endforeach; ?>
+            </tbody>
+            </table>
         <?php endforeach; ?>
     </div>
     <?php endif; ?>

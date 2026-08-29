@@ -34,6 +34,7 @@
   .galeria{padding-bottom:24px}
   table.linha-fotos{width:100%;table-layout:fixed;border-collapse:collapse}
   table.linha-fotos tr{break-inside:avoid;page-break-inside:avoid}
+  table.linha-fotos th{padding:0;border:none;text-align:left;font-weight:400}
   table.linha-fotos td{vertical-align:top;padding:0 6px 12px;border:none}
   table.linha-fotos td:first-child{padding-left:0}
   table.linha-fotos td:last-child{padding-right:0}
@@ -90,12 +91,20 @@
 <?php foreach ($stepNomes as $step => $nome): ?>
 <?php $fotosStep = $fotosPorStep[$step] ?? []; ?>
 <div class="sec">
-  <div class="sec-tit">Passo <?= $step ?> — <?= htmlspecialchars($nome) ?></div>
   <?php if ($fotosStep): ?>
   <div class="galeria">
-    <?php /* De tres em tres, para a linha caber inteira numa pagina. */
-    foreach (array_chunk($fotosStep, 3) as $linhaFotos): ?>
-    <table class="linha-fotos"><tr>
+    <table class="linha-fotos">
+    <?php /* O titulo do passo e o CABECALHO da tabela da galeria: assim
+             nunca fica sozinho no fim de uma pagina, separado das fotos,
+             e se repete quando o passo continua na pagina seguinte. As
+             fotos saem de tres em tres e cada linha e uma <tr> que nunca
+             se parte. */ ?>
+    <thead><tr><th colspan="3">
+      <div class="sec-tit">Passo <?= $step ?> — <?= htmlspecialchars($nome) ?></div>
+    </th></tr></thead>
+    <tbody>
+    <?php foreach (array_chunk($fotosStep, 3) as $linhaFotos): ?>
+    <tr>
     <?php foreach ($linhaFotos as $foto): ?>
     <td><div class="foto-card">
       <img src="<?= $executorUploads ?>/<?= htmlspecialchars($foto['arquivo']) ?>"
@@ -110,10 +119,13 @@
     </div></td>
     <?php endforeach; ?>
     <?php for ($v = count($linhaFotos); $v < 3; $v++): ?><td></td><?php endfor; ?>
-    </tr></table>
+    </tr>
     <?php endforeach; ?>
+    </tbody>
+    </table>
   </div>
   <?php else: ?>
+  <div class="sec-tit">Passo <?= $step ?> — <?= htmlspecialchars($nome) ?></div>
   <div class="sem-fotos">Nenhuma foto registrada neste passo.</div>
   <?php endif; ?>
 </div>
