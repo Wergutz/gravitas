@@ -461,32 +461,60 @@ function mu_num($v, int $casas = 2): string {
         <div class="mu-figs">
           <?php if (!empty($t['croqui'])): ?>
           <h5>Croqui</h5>
-          <div class="mu-galeria mu-croqui">
-            <figure class="mu-fig">
-              <img src="<?= htmlspecialchars(mu_url_thumb($t['croqui'], 880, 'croqui')) ?>"
-                   alt="Croqui do trecho <?= htmlspecialchars($rotuloTrecho) ?>"
-                   loading="eager" decoding="sync"
-                   onerror="this.onerror=null;this.src='<?= htmlspecialchars(mu_url_midia($t['croqui'], 'croqui')) ?>';">
-              <figcaption>Croqui 1 — trecho <?= htmlspecialchars($rotuloTrecho) ?></figcaption>
-            </figure>
-          </div>
+          <table class="mu-galeria mu-croqui">
+            <tr class="mu-linha-fig">
+              <td>
+                <figure class="mu-fig">
+                  <img src="<?= htmlspecialchars(mu_url_thumb($t['croqui'], 880, 'croqui')) ?>"
+                       alt="Croqui do trecho <?= htmlspecialchars($rotuloTrecho) ?>"
+                       loading="eager" decoding="sync"
+                       onerror="this.onerror=null;this.src='<?= htmlspecialchars(mu_url_midia($t['croqui'], 'croqui')) ?>';">
+                  <figcaption>Croqui 1 — trecho <?= htmlspecialchars($rotuloTrecho) ?></figcaption>
+                </figure>
+              </td>
+              <td class="mu-vazia"></td>
+            </tr>
+          </table>
           <?php endif; ?>
 
           <?php if ($d['fotos']): ?>
           <h5>Registro fotográfico</h5>
-          <div class="mu-galeria">
-            <?php foreach ($d['fotos'] as $k => $f):
-                $dataFoto = !empty($f['created_at']) ? date('d/m/Y', strtotime($f['created_at'])) : '';
-            ?>
-            <figure class="mu-fig">
-              <img src="<?= htmlspecialchars(mu_url_thumb($f['arquivo'], 440)) ?>"
-                   alt="Foto da repavimentação do trecho <?= htmlspecialchars($rotuloTrecho) ?>"
-                   loading="eager" decoding="sync"
-                   onerror="this.onerror=null;this.src='<?= htmlspecialchars(mu_url_midia($f['arquivo'])) ?>';">
-              <figcaption>Foto <?= $k + 1 ?><?= $dataFoto !== '' ? ' — ' . $dataFoto : '' ?></figcaption>
-            </figure>
+          <table class="mu-galeria">
+            <?php
+            // Laudo pericial: a foto não pode sair fatiada entre duas
+            // páginas. As fotos são agrupadas de três em três no PHP e
+            // cada linha é uma <tr> com `page-break-inside: avoid`.
+            //
+            // Linha de tabela, e não grid nem div: "não quebrar dentro
+            // desta linha" é a construção de paginação mais antiga e mais
+            // bem suportada que existe — todo motor de impressão a
+            // respeita, inclusive os antigos. Em item de grid a mesma
+            // regra é ignorada por vários motores, e era daí que vinha a
+            // foto cortada.
+            $k = 0;
+            foreach (array_chunk($d['fotos'], MU_FOTOS_POR_LINHA) as $linha): ?>
+            <tr class="mu-linha-fig">
+              <?php foreach ($linha as $f):
+                  $dataFoto = !empty($f['created_at']) ? date('d/m/Y', strtotime($f['created_at'])) : '';
+                  $k++;
+              ?>
+              <td>
+                <figure class="mu-fig">
+                  <img src="<?= htmlspecialchars(mu_url_thumb($f['arquivo'], 440)) ?>"
+                       alt="Foto da repavimentação do trecho <?= htmlspecialchars($rotuloTrecho) ?>"
+                       loading="eager" decoding="sync"
+                       onerror="this.onerror=null;this.src='<?= htmlspecialchars(mu_url_midia($f['arquivo'])) ?>';">
+                  <figcaption>Foto <?= $k ?><?= $dataFoto !== '' ? ' — ' . $dataFoto : '' ?></figcaption>
+                </figure>
+              </td>
+              <?php endforeach; ?>
+              <?php /* completa a última linha para as colunas não esticarem */
+              for ($i = count($linha); $i < MU_FOTOS_POR_LINHA; $i++): ?>
+              <td class="mu-vazia"></td>
+              <?php endfor; ?>
+            </tr>
             <?php endforeach; ?>
-          </div>
+          </table>
           <?php endif; ?>
         </div>
 

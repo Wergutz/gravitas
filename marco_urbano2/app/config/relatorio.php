@@ -71,6 +71,15 @@ const MU_RELATORIO = [
     'art'          => null,
 ];
 
+/**
+ * Quantas fotos entram por linha do registro fotográfico.
+ *
+ * O agrupamento é feito no PHP (array_chunk) porque cada linha precisa ser
+ * um bloco próprio no HTML — é o bloco que carrega o `break-inside: avoid`
+ * que impede a foto de ser cortada ao meio pela quebra de página.
+ */
+const MU_FOTOS_POR_LINHA = 3;
+
 /** Devolve o valor, ou a marcação de pendência para o PDF. */
 function mu_rel(string $chave, string $sePendente = 'a confirmar'): string
 {

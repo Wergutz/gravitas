@@ -227,13 +227,41 @@
   padding-bottom: .8mm;
   margin: 0 0 2mm;
 }
+/* A galeria era um grid de 3 colunas, com o `break-inside: avoid` no ITEM
+   DE GRID. Num laudo pericial a foto não pode sair fatiada entre duas
+   páginas, e essa regra, em item de grid, não é respeitada por todos os
+   motores de impressão — o Chrome recente respeita; versões mais antigas
+   (antes da paginação de grid) e outros motores cortam a imagem no meio.
+   Era daí que vinha a foto partida no relatório.
+
+   Agora a galeria é uma TABELA e cada linha de fotos é uma <tr> montada no
+   PHP (array_chunk). "Não quebrar dentro desta linha" é a construção de
+   paginação mais antiga e mais bem suportada que existe: nenhum motor a
+   ignora, o que torna o resultado igual em qualquer navegador ou máquina.
+   Nada aqui depende de grid nem de flex. A aparência é a mesma de antes:
+   três colunas de larguras iguais com 2,5 mm entre elas. */
 .mu-galeria{
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2.5mm;
+  /* O vão de 2,5 mm é o padding-direito de TODAS as células, inclusive a
+     última — só assim as três colunas ficam com a mesma largura útil (e as
+     fotos, com a mesma altura). A tabela ganha esses 2,5 mm a mais para o
+     vão da última coluna cair fora da área visível; ele sobra dentro do
+     padding de 3 mm do .mu-trecho-body e não vaza da moldura. */
+  width: calc(100% + 2.5mm);
+  table-layout: fixed;               /* colunas iguais mesmo na última linha */
+  border-collapse: collapse;
   margin-bottom: 3mm;
 }
-.mu-galeria.mu-croqui{ grid-template-columns: repeat(2, 1fr); }
+.mu-linha-fig{
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+.mu-galeria td{
+  vertical-align: top;
+  padding: 0 2.5mm 2.5mm 0;
+  border: none;
+}
+.mu-galeria tr:last-child td{ padding-bottom: 0; }
+.mu-galeria td.mu-vazia{ padding: 0; }
 .mu-galeria.mu-croqui .mu-fig{ max-width: 74mm; }
 .mu-ph{ position: relative; }
 .mu-ph::after{
@@ -254,6 +282,10 @@
   width: 100%;
   aspect-ratio: 3 / 4;               /* fotos e croquis do app são 1600x2133 */
   height: auto;
+  /* Teto de segurança: uma linha de fotos mais alta que a área útil da
+     página seria impossível de manter inteira e o motor quebraria no meio
+     de qualquer jeito. Com 150mm, linha + legenda cabem sempre. */
+  max-height: 150mm;
   object-fit: contain;               /* prova fotográfica não pode ser cortada */
   border: .6pt solid var(--mu-linha);
   background: #F4F4F4;
