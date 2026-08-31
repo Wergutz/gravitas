@@ -1,0 +1,504 @@
+/* =========================
+   RESET / BASE
+========================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    background: #0D1A2E;
+    color: #e5e7eb;
+}
+
+/* =========================
+   APP LAYOUT
+========================= */
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+.sidebar {
+    width: 240px;
+    background: linear-gradient(180deg, #0D1A2E 0%, #0D1A2E 100%);
+    padding: 20px;
+}
+
+.sidebar .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.sidebar .logo img {
+    width: 34px;
+}
+
+.sidebar .logo span {
+    font-weight: bold;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: #ffffff;
+}
+
+.sidebar nav a {
+    display: block;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #B7C3D8;
+    background: rgba(255,255,255,0.02);
+    transition: all .2s;
+}
+
+.sidebar nav a:hover {
+    background: rgba(255,255,255,0.08);
+    color: #ffffff;
+}
+
+.sidebar nav a.active {
+    background: #E0A53D;
+    color: #11203B;   /* texto escuro: branco sobre o dourado não tem contraste */
+}
+
+/* =========================
+   CONTENT
+========================= */
+.content {
+    flex: 1;
+    background: radial-gradient(circle at top, #11203B 0%, #0D1A2E 70%);
+    padding: 30px;
+    min-height: 100vh;
+}
+
+/* =========================
+   TOPBAR
+========================= */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.topbar h1 {
+    font-size: 22px;
+    margin-bottom: 4px;
+    color: #ffffff;
+}
+
+.topbar span {
+    font-size: 13px;
+    color: #9ca3af;
+}
+
+.topbar .managed {
+    font-size: 11px;
+    font-weight: bold;
+    color: #9ca3af;
+    letter-spacing: 1px;
+}
+
+/* =========================
+   CARDS
+========================= */
+.form-card,
+.card {
+    background: linear-gradient(180deg, #1A2D4F 0%, #132542 100%);
+    border-radius: 16px;
+    padding: 26px;
+    margin-bottom: 30px;
+    box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+}
+
+.form-card h3 {
+    margin-bottom: 20px;
+    color: #ffffff;
+    font-size: 18px;
+}
+
+/* =========================
+   FORM
+========================= */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #B7C3D8;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #2A4067;
+    background: #1B2A44;
+    color: #ffffff;
+    font-size: 14px;
+}
+
+.form-group input::placeholder {
+    color: #9ca3af;
+}
+
+.form-actions {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+}
+
+/* =========================
+   BOTÕES
+========================= */
+.btn-primary {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: #ffffff;
+    border: none;
+    padding: 11px 22px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    filter: brightness(1.05);
+}
+
+.btn-secondary {
+    background: #1B2A44;
+    color: #e5e7eb;
+    padding: 11px 22px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+/* =========================
+   TABLE
+========================= */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th {
+    text-align: left;
+    font-size: 13px;
+    padding: 14px 12px;
+    border-bottom: 1px solid #2A4067;
+    color: #B7C3D8;
+}
+
+.table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid #132542;
+    font-size: 14px;
+    color: #e5e7eb;
+}
+
+/* =========================
+   BADGES
+========================= */
+.badge {
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.badge-success {
+    background: #064e3b;
+    color: #34d399;
+}
+
+.badge-danger {
+    background: #7f1d1d;
+    color: #fecaca;
+}
+
+/* =========================
+   AÇÕES DA TABELA (PADRÃO VISIONHUB)
+========================= */
+.table td a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all .2s;
+    margin-right: 6px;
+}
+
+/* EDITAR */
+.table td a[href*="editar"] {
+    background: rgba(37, 99, 235, 0.15);
+    color: #93c5fd;
+}
+
+.table td a[href*="editar"]:hover {
+    background: rgba(37, 99, 235, 0.35);
+    color: #ffffff;
+}
+
+/* ATIVAR / INATIVAR */
+.table td a[href*="toggle"] {
+    background: rgba(148, 163, 184, 0.15);
+    color: #e5e7eb;
+}
+
+.table td a[href*="toggle"]:hover {
+    background: rgba(148, 163, 184, 0.35);
+    color: #ffffff;
+}
+/* ===== INPUTS DENTRO DE TABELAS (PADRÃO VISIONHUB) ===== */
+.table input,
+.table select {
+    width: 100%;
+    background-color: #0D1A2E;      /* mesmo fundo do sistema */
+    border: 1px solid #1B2A44;
+    color: #e5e7eb;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.table input::placeholder {
+    color: #9ca3af;
+}
+
+.table input:focus,
+.table select:focus {
+    outline: none;
+    border-color: #E0A53D;
+    background-color: #0D1A2E;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* =======================================================================
+   CONTENÇÃO DE IMAGEM E GALERIA  (pacote 2 — regras de TELA)
+   -----------------------------------------------------------------------
+   Do 01-frontend-css.css foram aproveitadas apenas as regras de tela: o
+   @media print de lá foi escrito antes da identidade GM e perde
+   para o relatorio-gm.css, conforme a precedência do relatório.
+
+   Sem isto a página do relatório media 1.878 px de largura contra 1.366 px
+   de viewport (rolagem horizontal) e 28.318 px de altura, porque as fotos
+   entravam em 1600 px nativos.
+   ==================================================================== */
+.content img{
+    max-width: 100%;
+    height: auto;
+}
+
+.form-card img,
+.table img{
+    max-width: 100%;
+    height: auto;
+}
+
+/* Galeria de fotos em grade que se adapta à largura disponível. */
+.mu-galeria-tela{
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.mu-galeria-tela img{
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 6px;
+    background: #11203B;
+}
+
+/* Tabela larga rola dentro da própria caixa, nunca empurra a página. */
+.table-wrap{
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* =========================
+   RESPONSIVO
+========================= */
+@media (max-width: 900px){
+    .app{ flex-direction: column; }
+    .sidebar{
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+    }
+    .sidebar nav{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+    }
+    .sidebar nav a{ flex: 1 1 auto; text-align: center; }
+    .content{ padding: 16px; }
+    .form-row{ flex-direction: column; }
+}
+
+/* =======================================================================
+   ENVIO DE MÍDIA — câmera ou galeria
+   -----------------------------------------------------------------------
+   Dois caminhos lado a lado. O input de arquivo fica escondido dentro do
+   <label>, que vira o botão — em celular, tocar no botão da câmera abre
+   a câmera direto (atributo capture).
+   ==================================================================== */
+.mu-envio{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.mu-envio-op{
+    flex: 1 1 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 12px;
+    border: 1px dashed #374151;
+    border-radius: 8px;
+    background: #11203B;
+    color: #e5e7eb;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: border-color .15s, background .15s;
+}
+
+.mu-envio-op:hover{
+    border-color: #3CB86A;
+    background: #0e2740;
+}
+
+/* O input real fica invisível: quem recebe o toque é o label. */
+.mu-envio-op input[type="file"]{
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+}
+
+/* Marca visual quando o campo já tem arquivo escolhido. */
+.mu-envio-op.tem-arquivo{
+    border-style: solid;
+    border-color: #22c55e;
+    background: #052e16;
+    color: #bbf7d0;
+}
+
+.mu-dica{
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #9ca3af;
+}
+
+/* =======================================================================
+   IMPRESSÃO — vale para TODAS as telas do painel
+   -----------------------------------------------------------------------
+   O painel é escuro por desenho (fundo #0D1A2E). Sem estas regras,
+   imprimir ou salvar em PDF qualquer tela que não seja o relatório sai
+   com a página inteira preta: o Chrome do Android costuma vir com
+   "gráficos de plano de fundo" ligado, e imprime o fundo escuro.
+
+   O relatório tem a própria folha de impressão, mais completa, que
+   continua valendo por ser carregada depois desta.
+   ==================================================================== */
+@media print{
+    html, body{
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    .app{ display: block !important; }
+
+    /* Navegação e botões não fazem sentido no papel. */
+    .sidebar, .no-print, nav, button, .form-actions{
+        display: none !important;
+    }
+
+    img{ max-width: 100%; height: auto; }
+
+    /* --------------------------------------------------------------
+       As regras de cor abaixo valem só para as telas comuns do painel.
+       O relatório usa .content.relatorio e tem folha de impressão
+       própria, com a paleta da GM — achatar tudo para preto
+       aqui estragaria o documento oficial.
+       -------------------------------------------------------------- */
+    .content:not(.relatorio){
+        background: #fff !important;
+        color: #000 !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+    }
+
+    .content:not(.relatorio) h1,
+    .content:not(.relatorio) h2,
+    .content:not(.relatorio) h3,
+    .content:not(.relatorio) h4,
+    .content:not(.relatorio) p,
+    .content:not(.relatorio) span,
+    .content:not(.relatorio) strong,
+    .content:not(.relatorio) label,
+    .content:not(.relatorio) td,
+    .content:not(.relatorio) th{
+        color: #000 !important;
+    }
+
+    .content:not(.relatorio) .form-card{
+        background: #fff !important;
+        border: 1px solid #999 !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+
+    .content:not(.relatorio) .table th,
+    .content:not(.relatorio) .table td{
+        border: 1px solid #999 !important;
+    }
+
+    .content:not(.relatorio) .table th{ background: #eee !important; }
+}
