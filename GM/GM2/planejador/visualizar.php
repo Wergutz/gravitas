@@ -37,6 +37,7 @@ $trechos = $trechos->fetchAll(PDO::FETCH_ASSOC);
         <img src="/GM/GM2/assets/img/icon-gm.png" alt="GM SERVIÇOS">
         <span>GM SERVIÇOS</span>
     </div>
+    <?= bloco_identidade() ?>
     <nav>
         <a href="menu.php">📊 Dashboard</a>
         <a href="listagem.php">📋 Listagem</a>

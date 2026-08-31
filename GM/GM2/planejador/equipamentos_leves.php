@@ -154,6 +154,7 @@ $equipamentos = $pdo->query("
         <img src="/GM/GM2/assets/img/icon-gm.png" alt="GM SERVIÇOS">
         <span>GM SERVIÇOS</span>
     </div>
+    <?= bloco_identidade() ?>
     <nav>
         <a href="/GM/GM2/planejador/menu.php">📊 Dashboard</a>
         <a href="/GM/GM2/planejador/equipamentos_pesados.php">🚜 Equip. Pesados</a>

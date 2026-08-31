@@ -13,7 +13,7 @@ auth_required([3, 4]); // 3 = Planejador, 4 = Executor
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard do Planejador | GM SERVIÇOS</title>
+<title>Dashboard do <?= perfil_label() ?> | GM SERVIÇOS</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- CSS ÚNICO OFICIAL -->
@@ -29,6 +29,7 @@ auth_required([3, 4]); // 3 = Planejador, 4 = Executor
         <img src="/GM/GM2/assets/img/icon-gm.png" alt="GM SERVIÇOS">
         <span>GM SERVIÇOS</span>
     </div>
+    <?= bloco_identidade() ?>
 
     <nav>
         <a href="/GM/GM2/planejador/menu.php" class="active">📊 Dashboard</a>
@@ -54,16 +55,21 @@ auth_required([3, 4]); // 3 = Planejador, 4 = Executor
 <!-- TOPBAR -->
 <div class="topbar">
     <div>
-        <h1>Dashboard do Planejador</h1>
+        <h1>Dashboard do <?= perfil_label() ?></h1>
         <span>Visão geral operacional</span>
     </div>
 </div>
 
 <!-- CONTEÚDO PRINCIPAL -->
 <div class="card">
-    <h3>Bem-vindo</h3>
+    <h3>Bem-vindo, <?= htmlspecialchars($_SESSION['nome'] ?? ($_SESSION['usuario'] ?? '')) ?></h3>
     <p style="color:#9ca3af; margin-top:10px;">
+        <?php if (eh_planejador()): ?>
         Utilize o menu lateral para acessar os cadastros, planejamento e controle operacional.
+        <?php else: ?>
+        Você está no perfil <b>Executor</b>: pode incluir e corrigir medições, e consultar
+        planejamentos e relatórios. Criar planejamento e alterar cadastros é do Planejador.
+        <?php endif; ?>
     </p>
 </div>
 

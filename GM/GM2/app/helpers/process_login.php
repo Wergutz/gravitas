@@ -23,7 +23,7 @@ if (!$usuario || !$senha) {
    BUSCA USUÁRIO
 ========================= */
 $stmt = $pdo->prepare("
-    SELECT id, usuario, senha, tipo_usuario, ativo
+    SELECT id, nome, usuario, senha, tipo_usuario, ativo
     FROM usuarios
     WHERE usuario = ?
     LIMIT 1
@@ -57,6 +57,11 @@ if (!password_verify($senha, $user['senha'])) {
 ========================= */
 $_SESSION['usuario_id']   = (int)$user['id'];
 $_SESSION['tipo_usuario'] = (int)$user['tipo_usuario'];
+// Nome e login ficam na sessão para a tela poder dizer quem está logado
+// e em que perfil — sem isso o executor não distingue a sessão dele da
+// do planejador, já que as duas usam as mesmas telas.
+$_SESSION['nome']         = (string)$user['nome'];
+$_SESSION['usuario']      = (string)$user['usuario'];
 
 header('Location: /GM/GM2/index.php');
 exit;

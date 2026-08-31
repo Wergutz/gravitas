@@ -27,3 +27,28 @@ function auth_required(array $perfis) {
 function eh_planejador(): bool {
     return ((int) ($_SESSION['tipo_usuario'] ?? 0)) === 3;
 }
+
+/** Nome do perfil de quem está logado, para aparecer na tela. */
+function perfil_label(): string {
+    return [
+        1 => 'Master',
+        2 => 'Proprietário',
+        3 => 'Planejador',
+        4 => 'Executor',
+    ][(int) ($_SESSION['tipo_usuario'] ?? 0)] ?? 'Sem perfil';
+}
+
+/**
+ * Bloco de identificação para o menu lateral: quem está logado e em que
+ * perfil. Planejador e Executor usam as mesmas telas — sem isso, dá para
+ * passar a sessão inteira achando que se está no outro perfil.
+ */
+function bloco_identidade(): string {
+    $nome   = $_SESSION['nome'] ?? ($_SESSION['usuario'] ?? '—');
+    $perfil = perfil_label();
+
+    return '<div class="quem">'
+         . '<b>' . htmlspecialchars($nome, ENT_QUOTES, 'UTF-8') . '</b>'
+         . '<span>' . htmlspecialchars($perfil, ENT_QUOTES, 'UTF-8') . '</span>'
+         . '</div>';
+}

@@ -38,7 +38,35 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 16px;
+}
+
+/* Quem está logado e em que perfil. Planejador e Executor usam as mesmas
+   telas — sem isto, dá para trabalhar a sessão inteira achando que se
+   está no outro perfil. */
+.sidebar .quem {
+    margin-bottom: 24px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    border-left: 3px solid #E0A53D;
+}
+
+.sidebar .quem b {
+    display: block;
+    font-size: 13px;
+    color: #ffffff;
+    line-height: 1.3;
+}
+
+.sidebar .quem span {
+    display: block;
+    margin-top: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #E0A53D;
 }
 
 .sidebar .logo img {

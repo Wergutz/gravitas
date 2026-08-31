@@ -28,6 +28,7 @@ $lista = $pdo->query("
         <img src="/GM/GM2/assets/img/icon-gm.png" alt="GM SERVIÇOS">
         <span>GM SERVIÇOS</span>
     </div>
+    <?= bloco_identidade() ?>
     <nav>
         <a href="menu.php">📊 Dashboard</a>
         <?php if (eh_planejador()): ?>
