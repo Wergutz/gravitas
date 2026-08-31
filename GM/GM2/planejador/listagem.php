@@ -3,7 +3,7 @@ require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/asset.php';
 require_once __DIR__ . '/../app/config/database.php';
 
-auth_required([3]);
+auth_required([3, 4]);
 
 $lista = $pdo->query("
     SELECT p.id, p.created_at, u.nome
@@ -30,7 +30,9 @@ $lista = $pdo->query("
     </div>
     <nav>
         <a href="menu.php">📊 Dashboard</a>
+        <?php if (eh_planejador()): ?>
         <a href="planejamento.php">🛣 Planejamento</a>
+        <?php endif; ?>
         <a href="listagem.php" class="active">📋 Listagem</a>
         <a href="/GM/GM2/public/logout.php">🚪 Sair</a>
     </nav>

@@ -3,7 +3,7 @@ require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/asset.php';
 require_once __DIR__ . '/../app/config/database.php';
 
-auth_required([3]); // Planejador
+auth_required([3, 4]); // Planejador
 
 /* ===============================
    BUSCA PLANEJAMENTOS
@@ -40,7 +40,9 @@ $planejamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
     <nav>
         <a href="/GM/GM2/planejador/menu.php">📊 Dashboard</a>
+        <?php if (eh_planejador()): ?>
         <a href="/GM/GM2/planejador/planejamento.php">🛣 Novo Planejamento</a>
+        <?php endif; ?>
         <a href="#" class="active">📂 Selecionar Planejamento</a>
         <a href="/GM/GM2/public/logout.php">🚪 Sair</a>
     </nav>

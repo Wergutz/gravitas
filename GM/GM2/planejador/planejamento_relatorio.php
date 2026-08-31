@@ -8,7 +8,7 @@ require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
 require_once __DIR__ . '/../app/helpers/midia_url.php';
 require_once __DIR__ . '/../app/libs/tcpdf/tcpdf.php';
 
-auth_required([3]);
+auth_required([3, 4]); // relatório do planejamento: somente leitura
 
 $planejamentoId = (int) ($_GET['id'] ?? 0);
 if (!$planejamentoId) die('Planejamento inválido');

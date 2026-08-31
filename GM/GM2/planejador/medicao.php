@@ -6,22 +6,30 @@ require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
 require_once __DIR__ . '/../app/helpers/validacao_midia.php';
 require_once __DIR__ . '/../app/helpers/midia_url.php';
 
-auth_required([3]);
+auth_required([3, 4]);
 
 $erro      = null;
 $recusados = [];   // arquivos barrados (só quando MU_VALIDACAO_BLOQUEIA)
 $avisos    = [];   // observações que não impedem o lançamento
 
 /* ===============================
-   PLANEJAMENTOS DO USUÁRIO
+   PLANEJAMENTOS
+   -------------------------------
+   Todos os planejamentos, de qualquer planejador — não só os do usuário
+   logado. A equipe trabalha na mesma obra: quem cria o planejamento e
+   quem lança a medição costumam ser pessoas diferentes.
+
+   A coluna planejamentos.usuario_id continua guardando QUEM criou, e as
+   telas de listagem mostram esse nome. O que mudou é que ela não filtra
+   mais o acesso.
 ================================ */
 $stmt = $pdo->prepare("
-    SELECT id, nome
-    FROM planejamentos
-    WHERE usuario_id = ?
-    ORDER BY id DESC
+    SELECT p.id, p.nome, u.nome AS criado_por
+    FROM planejamentos p
+    JOIN usuarios u ON u.id = p.usuario_id
+    ORDER BY p.id DESC
 ");
-$stmt->execute([$_SESSION['usuario_id']]);
+$stmt->execute();
 $planejamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 /* ===============================
@@ -36,12 +44,9 @@ if (!empty($_GET['planejamento_id'])) {
     $stmt = $pdo->prepare("
         SELECT *
         FROM planejamentos
-        WHERE id = ? AND usuario_id = ?
+        WHERE id = ?
     ");
-    $stmt->execute([
-        $_GET['planejamento_id'],
-        $_SESSION['usuario_id']
-    ]);
+    $stmt->execute([$_GET['planejamento_id']]);
     $planejamentoSelecionado = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($planejamentoSelecionado) {
@@ -65,13 +70,9 @@ if (!empty($_GET['trecho_id'])) {
         FROM trechos t
         JOIN planejamentos p ON p.id = t.planejamento_id
         WHERE t.id = ?
-          AND p.usuario_id = ?
           AND t.area_total = 0
     ");
-    $stmt->execute([
-        $_GET['trecho_id'],
-        $_SESSION['usuario_id']
-    ]);
+    $stmt->execute([$_GET['trecho_id']]);
     $trechoSelecionado = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
@@ -230,7 +231,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <nav>
         <a href="/GM/GM2/planejador/menu.php">📊 Dashboard</a>
+        <?php if (eh_planejador()): ?>
         <a href="/GM/GM2/planejador/planejamento.php">🗂 Planejamento</a>
+        <?php endif; ?>
         <a href="/GM/GM2/planejador/medicao.php" class="active">📐 Incluir Medições</a>
         <a href="/GM/GM2/planejador/relatorio.php">📄 Relatório</a>
         <a href="/GM/GM2/public/logout.php">🚪 Sair</a>
@@ -310,7 +313,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <option value="">Selecione</option>
 <?php foreach ($planejamentos as $p): ?>
 <option value="<?= $p['id'] ?>" <?= (!empty($_GET['planejamento_id']) && $_GET['planejamento_id']==$p['id'])?'selected':'' ?>>
-<?= htmlspecialchars($p['nome']) ?>
+<?= htmlspecialchars($p['nome'] ?? ('Planejamento ' . $p['id'])) ?> — <?= htmlspecialchars($p['criado_por']) ?>
 </option>
 <?php endforeach; ?>
 </select>

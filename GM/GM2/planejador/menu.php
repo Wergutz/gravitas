@@ -1,7 +1,13 @@
 <?php
 require_once __DIR__ . '/../app/helpers/auth.php';
 require_once __DIR__ . '/../app/helpers/asset.php';
-auth_required([3]); // Planejador
+auth_required([3, 4]); // 3 = Planejador, 4 = Executor
+
+/* O executor (4) entra só no fluxo de medição: lança e corrige medição,
+   consulta planejamentos e relatórios. Criar planejamento e mexer nos
+   cadastros é do planejador (3) — por isso os itens abaixo somem do menu
+   dele. Não é só o menu: as telas em si recusam o nível 4. */
+// (usa o helper eh_planejador(), definido em app/helpers/auth.php)
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -27,14 +33,17 @@ auth_required([3]); // Planejador
     <nav>
         <a href="/GM/GM2/planejador/menu.php" class="active">📊 Dashboard</a>
 
-        <!-- ÚNICA ALTERAÇÃO AQUI -->
+        <?php if (eh_planejador()): ?>
         <a href="/GM/GM2/planejador/planejamento.php">🗂 Novo Planejamento</a>
+        <?php endif; ?>
         <a href="/GM/GM2/planejador/medicao.php">📐 Incluir Medição</a>
         <a href="/GM/GM2/planejador/planejamento_selecionar.php">📋 Planejamentos</a>
         <a href="/GM/GM2/planejador/relatorio.php">📄 Relatórios</a>
+        <?php if (eh_planejador()): ?>
         <a href="/GM/GM2/planejador/equipamentos_pesados.php">🚜 Equip. Pesados</a>
         <a href="/GM/GM2/planejador/equipamentos_leves.php">🧰 Equip. Leves</a>
         <a href="/GM/GM2/planejador/funcionarios.php">👷 Funcionários</a>
+        <?php endif; ?>
         <a href="/GM/GM2/public/logout.php">🚪 Sair</a>
     </nav>
 </aside>

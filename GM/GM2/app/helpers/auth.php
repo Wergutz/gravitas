@@ -14,3 +14,16 @@ function auth_required(array $perfis) {
         exit;
     }
 }
+
+/**
+ * true quando quem está logado é o Planejador (3).
+ *
+ * O Executor (4) usa as mesmas telas, mas só o fluxo de medição: criar
+ * planejamento e mexer nos cadastros é do planejador. Serve para esconder
+ * o que ele não alcança — sem isso o link aparece e derruba para o login.
+ * Não substitui o auth_required() de cada tela: esconder link não protege
+ * nada, quem protege é a checagem no topo do arquivo.
+ */
+function eh_planejador(): bool {
+    return ((int) ($_SESSION['tipo_usuario'] ?? 0)) === 3;
+}

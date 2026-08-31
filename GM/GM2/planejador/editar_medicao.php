@@ -6,7 +6,7 @@ require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
 require_once __DIR__ . '/../app/helpers/validacao_midia.php';
 require_once __DIR__ . '/../app/helpers/midia_url.php';
 
-auth_required([3]);
+auth_required([3, 4]);
 
 $erro      = null;
 $recusados = [];
@@ -23,9 +23,9 @@ $stmt = $pdo->prepare("
     SELECT t.*, p.nome AS planejamento
     FROM trechos t
     JOIN planejamentos p ON p.id = t.planejamento_id
-    WHERE t.id = ? AND p.usuario_id = ?
+    WHERE t.id = ?
 ");
-$stmt->execute([$_GET['trecho_id'], $_SESSION['usuario_id']]);
+$stmt->execute([$_GET['trecho_id']]);
 $trecho = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$trecho) {

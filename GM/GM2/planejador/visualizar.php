@@ -4,7 +4,7 @@ require_once __DIR__ . '/../app/helpers/asset.php';
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/helpers/midia_url.php';
 
-auth_required([3]);
+auth_required([3, 4]);
 
 $id = (int)$_GET['id'];
 

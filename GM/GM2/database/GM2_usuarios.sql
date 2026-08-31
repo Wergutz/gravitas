@@ -20,14 +20,14 @@
 -- Níveis deste programa (numeração própria, não confundir com a do GM):
 --   1 = MASTER   2 = PROPRIETÁRIO   3 = PLANEJADOR   4 = EXECUTOR
 --
--- ATENÇÃO ao nível do executor2_gm: ele entra como 3 (PLANEJADOR), não
--- como 4. É deliberado. O nível 4 não tem nenhuma tela — a pasta
--- executor/ está vazia — então um usuário nível 4 conseguiria fazer
--- login e não teria para onde ir. Em 3 ele usa o painel do planejador,
--- com acesso a tudo que o planejador acessa.
+-- O executor2_gm entra como 4 (EXECUTOR). A pasta executor/ está vazia,
+-- então ele não tem tela própria: o login manda o nível 4 para o painel
+-- do planejador, que o reconhece e libera só o fluxo de medição —
+-- incluir e corrigir medição, consultar planejamentos e relatórios.
+-- Criar planejamento e mexer nos cadastros continua sendo do nível 3.
 --
--- Não foi criado usuário de nível 2 (PROPRIETÁRIO) pelo mesmo motivo:
--- a pasta proprietario/ também está vazia.
+-- Não foi criado usuário de nível 2 (PROPRIETÁRIO): a pasta
+-- proprietario/ também está vazia e nada foi liberado para esse nível.
 -- =====================================================================
 
 SET NAMES utf8mb4;
@@ -52,6 +52,12 @@ VALUES
     'Executor 2',
     'executor2_gm',
     '$2y$12$KA9c5SFjPWKZIa/XzWdr7uCs0JSM67S./UOyZCiQPZcsn7krsXNWy',
-    3,
+    4,
     1
 );
+
+-- ---------------------------------------------------------------------
+-- Se o executor2_gm JÁ FOI CRIADO como nível 3, o INSERT acima não o
+-- altera (o usuário é único e a linha já existe). Rode este UPDATE:
+-- ---------------------------------------------------------------------
+UPDATE `usuarios` SET `tipo_usuario` = 4 WHERE `usuario` = 'executor2_gm';

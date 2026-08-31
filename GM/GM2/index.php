@@ -27,7 +27,10 @@ switch ($_SESSION['tipo_usuario']) {
         exit;
 
     case 4: // EXECUTOR
-        header("Location: $base/executor/menu.php");
+        // A pasta executor/ está vazia — não há tela própria para este
+        // nível. Ele trabalha no painel do planejador, que o reconhece e
+        // libera só o fluxo de medição.
+        header("Location: $base/planejador/menu.php");
         exit;
 
     default:

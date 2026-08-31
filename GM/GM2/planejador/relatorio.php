@@ -6,18 +6,17 @@ require_once __DIR__ . '/../app/config/relatorio.php';
 require_once __DIR__ . '/../app/helpers/tipos_pavimento.php';
 require_once __DIR__ . '/../app/helpers/midia_url.php';
 
-auth_required([3]);
+auth_required([3, 4]); // o executor consulta o relatório do que mediu (somente leitura)
 
 /* =========================================
-   PLANEJAMENTOS DO USUÁRIO LOGADO
+   PLANEJAMENTOS — todos, de qualquer planejador
 ========================================= */
 $stmt = $pdo->prepare("
     SELECT id, nome
     FROM planejamentos
-    WHERE usuario_id = ?
     ORDER BY id DESC
 ");
-$stmt->execute([$_SESSION['usuario_id']]);
+$stmt->execute();
 $planejamentos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 /* =========================================
@@ -32,12 +31,9 @@ if (!empty($_GET['planejamento_id'])) {
     $stmt = $pdo->prepare("
         SELECT nome
         FROM planejamentos
-        WHERE id = ? AND usuario_id = ?
+        WHERE id = ?
     ");
-    $stmt->execute([
-        $planejamentoSelecionado,
-        $_SESSION['usuario_id']
-    ]);
+    $stmt->execute([$planejamentoSelecionado]);
     $planejamento = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
@@ -60,8 +56,8 @@ if ($planejamentoSelecionado) {
 
 /* =========================================
    TRECHOS SELECIONADOS
-   Restrito ao planejamento do próprio usuário: sem isso, um id na mão
-   traria trecho de outro planejamento para dentro do relatório.
+   Restrito ao planejamento escolhido: sem o AND abaixo, um id passado na
+   mão traria trecho de OUTRO planejamento para dentro do relatório.
 ========================================= */
 $trechosSelecionados = [];
 
@@ -75,10 +71,9 @@ if (!empty($_POST['trechos']) && $planejamentoSelecionado) {
             JOIN planejamentos p ON p.id = t.planejamento_id
             WHERE t.id IN ($ph)
               AND t.planejamento_id = ?
-              AND p.usuario_id = ?
             ORDER BY t.medicao, t.id
         ");
-        $stmt->execute(array_merge($ids, [$planejamentoSelecionado, $_SESSION['usuario_id']]));
+        $stmt->execute(array_merge($ids, [$planejamentoSelecionado]));
         $trechosSelecionados = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
