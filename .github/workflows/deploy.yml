@@ -49,3 +49,7 @@ jobs:
             cp -rT $BASE/principal/marco_urbano2 $BASE/marco_urbano2
             mkdir -p $BASE/login
             cp -rT $BASE/principal/login $BASE/login
+            # cp -rT sobrescreve mas não apaga: arquivo removido do
+            # repositório continua publicado até ser apagado à mão.
+            rm -f $BASE/marco_urbano2/planejador/_teste.php
+            rm -f $BASE/GM/GM2/planejador/_teste.php
