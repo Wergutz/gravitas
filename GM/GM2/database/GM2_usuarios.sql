@@ -20,10 +20,14 @@
 -- Níveis deste programa (numeração própria, não confundir com a do GM):
 --   1 = MASTER   2 = PROPRIETÁRIO   3 = PLANEJADOR   4 = EXECUTOR
 --
--- Criados abaixo apenas o MASTER e o PLANEJADOR: são os dois únicos
--- perfis com tela implementada. As pastas executor/ e proprietario/
--- estão vazias, então usuário desses níveis entraria e não teria para
--- onde ir. Criar quando as telas existirem.
+-- ATENÇÃO ao nível do executor2_gm: ele entra como 3 (PLANEJADOR), não
+-- como 4. É deliberado. O nível 4 não tem nenhuma tela — a pasta
+-- executor/ está vazia — então um usuário nível 4 conseguiria fazer
+-- login e não teria para onde ir. Em 3 ele usa o painel do planejador,
+-- com acesso a tudo que o planejador acessa.
+--
+-- Não foi criado usuário de nível 2 (PROPRIETÁRIO) pelo mesmo motivo:
+-- a pasta proprietario/ também está vazia.
 -- =====================================================================
 
 SET NAMES utf8mb4;
@@ -40,6 +44,13 @@ VALUES
 (
     'Planejador GM',
     'planejador_gm2',
+    '$2y$12$KA9c5SFjPWKZIa/XzWdr7uCs0JSM67S./UOyZCiQPZcsn7krsXNWy',
+    3,
+    1
+),
+(
+    'Executor 2',
+    'executor2_gm',
     '$2y$12$KA9c5SFjPWKZIa/XzWdr7uCs0JSM67S./UOyZCiQPZcsn7krsXNWy',
     3,
     1
