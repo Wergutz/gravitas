@@ -400,6 +400,20 @@ body {
     .sidebar nav a{ flex: 1 1 auto; text-align: center; }
     .content{ padding: 16px; }
     .form-row{ flex-direction: column; }
+
+    /* No celular a barra vira uma faixa horizontal: a identidade se
+       encosta na direita da mesma linha da marca, como um rótulo, não
+       como o cartão que faz sentido na coluna do desktop. */
+    .sidebar .logo{ margin-bottom: 0; }
+    .sidebar .quem{
+        margin: 0 0 0 auto;
+        padding: 2px 0 2px 10px;
+        background: none;
+        border-radius: 0;
+        text-align: left;
+    }
+    .sidebar .quem b{ font-size: 12px; }
+    .sidebar .quem span{ font-size: 10px; }
 }
 
 /* =======================================================================

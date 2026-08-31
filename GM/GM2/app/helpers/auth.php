@@ -44,11 +44,19 @@ function perfil_label(): string {
  * passar a sessão inteira achando que se está no outro perfil.
  */
 function bloco_identidade(): string {
-    $nome   = $_SESSION['nome'] ?? ($_SESSION['usuario'] ?? '—');
-    $perfil = perfil_label();
+    $nome = trim((string) ($_SESSION['nome'] ?? ''));
+    if ($nome === '') {
+        $nome = trim((string) ($_SESSION['usuario'] ?? ''));
+    }
+
+    // Sessão aberta antes de o login passar a guardar o nome: mostra só o
+    // perfil, em vez de um traço solto no lugar do nome.
+    $linhaNome = $nome !== ''
+        ? '<b>' . htmlspecialchars($nome, ENT_QUOTES, 'UTF-8') . '</b>'
+        : '';
 
     return '<div class="quem">'
-         . '<b>' . htmlspecialchars($nome, ENT_QUOTES, 'UTF-8') . '</b>'
-         . '<span>' . htmlspecialchars($perfil, ENT_QUOTES, 'UTF-8') . '</span>'
+         . $linhaNome
+         . '<span>' . htmlspecialchars(perfil_label(), ENT_QUOTES, 'UTF-8') . '</span>'
          . '</div>';
 }

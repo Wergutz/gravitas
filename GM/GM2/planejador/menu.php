@@ -62,7 +62,8 @@ auth_required([3, 4]); // 3 = Planejador, 4 = Executor
 
 <!-- CONTEÚDO PRINCIPAL -->
 <div class="card">
-    <h3>Bem-vindo, <?= htmlspecialchars($_SESSION['nome'] ?? ($_SESSION['usuario'] ?? '')) ?></h3>
+    <?php $quem = trim((string) ($_SESSION['nome'] ?? ($_SESSION['usuario'] ?? ''))); ?>
+    <h3>Bem-vindo<?= $quem !== '' ? ', ' . htmlspecialchars($quem) : '' ?></h3>
     <p style="color:#9ca3af; margin-top:10px;">
         <?php if (eh_planejador()): ?>
         Utilize o menu lateral para acessar os cadastros, planejamento e controle operacional.
