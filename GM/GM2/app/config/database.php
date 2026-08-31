@@ -2,7 +2,7 @@
 $host = 'localhost';
 $db   = 'u278289683_GM2';
 $user = 'u278289683_GM2';
-$pass = 'TROCAR_PELA_SENHA_DO_BANCO_GM2';
+$pass = 'geb91/RS';
 $charset = 'utf8mb4';
 
 $options = [
