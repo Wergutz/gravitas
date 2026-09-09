@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Painel Gravitas · Uruguaiana</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap">
+<style>
+/* Tokens da Plataforma Gravitas (gravitas.net.br/principal/painel) */
+:root{
+  --navy:#1A2D4F; --navy-900:#11203B; --navy-700:#27406A; --navy-500:#3A578A;
+  --ink:#1E2738; --muted:#6B7686; --faint:#98A2B3; --line:#E4E8EF; --line-2:#EEF1F6; --surface:#FFFFFF; --surface-2:#F4F6FA; --ground:#F4F6FA;
+  --gold:#E0A53D; --gold-600:#C68C28; --gold-ink:#3A2A06;
+  --ok:#1F7A6E; --ok-bg:#E6F3F1; --aviso:#A96C2A; --aviso-bg:#F6ECE0; --erro:#B23A2C; --erro-bg:#F7E4E1; --info:#2F6BA6; --info-bg:#E4EEF8; --neutral:#8A95A6; --neutral-bg:#EDF0F4;
+  --text:var(--ink);
+  --rail:var(--navy); --rail-text:#C7D2E5; --rail-hi:#FFFFFF; --rail-sub:#9FB4D6; --rail-line:rgba(255,255,255,.10); --rail-on:rgba(255,255,255,.12);
+  --accent:var(--gold); --accent-ink:var(--gold-ink); --focus:var(--info);
+  --good:var(--ok); --warn:var(--gold-600); --serious:var(--info); --crit:var(--erro);
+  --good-bg:var(--ok-bg); --warn-bg:#F8EFDC; --serious-bg:var(--info-bg); --crit-bg:var(--erro-bg);
+  --radius:14px; --radius-lg:18px; --radius-sm:9px;
+  --shadow:0 4px 24px rgba(26,45,79,.04); --shadow-lg:0 20px 50px rgba(16,32,72,.14);
+  --sans:"Inter",-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --display:"Plus Jakarta Sans","Inter",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0E1729; --surface:#152238; --surface-2:#1B2A44; --line:#2A3A57; --line-2:#22314C;
+    --text:#E6EAF2; --ink:#E6EAF2; --muted:#A5B1C6; --faint:#6F7E99;
+    --rail:#0B1424; --rail-line:rgba(255,255,255,.08);
+    --ok-bg:#153A36; --aviso-bg:#3E2C14; --erro-bg:#43201C; --info-bg:#1B2F4A; --neutral-bg:#243247; --warn-bg:#3E3014;
+    --good-bg:var(--ok-bg); --serious-bg:var(--info-bg); --crit-bg:var(--erro-bg);
+    --good:#4FB3A5; --warn:#E0A53D; --serious:#6EA6DF; --crit:#E0665A; --neutral:#8A95A6;
+    --focus:#8FBDEB; --shadow:0 4px 24px rgba(0,0,0,.35);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0E1729; --surface:#152238; --surface-2:#1B2A44; --line:#2A3A57; --line-2:#22314C;
+  --text:#E6EAF2; --ink:#E6EAF2; --muted:#A5B1C6; --faint:#6F7E99;
+  --rail:#0B1424; --rail-line:rgba(255,255,255,.08);
+  --ok-bg:#153A36; --aviso-bg:#3E2C14; --erro-bg:#43201C; --info-bg:#1B2F4A; --neutral-bg:#243247; --warn-bg:#3E3014;
+  --good-bg:var(--ok-bg); --serious-bg:var(--info-bg); --crit-bg:var(--erro-bg);
+  --good:#4FB3A5; --warn:#E0A53D; --serious:#6EA6DF; --crit:#E0665A; --neutral:#8A95A6;
+  --focus:#8FBDEB; --shadow:0 4px 24px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--ground);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+h1,h2,h3,h4{margin:0;font-weight:800;letter-spacing:-.3px;text-wrap:balance;color:var(--text)}
+p{margin:0}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.faint{color:var(--faint)}
+.small{font-size:12px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hide{display:none!important}
+
+/* ---------- shell ---------- */
+.app{display:grid;grid-template-columns:236px 1fr;min-height:100vh}
+.app.pub{grid-template-columns:1fr}
+.rail{background:var(--rail);color:var(--rail-text);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;padding:22px 14px 14px}
+.brand{display:flex;align-items:center;gap:12px;padding:0 6px 18px;border-bottom:1px solid var(--rail-line)}
+.brand svg{width:38px;height:38px;flex:none}
+.brand b{display:block;color:var(--rail-hi);font-size:14px;font-weight:800;letter-spacing:3px;line-height:1.1}
+.brand span{display:block;font-size:9.5px;letter-spacing:1.5px;color:var(--rail-sub);text-transform:uppercase;margin-top:3px}
+.who{padding:14px 6px;border-bottom:1px solid var(--rail-line)}
+.who .eyebrow{color:var(--rail-sub);margin-bottom:6px;font-size:9.5px;letter-spacing:1.5px}
+.who select{width:100%;background:rgba(255,255,255,.08);color:var(--rail-hi);border:1px solid rgba(255,255,255,.14);padding:8px 10px;border-radius:var(--radius-sm)}
+.who .role{margin-top:8px;font-size:12px;color:var(--rail-text);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.06em;padding:2px 7px;border:1px solid rgba(255,255,255,.18);border-radius:999px;color:var(--rail-hi)}
+.nav{padding:10px 0;display:flex;flex-direction:column;gap:2px;flex:1}
+.nav .eyebrow{color:var(--rail-sub);padding:12px 12px 6px;font-size:9.5px;letter-spacing:1.5px}
+.nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;color:var(--rail-text);padding:10px 12px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:600}
+.nav button svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.9}
+.nav button span.l{flex:1}
+.nav button:hover{background:rgba(255,255,255,.07);color:var(--rail-hi)}
+.nav button.on{background:var(--rail-on);color:var(--rail-hi)}
+.nav button .n{font-size:11px;font-weight:700;min-width:20px;height:18px;padding:0 6px;border-radius:9px;background:var(--gold);color:var(--gold-ink);display:grid;place-items:center}
+.railfoot{padding:14px 6px 0;border-top:1px solid var(--rail-line);font-size:11px;color:var(--rail-sub);line-height:1.5}
+.railfoot a{color:var(--rail-hi);text-decoration:none;font-weight:600}
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;gap:14px;padding:22px 28px 0;position:sticky;top:0;z-index:5;background:linear-gradient(var(--ground) 80%,transparent)}
+.topbar h1{font-size:21px}
+.topbar .city{font-size:13px;color:var(--muted);margin-top:2px}
+.topbar .sp{flex:1}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:8px 14px;min-width:280px}
+.search input{border:0;background:none;outline:none;width:100%;font-size:13px}
+.bell{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:7px 14px 7px 8px;font-size:13px;font-weight:600;display:flex;gap:8px;align-items:center}
+.bell .av{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.bell .n{font-size:11px;font-weight:700;background:var(--erro);color:#fff;border-radius:9px;padding:0 6px;min-width:18px;text-align:center}
+.bell .n.zero{background:var(--neutral-bg);color:var(--muted)}
+.content{padding:18px 28px 40px;display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:20px;align-items:start}
+.content.one{grid-template-columns:minmax(0,1fr)}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px;grid-column:1/-1}
+.pagehead h2{font-size:20px}
+.pagehead p{color:var(--muted);max-width:66ch;margin-top:4px}
+
+/* ---------- kpis ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;grid-column:1/-1;margin-bottom:4px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 14px;box-shadow:var(--shadow)}
+.kpi .ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;margin-bottom:12px;background:var(--neutral-bg);color:var(--muted)}
+.kpi .ic svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.kpi .v{font-size:26px;font-weight:800;line-height:1.1;color:var(--text);letter-spacing:-.5px}
+.kpi .eyebrow{font-size:12.5px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted);margin-top:4px}
+.kpi.good .ic{background:var(--ok-bg);color:var(--good)}.kpi.warn .ic{background:var(--warn-bg);color:var(--warn)}.kpi.crit .ic{background:var(--erro-bg);color:var(--crit)}.kpi.serious .ic{background:var(--info-bg);color:var(--serious)}.kpi.acc .ic{background:#FBF1DE;color:var(--gold-600)}
+:root[data-theme="dark"] .kpi.acc .ic{background:#3E3014}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .kpi.acc .ic{background:#3E3014}}
+
+/* ---------- panels & lists ---------- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.panel>header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line-2)}
+.panel>header h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.row{display:grid;grid-template-columns:118px minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 18px;border-bottom:1px solid var(--line-2);cursor:pointer}
+.row:last-child{border-bottom:0}
+.row:hover{background:var(--surface-2)}
+.row.sel{background:var(--surface-2);box-shadow:inset 3px 0 0 var(--gold)}
+.row .code{font-size:12px;color:var(--muted);font-weight:500}
+.row .title{font-weight:600}
+.row .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.row .act{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap;border:1px solid transparent}
+.pill i{width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+.pill.neutral{background:var(--neutral-bg);color:var(--text);border-color:var(--line)}
+.pill.good{background:var(--good-bg);color:var(--good)}.pill.warn{background:var(--warn-bg);color:var(--aviso)}.pill.serious{background:var(--serious-bg);color:var(--serious)}.pill.crit{background:var(--crit-bg);color:var(--crit)}
+.pill.step{background:var(--surface-2);color:var(--muted);border-color:var(--line);font-size:11px}
+.empty{padding:28px 16px;color:var(--muted);text-align:center;font-size:13px}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;line-height:1.2;color:var(--text)}
+.btn:hover{background:var(--surface-2)}
+.btn.pri{background:var(--gold);border-color:var(--gold);color:var(--gold-ink);font-weight:700}
+.btn.pri:hover{background:var(--gold-600);border-color:var(--gold-600)}
+.btn.green{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700}
+.btn.danger{border-color:var(--crit);color:var(--crit)}
+.btn.sm{padding:5px 10px;font-size:12px;border-radius:8px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- detail drawer ---------- */
+.drawer{position:sticky;top:84px;max-height:calc(100vh - 104px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-lg)}
+.drawer .head{padding:18px 20px 14px;border-bottom:1px solid var(--line-2)}
+.drawer .head .code{font-size:12px;color:var(--muted);font-weight:500}
+.drawer .head h3{font-size:17px;margin-top:2px}
+.drawer .head .sub{color:var(--muted);font-size:12.5px;margin-top:4px}
+.drawer section{padding:14px 20px;border-bottom:1px solid var(--line-2)}
+.drawer section:last-child{border-bottom:0}
+.drawer section h4{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;font-weight:700}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:6px 12px;font-size:13px}
+.kv dt{color:var(--muted)}.kv dd{margin:0}
+.kv dd.mono{font-family:var(--sans);font-size:13px;font-weight:500}
+.steps{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin-top:8px}
+.steps i{height:5px;background:var(--line);display:block;border-radius:3px}
+.steps i.done{background:var(--ok)}.steps i.cur{background:var(--gold)}.steps i.bad{background:var(--crit)}
+.tl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0}
+.tl li{display:grid;grid-template-columns:14px minmax(0,1fr);gap:10px;padding:6px 0;position:relative}
+.tl li:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--line);margin-top:6px;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.tl li.acc:before{background:var(--gold)}
+.tl li.bad:before{background:var(--crit)}
+.tl li.ok:before{background:var(--ok)}
+.tl li:not(:last-child):after{content:"";position:absolute;left:5px;top:18px;bottom:-8px;width:2px;background:var(--line-2)}
+.tl .t{font-size:11px;color:var(--faint);font-weight:500}
+.tl .e{font-size:12.5px}
+.tl .h{font-family:var(--mono);font-size:10px;color:var(--faint);word-break:break-all}
+.docs{display:flex;flex-direction:column;gap:6px}
+.doc{display:flex;align-items:center;gap:10px;border:1px solid var(--line-2);border-radius:10px;padding:8px 10px;font-size:12.5px;background:var(--surface-2)}
+.doc .k{font-size:11px;font-weight:800;min-width:34px;color:var(--navy);letter-spacing:.02em}
+:root[data-theme="dark"] .doc .k{color:var(--gold)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .doc .k{color:var(--gold)}}
+.doc .s{margin-left:auto;font-size:11px;color:var(--muted);white-space:nowrap}
+.photos{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ph{aspect-ratio:4/3;background:linear-gradient(135deg,var(--surface-2),var(--line));border:1px solid var(--line-2);border-radius:8px;display:grid;place-items:end start;padding:5px;font-size:10px;color:var(--muted);font-weight:500}
+.callout{border-left:3px solid var(--gold);background:var(--surface-2);padding:10px 12px;font-size:12.5px;color:var(--text);border-radius:0 10px 10px 0}
+.callout.warn{border-left-color:var(--aviso);background:var(--aviso-bg)}.callout.crit{border-left-color:var(--erro);background:var(--erro-bg)}.callout.good{border-left-color:var(--ok);background:var(--ok-bg)}
+
+/* ---------- forms ---------- */
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px;padding:18px}
+.form .full{grid-column:1/-1}
+.f label{display:block;font-size:12.5px;font-weight:700;color:var(--text);margin-bottom:5px}
+.f input,.f select,.f textarea{width:100%;border:1px solid var(--line);background:var(--surface);padding:9px 12px;border-radius:10px;font-size:13px}
+.f input:focus,.f select:focus,.f textarea:focus{outline:none;border-color:var(--info);box-shadow:0 0 0 3px rgba(47,107,166,.15)}
+.f textarea{min-height:70px;resize:vertical}
+.f .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+.f input:disabled,.f select:disabled{background:var(--surface-2);color:var(--faint)}
+.formfoot{grid-column:1/-1;display:flex;justify-content:flex-end;gap:8px;padding-top:8px;border-top:1px solid var(--line-2)}
+.radio{display:flex;gap:8px;flex-wrap:wrap}
+.radio label{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);padding:7px 11px;border-radius:999px;font-size:12.5px;cursor:pointer;background:var(--surface)}
+.radio input,.f .radio input{margin:0;width:auto;flex:none;accent-color:var(--navy)}
+.f .radio label{display:inline-flex;font-weight:500;font-size:12.5px;margin:0;color:var(--text)}
+.calc{display:grid;grid-template-columns:1fr auto;gap:6px 16px;font-size:13px;padding:14px 18px;background:var(--surface-2);border-top:1px solid var(--line-2)}
+.calc .r{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.calc .tot{font-weight:800;font-size:16px;border-top:1px solid var(--line);padding-top:8px;margin-top:4px}
+.calc .tot.r{color:var(--crit)}
+.table{width:100%;border-collapse:collapse;font-size:12.5px}
+.table th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:9px 14px;border-bottom:1px solid var(--line);font-weight:700;background:var(--surface-2)}
+.table td{padding:10px 14px;border-bottom:1px solid var(--line-2);vertical-align:top}
+.table td.r,.table th.r{text-align:right;font-variant-numeric:tabular-nums}
+.table tr:last-child td{border-bottom:0}
+.table .on td{background:var(--surface-2)}
+.tabwrap{overflow-x:auto}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;max-width:90vw}
+.toast.on{opacity:1}
+.pex{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pexc{border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;background:var(--surface)}
+.pexc h4{font-size:13.5px;margin-bottom:6px;letter-spacing:0}
+.pexc ul{margin:0;padding-left:16px;font-size:12.5px;color:var(--muted)}
+.pexc li{margin:2px 0}
+.pexc.on{border-color:var(--gold);box-shadow:inset 0 0 0 1px var(--gold)}
+
+/* ---------- map ---------- */
+.map{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);position:relative;overflow:hidden}
+.map svg{width:100%;height:auto;display:block}
+.map .lbl{font-family:var(--sans);font-size:9px;font-weight:500;fill:var(--faint);letter-spacing:.02em}
+.map .seg{stroke:var(--line);stroke-width:5;stroke-linecap:butt;fill:none;cursor:pointer}
+.map .seg.hit{stroke-width:14;stroke:transparent}
+.map .seg.on{stroke-width:7}
+.map .ring{fill:none;stroke:var(--text);stroke-width:1.5;stroke-dasharray:3 2}
+.map .corr{stroke:var(--navy);stroke-width:9;opacity:.25;fill:none}
+:root[data-theme="dark"] .map .corr{stroke:#8FA3C4}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--line-2);font-size:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:18px;height:5px;display:inline-block;border-radius:3px}
+.pubhead{background:linear-gradient(135deg,var(--navy-900),var(--navy) 60%,var(--navy-700));color:#fff;padding:26px 28px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.pubhead .pb{display:flex;align-items:center;gap:14px}
+.pubhead .pb svg{width:44px;height:44px;flex:none}
+.pubhead h1{font-family:var(--display);font-size:26px;font-weight:800;letter-spacing:-.5px;color:#fff}
+.pubhead h1 em{font-style:normal;color:var(--gold)}
+.pubhead .sub{color:rgba(255,255,255,.7);font-size:13px;margin-top:2px}
+.pubhead .sp{flex:1}
+.pubhead .btn{background:transparent;color:#fff;border-color:rgba(255,255,255,.3)}
+.pub .content{grid-template-columns:minmax(0,1fr) 400px}
+.rua{display:flex;flex-direction:column;gap:8px}
+.rua .it{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 12px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface)}
+.rua .it .q{font-size:11px;color:var(--muted);font-weight:500}
+.rua .it b{font-weight:600;font-size:13px}
+.rua .it .d{font-size:12px;color:var(--muted)}
+.glyph{font-weight:800;font-size:11px;width:20px;height:20px;border-radius:6px;display:inline-grid;place-items:center;color:#fff}
+.ba{position:relative;aspect-ratio:16/9;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface-2)}
+.ba .a,.ba .b{position:absolute;inset:0}
+.ba .a{background:repeating-linear-gradient(45deg,#8B7355 0 8px,#7A6448 8px 16px)}
+.ba .b{background:repeating-linear-gradient(90deg,#3B3F45 0 40px,#454A50 40px 80px);clip-path:inset(0 0 0 var(--cut,50%))}
+.ba input{position:absolute;left:0;right:0;bottom:8px;width:100%;margin:0;accent-color:var(--gold)}
+.ba .cap{position:absolute;top:6px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff}
+@media (max-width:1100px){.content{grid-template-columns:1fr}.drawer{position:static;max-height:none}.pub .content{grid-template-columns:1fr}}
+@media (max-width:820px){.app{grid-template-columns:1fr}.rail{position:static;height:auto}.nav{flex-direction:row;flex-wrap:wrap}.nav .eyebrow{width:100%}.search{min-width:0}.form{grid-template-columns:1fr}.pex{grid-template-columns:1fr}.topbar{flex-wrap:wrap}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* ---------- faixa de demonstração (publicação no Painel de Controle) ---------- */
+.demo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0;padding:9px 28px;background:var(--aviso-bg);color:var(--aviso);border-bottom:1px solid var(--line);font-size:12.5px;line-height:1.45}
+.demo b{flex:none;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid currentColor}
+@media (max-width:820px){.demo{padding:9px 14px}}
+</style>
+</head>
+<body>
+<p class="demo" role="note"><b>Demonstração</b><span>Modelo de apresentação do licenciamento viário de Uruguaiana. Os dados são fictícios e nada do que você fizer aqui fica gravado — ao recarregar a página, tudo volta ao começo.</span></p>
+<div id="app" class="app"></div>
+<div id="toast" class="toast" role="status"></div>
+
+<script>
+/* ===================== DADOS (exemplo — Uruguaiana, RS) ===================== */
+const CITY = {nome:'Uruguaiana', uf:'RS', ufm:2.83 /* valor fictício de UFM — a confirmar na lei municipal */};
+
+const USERS = [
+  {id:'adm',  nome:'Gravitas · Administração', org:'Gravitas Engenharia', perfil:'adm',  papel:'Administrador do sistema', cert:'ICP-Brasil A1'},
+  {id:'obr1', nome:'Eng. Marcelo Righi',       org:'Sec. de Obras e Serviços Públicos', perfil:'pref', papel:'Operador (fiscal)', cert:'—', assina:[]},
+  {id:'obr2', nome:'Sec. Daniela Fontoura',    org:'Sec. de Obras e Serviços Públicos', perfil:'pref', papel:'Signatário', cert:'ICP-Brasil A3', assina:['LAV','NOT','AI','OF']},
+  {id:'ses1', nome:'Cel. Paulo Meneghetti',    org:'SESTRA — Segurança e Trânsito', perfil:'pref', papel:'Signatário', cert:'ICP-Brasil A3', assina:['LFT','AI-CTB']},
+  {id:'cor1', nome:'Fabiana Lopes',            org:'Corsan / Aegea — Unidade Fronteira Oeste', perfil:'terc', papel:'Operador', cert:'—', interv:'Corsan'},
+  {id:'rge1', nome:'Cristiano Amaral',         org:'RGE — Distribuição', perfil:'terc', papel:'Operador', cert:'—', interv:'RGE'},
+  {id:'lab1', nome:'Téc. Rosana Ferreira',     org:'LabPav Fronteira (laboratório contratado)', perfil:'lab', papel:'Responsável técnico', cert:'ICP-Brasil A1'},
+  {id:'grv1', nome:'Eng. Alex Gene',           org:'Gravitas Engenharia', perfil:'grav', papel:'Engenheiro responsável (ART)', cert:'ICP-Brasil A1'},
+  {id:'pop',  nome:'População',                org:'acesso público, sem login', perfil:'pop', papel:'—', cert:'—'},
+];
+
+const PROFILES = {
+  adm:{nome:'Administração', nav:[['users','Usuários e perfis'],['params','Parâmetros do município'],['audit','Trilha de auditoria']]},
+  pref:{nome:'Prefeitura', nav:[['inbox','Fila de trabalho'],['lic','Licenças LAV · LFT'],['vist','Vistorias e laudos'],['not','Notificações'],['multa','Multas'],['of','Ofícios AGERGS · MP'],['map','Mapa'],['todas','Todas as intervenções']]},
+  terc:{nome:'Interveniente', nav:[['inbox','Fila de trabalho'],['nova','Nova solicitação'],['pex','Padrão executivo'],['lic','Minhas licenças'],['not','Notificações recebidas'],['multa','Multas recebidas'],['prog','Programação mensal'],['map','Mapa']]},
+  lab:{nome:'Laboratório', nav:[['inbox','Ordens de ensaio'],['res','Resultados lançados']]},
+  grav:{nome:'Gravitas', nav:[['inbox','Fila de trabalho'],['aud','Auditoria da prévia'],['rec','Recebimento'],['gar','Garantia 1 · 6 · 12'],['pat','Pareceres de patologia'],['ens','Ensaios'],['map','Mapa'],['todas','Todas as intervenções']]},
+  pop:{nome:'População', nav:[]},
+};
+
+/* Malha esquemática do Centro. A malha real é carregada por OSM ou pelo cadastro municipal na implantação. */
+const EW = ['Rua Duque de Caxias','Rua Domingos de Almeida','Rua Bento Martins','Rua Santana'];
+const NS = ['Rua Sete de Setembro','Rua Tiradentes','Rua Dr. Maia','Rua General Câmara','Rua XV de Novembro'];
+const VX = [150,290,430,570,710], HY = [70,180,290,400];
+const ABR = s=>({'Rua Duque de Caxias':'DCX','Rua Domingos de Almeida':'DAL','Rua Bento Martins':'BMA','Rua Santana':'STA','Rua Sete de Setembro':'SSE','Rua Tiradentes':'TIR','Rua Dr. Maia':'DRM','Rua General Câmara':'GCA','Rua XV de Novembro':'XVN'})[s];
+const SEGS = [];
+EW.forEach((r,j)=>{ for(let i=0;i<NS.length-1;i++) SEGS.push({id:`URU-CEN-${ABR(r)}-${String(i+1).padStart(3,'0')}`, rua:r, entre:`${NS[i]} × ${NS[i+1]}`, x1:VX[i],y1:HY[j],x2:VX[i+1],y2:HY[j], ext:140, pav: j===0?'CBUQ':j===1?'Paralelepípedo regular':j===2?'Asfalto sobre paralelepípedo':'Bloco de concreto'}); });
+NS.forEach((r,i)=>{ for(let j=0;j<EW.length-1;j++) SEGS.push({id:`URU-CEN-${ABR(r)}-${String(j+1).padStart(3,'0')}`, rua:r, entre:`${EW[j]} × ${EW[j+1]}`, x1:VX[i],y1:HY[j],x2:VX[i],y2:HY[j+1], ext:110, pav: i%2?'Paralelepípedo irregular':'CBUQ'}); });
+const SEG = Object.fromEntries(SEGS.map(s=>[s.id,s]));
+
+const ST = {
+  s1:{n:'Solicitada',                    pop:'prog'}, s2:{n:'Vistoria prévia registrada', pop:'prog'},
+  s3:{n:'Prévia auditada',               pop:'prog'}, s4:{n:'Em análise — Obras + SESTRA', pop:'prog'},
+  s5:{n:'Licenciada',                    pop:'prog'}, s6:{n:'Em execução',                 pop:'aberta'},
+  s7:{n:'Executada',                     pop:'aguard'}, s8:{n:'Em recebimento',            pop:'aguard'},
+  s9a:{n:'Recebida provisoriamente',     pop:'ok'},   s9b:{n:'Notificada',                 pop:'corr'},
+  s10:{n:'Garantia — 1 mês',             pop:'ok'},   s11:{n:'Garantia — 6 meses',         pop:'ok'},
+  s12:{n:'Garantia — 12 meses',          pop:'ok'},   s13a:{n:'Recebida definitivamente',  pop:'ok'},
+  s13b:{n:'Patologia em garantia',       pop:'corr'}, s14:{n:'Suspensa / escalonada',      pop:'corr'},
+};
+const ORDER = ['s1','s2','s3','s4','s5','s6','s7','s8','s9a','s10','s11','s12','s13a'];
+const POP = {
+  prog:  {n:'Programada',                 cls:'neutral', col:'var(--neutral)', g:'P', dash:'6 4'},
+  aberta:{n:'Rua aberta',                 cls:'crit',    col:'var(--crit)',    g:'A', dash:''},
+  aguard:{n:'Aguardando repavimentação',  cls:'warn',    col:'var(--warn)',    g:'R', dash:''},
+  corr:  {n:'Em correção',                cls:'serious', col:'var(--serious)', g:'C', dash:'10 3'},
+  ok:    {n:'Concluída e aprovada',       cls:'good',    col:'var(--good)',    g:'✓', dash:''},
+  /* cores = tokens semânticos da Plataforma Gravitas: erro, gold-600, info, ok, neutro */
+};
+const PEX = {
+  'CBUQ':{t:'CBUQ (asfalto)', r:['Corte reto com serra, 30 cm além da borda da vala, cada lado','Reaterro em camadas de 20 cm, GC ≥ 95% PN','Base BGS 15 cm, GC 100% PI','Imprimação + pintura de ligação','CBUQ faixa C DNIT, e = 5 cm (mín. igual ao existente), GC 97–101%','Recomposição em toda a largura da faixa de rolamento (IR-01, 4.2.2)']},
+  'Asfalto sobre paralelepípedo':{t:'Asfalto sobre paralelepípedo', r:['Recolocação do paralelepípedo sobre colchão de areia 10 cm, rejunte','Reperfilagem antes do CBUQ','CBUQ e = mín. 4 cm em toda a largura da faixa','Ensaio de espessura por testemunho a cada 40 m']},
+  'Paralelepípedo regular':{t:'Paralelepípedo regular', r:['Reaproveitar peças íntegras; reposição por peça de mesma dimensão','Colchão de areia 10 cm, assentamento a cordel','Rejunte com areia + compactação com placa vibratória','Cota final nivelada com o entorno (tolerância 5 mm)']},
+  'Paralelepípedo irregular':{t:'Paralelepípedo irregular', r:['Reassentamento com juntas ≤ 2 cm','Colchão de areia 10 cm compactado','Rejunte, compactação, 2ª rega','Sem afundamento perceptível a régua de 3 m']},
+  'Bloco de concreto':{t:'Bloco intertravado', r:['Blocos novos de mesma família e resistência (fpk ≥ 35 MPa)','Areia de assentamento 4 cm, contenção lateral','Compactação com placa, selagem com areia fina','Padrão de assentamento igual ao existente']},
+  'Calçada':{t:'Calçada', r:['Piso igual ao existente (cimentado, ladrilho ou intertravado)','Base de concreto magro 5 cm','Juntas alinhadas com o existente','Rebaixo de acessibilidade preservado']},
+};
+
+let SEQ = 40, LOGSEQ = 900;
+const h=(s)=>{let x=0;for(const c of s)x=(x*31+c.charCodeAt(0))>>>0;return (x.toString(16)+'0000000').slice(0,7)+(Math.abs(x*7919)>>>0).toString(16).slice(0,5)};
+const stamp=(d)=>d||'2026-09-09 10:12';
+function mk(o){
+  const it = Object.assign({id:'INT-2026-'+String(SEQ++).padStart(4,'0'), fotos:0, docs:[], log:[], notif:[], multas:[], ensaios:[], sig:{LAV:null,LFT:null}, caucao:0, prev:null, apont:[]}, o);
+  it.log.forEach(l=>l.hash=h(it.id+l.t+l.e));
+  return it;
+}
+const INTS = [
+  mk({seg:'URU-CEN-DCX-002', interv:'Corsan', motivo:'Reparo de vazamento — rede DN 100', ext:12, larg:0.8, st:'s1', dt:'2026-09-08', log:[{t:'2026-09-08 16:40',w:'Fabiana Lopes · Corsan',e:'Solicitação registrada (LAV + LFT)'}]}),
+  mk({seg:'URU-CEN-DAL-003', interv:'RGE', motivo:'Rede subterrânea — travessia', ext:9, larg:0.6, st:'s2', dt:'2026-09-05', fotos:8, prev:{pav:'Bom',trincas:'Ausentes',afund:'Ausentes',obs:'Sarjeta íntegra; boca-de-lobo a 4 m'}, log:[{t:'2026-09-05 09:10',w:'Cristiano Amaral · RGE',e:'Solicitação registrada'},{t:'2026-09-06 11:32',w:'Cristiano Amaral · RGE',e:'Vistoria prévia registrada — 8 fotos georreferenciadas'}]}),
+  mk({seg:'URU-CEN-BMA-001', interv:'Corsan', motivo:'Ligação domiciliar de esgoto', ext:6, larg:0.6, st:'s4', dt:'2026-09-02', fotos:6, prev:{pav:'Regular',trincas:'Couro de jacaré 2 m²',afund:'Ausentes',obs:'Patologia pré-existente registrada'}, sig:{LAV:{w:'Sec. Daniela Fontoura',t:'2026-09-04 15:02'},LFT:null}, log:[{t:'2026-09-02 08:55',w:'Fabiana Lopes · Corsan',e:'Solicitação registrada'},{t:'2026-09-02 14:20',w:'Fabiana Lopes · Corsan',e:'Vistoria prévia registrada — 6 fotos'},{t:'2026-09-03 10:05',w:'Eng. Alex Gene · Gravitas',e:'Prévia auditada — concorda com a declaração; patologia pré-existente delimitada'},{t:'2026-09-04 15:02',w:'Sec. Daniela Fontoura · Obras',e:'LAV assinada (ICP-Brasil A3)'}]}),
+  mk({seg:'URU-CEN-STA-002', interv:'CEEE Equatorial', motivo:'Substituição de cabo subterrâneo', ext:38, larg:0.6, st:'s5', dt:'2026-08-28', fotos:12, caucao:7688, sig:{LAV:{w:'Sec. Daniela Fontoura',t:'2026-08-30 11:00'},LFT:{w:'Cel. Paulo Meneghetti',t:'2026-08-30 16:40'}}, docs:[['LAV','Licença de Abertura de Vala nº 0031/2026','2026-08-30'],['LFT','Licença de Fechamento de Trânsito nº 0019/2026 — bloqueio parcial, 7 dias','2026-08-30'],['PEX','Padrão executivo — Bloco de concreto','2026-08-30']], log:[{t:'2026-08-28 09:00',w:'CEEE',e:'Solicitação registrada'},{t:'2026-08-29 10:30',w:'Gravitas',e:'Prévia auditada'},{t:'2026-08-30 16:40',w:'Obras + SESTRA',e:'Licenciada — LAV 0031 + LFT 0019; caução R$ 7.688,00'}]}),
+  mk({seg:'URU-CEN-SSE-002', interv:'Corsan', motivo:'Rede de água DN 150 — substituição', ext:110, larg:0.8, st:'s6', dt:'2026-08-20', fotos:14, caucao:22255, sig:{LAV:{w:'Sec. Daniela Fontoura',t:'2026-08-22 10:00'},LFT:{w:'Cel. Paulo Meneghetti',t:'2026-08-22 10:30'}}, docs:[['LAV','Licença de Abertura de Vala nº 0028/2026','2026-08-22'],['LFT','Licença de Fechamento de Trânsito nº 0017/2026 — interdição total, 12 dias','2026-08-22'],['PEX','Padrão executivo — CBUQ','2026-08-22']], log:[{t:'2026-08-20 08:10',w:'Corsan',e:'Solicitação registrada'},{t:'2026-08-22 10:30',w:'Obras + SESTRA',e:'Licenciada'},{t:'2026-09-01 07:30',w:'Corsan',e:'Início de execução informado'}]}),
+  mk({seg:'URU-CEN-TIR-001', interv:'Corsan', motivo:'Rede de esgoto — ramal', ext:60, larg:0.8, st:'s7', dt:'2026-08-12', fotos:10, caucao:12139, docs:[['LAV','Licença de Abertura de Vala nº 0025/2026','2026-08-14'],['LFT','Licença de Fechamento de Trânsito nº 0015/2026','2026-08-14'],['PEX','Padrão executivo — Paralelepípedo irregular','2026-08-14']], sig:{LAV:{w:'Sec. Daniela Fontoura',t:'2026-08-14'},LFT:{w:'Cel. Paulo Meneghetti',t:'2026-08-14'}}, log:[{t:'2026-08-12',w:'Corsan',e:'Solicitação registrada'},{t:'2026-08-14',w:'Obras + SESTRA',e:'Licenciada'},{t:'2026-08-18',w:'Corsan',e:'Início de execução'},{t:'2026-09-06 17:10',w:'Corsan',e:'Conclusão informada — 60 m repavimentados; controle tecnológico anexado'}]}),
+  mk({seg:'URU-CEN-DCX-003', interv:'Corsan', motivo:'Rede de água DN 100 — reparo', ext:24, larg:0.8, st:'s8', dt:'2026-08-05', fotos:9, caucao:4856, docs:[['LAV','Licença de Abertura de Vala nº 0022/2026','2026-08-06'],['LFT','LFT nº 0013/2026','2026-08-06'],['PEX','Padrão executivo — CBUQ','2026-08-06'],['CT','Controle tecnológico da QTK — 2 testemunhos','2026-09-02']], ensaios:[{id:'OE-2026-011', tipo:'Extração de testemunho — espessura, GC, teor de ligante', pts:2, st:'pendente', ped:'2026-09-08', por:'Eng. Marcelo Righi · Obras'}], sig:{LAV:{w:'Sec. Daniela Fontoura',t:'2026-08-06'},LFT:{w:'Cel. Paulo Meneghetti',t:'2026-08-06'}}, log:[{t:'2026-08-05',w:'Corsan',e:'Solicitação registrada'},{t:'2026-08-06',w:'Obras + SESTRA',e:'Licenciada'},{t:'2026-09-02',w:'Corsan',e:'Conclusão informada; controle tecnológico da QTK anexado'},{t:'2026-09-08 09:15',w:'Eng. Marcelo Righi · Obras',e:'Análise crítica: espessura declarada 4,6 cm × projeto 5,0 cm (−8%) — fora da tolerância DNIT 112. Contraprova solicitada (OE-2026-011)'}]}),
+  mk({seg:'URU-CEN-DAL-001', interv:'Corsan', motivo:'Ligação de água', ext:5, larg:0.6, st:'s9b', dt:'2026-07-22', fotos:7, caucao:1012, apont:[{n:'Afundamento de 3,5 cm na régua de 3 m',g:'grave'},{n:'Recomposição só na largura da vala — faixa não recomposta (IR-01, 4.2.2)',g:'média'}], docs:[['LAV','LAV nº 0018/2026','2026-07-24'],['NOT','Notificação nº 0007/2026 — prazo 15 dias para refazimento','2026-08-29']], sig:{LAV:{w:'Sec. Daniela Fontoura',t:'2026-07-24'},LFT:{w:'Cel. Paulo Meneghetti',t:'2026-07-24'}}, log:[{t:'2026-07-22',w:'Corsan',e:'Solicitação registrada'},{t:'2026-08-20',w:'Corsan',e:'Conclusão informada'},{t:'2026-08-28 14:00',w:'Eng. Alex Gene · Gravitas',e:'Vistoria de recebimento — 2 apontamentos; laudo VG-0031'},{t:'2026-08-29 09:30',w:'Sec. Daniela Fontoura · Obras',e:'Notificação 0007/2026 emitida — refazimento em 15 dias'}]}),
+  mk({seg:'URU-CEN-DRM-002', interv:'RGE', motivo:'Travessia subterrânea', ext:8, larg:0.6, st:'s10', dt:'2026-07-10', fotos:6, caucao:1619, docs:[['LAV','LAV nº 0014/2026','2026-07-12'],['TRP','Termo de Recebimento Provisório','2026-08-08']], sig:{LAV:{w:'Sec. Daniela Fontoura',t:'2026-07-12'},LFT:{w:'Cel. Paulo Meneghetti',t:'2026-07-12'}}, log:[{t:'2026-07-10',w:'RGE',e:'Solicitação registrada'},{t:'2026-08-08',w:'Gravitas',e:'Recebida provisoriamente — TRP emitido; medição liberada'}], vgar:'2026-09-08'}),
+  mk({seg:'URU-CEN-GCA-001', interv:'Corsan', motivo:'Rede de esgoto — coletor', ext:95, larg:0.8, st:'s11', dt:'2026-02-14', fotos:16, caucao:19220, docs:[['LAV','LAV nº 0003/2026','2026-02-16'],['TRP','Termo de Recebimento Provisório','2026-03-20'],['VG','Vistoria de garantia 1 mês — sem patologia','2026-04-21']], sig:{LAV:{w:'Sec. Daniela Fontoura',t:'2026-02-16'},LFT:{w:'Cel. Paulo Meneghetti',t:'2026-02-16'}}, log:[{t:'2026-02-14',w:'Corsan',e:'Solicitação registrada'},{t:'2026-03-20',w:'Gravitas',e:'Recebida provisoriamente'},{t:'2026-04-21',w:'Gravitas',e:'Vistoria de garantia 1 mês — sem patologia'}], vgar:'2026-09-20'}),
+  mk({seg:'URU-CEN-STA-003', interv:'Corsan', motivo:'Rede de água — substituição', ext:120, larg:0.8, st:'s13b', dt:'2025-10-02', fotos:18, caucao:24278, apont:[{n:'Afundamento longitudinal 4 cm sobre a vala, 22 m — recalque do reaterro',g:'grave'}], docs:[['LAV','LAV nº 0087/2025','2025-10-04'],['TRP','TRP','2025-11-10'],['VG','VG 1 mês — ok','2025-12-11'],['VG','VG 6 meses — patologia','2026-05-12'],['NOT','Notificação nº 0004/2026','2026-05-14']], sig:{LAV:{w:'Obras',t:'2025-10-04'},LFT:{w:'SESTRA',t:'2025-10-04'}}, log:[{t:'2025-10-02',w:'Corsan',e:'Solicitação registrada'},{t:'2025-11-10',w:'Gravitas',e:'Recebida provisoriamente'},{t:'2026-05-12',w:'Eng. Alex Gene · Gravitas',e:'Vistoria de garantia 6 meses — afundamento 4 cm; parecer de patologia PP-0009 (recalque do reaterro, GC insuficiente)'},{t:'2026-05-14',w:'Obras',e:'Notificação 0004/2026 — refazimento em garantia, 30 dias'},{t:'2026-06-20',w:'Obras',e:'Prazo vencido sem resposta'}]}),
+  mk({seg:'URU-CEN-XVN-002', interv:'Corsan', motivo:'Reparo emergencial — sem licença', ext:7, larg:0.8, st:'s14', dt:'2026-08-30', fotos:4, apont:[{n:'Abertura de vala sem LAV/LFT (CTB art. 95)',g:'gravíssima'}], multas:[{id:'AI-2026-0012', base:'CTB art. 95, §3º — via SESTRA', v:488.10, dias:9, diaria:488.10, total:4880.99, dt:'2026-09-01', st:'emitida'}], docs:[['AI','Auto de infração AI-2026-0012 (SESTRA)','2026-09-01'],['OF','Ofício nº 0041/2026 à AGERGS — descumprimento do PMSB','2026-09-03']], log:[{t:'2026-08-30 07:40',w:'SESTRA',e:'Abertura sem licença constatada em ronda'},{t:'2026-08-30 08:15',w:'Eng. Marcelo Righi · Obras',e:'Intervenção cadastrada de ofício; regularização exigida'},{t:'2026-09-01',w:'Cel. Paulo Meneghetti · SESTRA',e:'Auto de infração AI-2026-0012 — CTB art. 95 §3º + diária'},{t:'2026-09-03',w:'Sec. Daniela Fontoura · Obras',e:'Ofício 0041/2026 à AGERGS assinado e protocolado'}]}),
+  mk({seg:'URU-CEN-BMA-004', interv:'Claro (fibra)', motivo:'Lançamento de duto — fibra óptica', ext:130, larg:0.4, st:'s13a', dt:'2025-06-10', fotos:20, caucao:0, docs:[['LAV','LAV nº 0044/2025','2025-06-12'],['TRD','Termo de Recebimento Definitivo — caução liberada','2026-08-15']], sig:{LAV:{w:'Obras',t:'2025-06-12'},LFT:{w:'SESTRA',t:'2025-06-12'}}, log:[{t:'2025-06-10',w:'Claro',e:'Solicitação registrada'},{t:'2025-07-30',w:'Gravitas',e:'Recebida provisoriamente'},{t:'2026-08-15',w:'Gravitas + Obras',e:'Garantia 12 meses sem patologia — TRD emitido, caução liberada'}]}),
+];
+const PROG = [ /* programação mensal declarada pelos intervenientes */
+  {interv:'Corsan', seg:'URU-CEN-SSE-003', mes:'out/2026', motivo:'Rede de água DN 150 — continuação'},
+  {interv:'Corsan', seg:'URU-CEN-DRM-003', mes:'out/2026', motivo:'Coletor de esgoto'},
+  {interv:'RGE',    seg:'URU-CEN-BMA-002', mes:'nov/2026', motivo:'Travessia subterrânea'},
+  {interv:'Corsan', seg:'URU-CEN-GCA-002', mes:'dez/2026', motivo:'Coletor de esgoto — 2ª etapa'},
+];
+const NOTIF = [
+  {t:'2026-09-08 09:15', to:'lab', from:'Obras', int:'INT-2026-0046', txt:'Ordem de ensaio OE-2026-011 — 2 testemunhos, Duque de Caxias 003'},
+  {t:'2026-09-08 16:40', to:'grav', from:'Corsan', int:'INT-2026-0040', txt:'Nova solicitação aguarda vistoria prévia do interveniente'},
+  {t:'2026-09-06 11:32', to:'grav', from:'RGE', int:'INT-2026-0041', txt:'Vistoria prévia registrada — auditar'},
+  {t:'2026-09-04 15:02', to:'pref', from:'Obras', int:'INT-2026-0042', txt:'LAV assinada — falta LFT (SESTRA)'},
+  {t:'2026-09-06 17:10', to:'grav', from:'Corsan', int:'INT-2026-0045', txt:'Conclusão informada — agendar vistoria de recebimento'},
+  {t:'2026-08-29 09:30', to:'terc:Corsan', from:'Obras', int:'INT-2026-0047', txt:'Notificação 0007/2026 — refazimento em 15 dias (vence 13/09)'},
+  {t:'2026-09-01 10:00', to:'terc:Corsan', from:'SESTRA', int:'INT-2026-0051', txt:'Auto de infração AI-2026-0012 — CTB art. 95'},
+  {t:'2026-06-20 10:00', to:'pref', from:'Sistema', int:'INT-2026-0050', txt:'Notificação 0004/2026 vencida sem resposta — escalonar?'},
+];
+const AUDIT = []; // trilha global
+</script>
+<script>
+/* ===================== ESTADO E UTILITÁRIOS ===================== */
+const S = {uid:'obr1', view:'inbox', sel:null, q:'', read:new Set(), tab:{}};
+const PARAMS = {auditPct:20, garantiaMeses:12, caucaoM:202.32, susp:{}, leiMulta:false, ufm:CITY.ufm};
+const $ = (s)=>document.querySelector(s);
+const brl = (v)=>'R$ '+(Math.round(v*100)/100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc = (s)=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const now = ()=>{const d=new Date();return d.toISOString().slice(0,10)+' '+d.toTimeString().slice(0,5)};
+const U = ()=>USERS.find(u=>u.id===S.uid);
+const P = ()=>U().perfil;
+const INT = (id)=>INTS.find(i=>i.id===id);
+const cur = (segId)=>INTS.filter(i=>i.seg===segId).sort((a,b)=>b.dt.localeCompare(a.dt))[0];
+const popOf = (it)=>POP[ST[it.st].pop];
+const stepIdx = (st)=>{ const m={s9b:8,s13b:12,s14:-1}; return m[st]!==undefined?m[st]:ORDER.indexOf(st); };
+let toastT; function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600);}
+function log(it, e, w){ const l={t:now(), w:w||(U().nome+' · '+U().org.split(' —')[0].split(' /')[0]), e}; l.hash=h(it.id+l.t+e); it.log.push(l); AUDIT.push({t:l.t,w:l.w,int:it.id,e,hash:l.hash}); }
+function notify(to, int, txt){ NOTIF.unshift({t:now(), to, from:U().org.split(' —')[0].split(' /')[0], int, txt}); }
+function myNotifs(){ const u=U(); const key = u.perfil==='terc'?'terc:'+u.interv:u.perfil; return NOTIF.filter(n=>n.to===key); }
+function unread(){ return myNotifs().filter(n=>!S.read.has(n.t+n.int)).length; }
+function go(view, sel){ S.view=view; if(sel!==undefined) S.sel=sel; render(); }
+function sel(id){ S.sel = (S.sel===id?null:id); render(); }
+function pill(it){ const p=popOf(it); return `<span class="pill ${p.cls}"><i></i>${ST[it.st].n}</span>`; }
+function due(it){ /* vistoria de garantia devida? */ return it.vgar && it.vgar<=now().slice(0,10); }
+function caucaoDe(it){ return it.ext*PARAMS.caucaoM; }
+
+/* ===================== FILAS POR PERFIL ===================== */
+function queue(){
+  const u=U();
+  const q=[];
+  if(u.perfil==='pref'){
+    INTS.forEach(it=>{
+      if(it.st==='s4'){ const need=[]; if(!it.sig.LAV)need.push('LAV'); if(!it.sig.LFT)need.push('LFT'); const mine=need.filter(d=>(u.assina||[]).includes(d)); q.push({it, a: mine.length?`Assinar ${mine.join(' + ')}`:`Aguarda ${need.join(' + ')}`, pri: mine.length?1:3, fn: mine.length?()=>sel(it.id):null}); }
+      if(it.st==='s3') q.push({it, a:'Enviar para análise', pri:1, fn:()=>act_analise(it.id)});
+      if(it.st==='s8' && it.ensaios.some(e=>e.st==='lançado'&&!e.ok)) q.push({it, a:'Ensaio não conforme — notificar', pri:1, fn:()=>go('not',it.id)});
+      if(it.st==='s9b' && !it.docs.some(d=>d[0]==='NOT')) q.push({it, a:'Emitir notificação', pri:1, fn:()=>go('not',it.id)});
+      if(it.st==='s9b' && it.docs.some(d=>d[0]==='NOT')) q.push({it, a:'Prazo em curso · multa se vencer', pri:2, fn:()=>go('multa',it.id)});
+      if(it.st==='s13b') q.push({it, a:'Prazo vencido — multa / ofício', pri:1, fn:()=>go('of',it.id)});
+      if(it.st==='s14' && !it.docs.some(d=>d[0]==='OF')) q.push({it, a:'Escalonar — ofício AGERGS/MP', pri:1, fn:()=>go('of',it.id)});
+    });
+  }
+  if(u.perfil==='terc'){
+    INTS.filter(it=>it.interv===u.interv).forEach(it=>{
+      if(it.st==='s1') q.push({it,a:'Registrar vistoria prévia',pri:1,fn:()=>sel(it.id)});
+      if(it.st==='s5') q.push({it,a:'Informar início da execução',pri:2,fn:()=>sel(it.id)});
+      if(it.st==='s6') q.push({it,a:'Informar conclusão + controle tecnológico',pri:2,fn:()=>sel(it.id)});
+      if(it.st==='s9b'||it.st==='s13b') q.push({it,a:'Responder notificação — informar refazimento',pri:1,fn:()=>sel(it.id)});
+      if(it.multas.some(m=>m.st==='emitida')) q.push({it,a:'Auto de infração — pagar ou recorrer',pri:1,fn:()=>go('multa',it.id)});
+      if(it.st==='s14') q.push({it,a:'Regularizar — solicitar LAV/LFT',pri:1,fn:()=>sel(it.id)});
+    });
+  }
+  if(u.perfil==='grav'){
+    INTS.forEach(it=>{
+      if(it.st==='s2') q.push({it,a:'Auditar vistoria prévia',pri:1,fn:()=>sel(it.id)});
+      if(it.st==='s7') q.push({it,a:'Vistoria de recebimento',pri:1,fn:()=>sel(it.id)});
+      if(it.st==='s8' && it.ensaios.some(e=>e.st==='lançado')) q.push({it,a:'Concluir recebimento com o ensaio',pri:1,fn:()=>sel(it.id)});
+      if(['s10','s11','s12'].includes(it.st) && due(it)) q.push({it,a:'Vistoria de garantia devida',pri:1,fn:()=>sel(it.id)});
+      if(it.st==='s13b' && !it.docs.some(d=>d[0]==='PP')) q.push({it,a:'Emitir parecer de patologia',pri:2,fn:()=>sel(it.id)});
+    });
+  }
+  if(u.perfil==='lab'){
+    INTS.forEach(it=>it.ensaios.filter(e=>e.st==='pendente').forEach(e=>q.push({it,a:`Lançar ${e.id}`,pri:1,fn:()=>sel(it.id)})));
+  }
+  return q.sort((a,b)=>a.pri-b.pri);
+}
+
+/* ===================== AÇÕES ===================== */
+function act_nova(f){
+  const seg=SEG[f.seg]; const u=U();
+  const it=mk({seg:f.seg, interv:u.interv, motivo:f.motivo, ext:+f.ext, larg:+f.larg, st:'s1', dt:now().slice(0,10), log:[]});
+  INTS.unshift(it); log(it,'Solicitação registrada (LAV + LFT) — previsão '+f.prev+', '+f.dias+' dias, bloqueio '+f.bloq);
+  notify('pref',it.id,`Nova solicitação ${u.interv} — ${seg.rua}, ${seg.entre}`); notify('grav',it.id,'Nova solicitação aguarda vistoria prévia do interveniente');
+  toast('Solicitação registrada — registre a vistoria prévia para seguir'); go('inbox',it.id);
+}
+function act_prev(id,f){ const it=INT(id); it.prev={pav:f.pav,trincas:f.trincas,afund:f.afund,obs:f.obs}; it.fotos=+f.fotos; it.st='s2'; log(it,`Vistoria prévia registrada — ${f.fotos} fotos georreferenciadas; pavimento ${f.pav.toLowerCase()}`); notify('grav',id,'Vistoria prévia registrada — auditar'); toast('Vistoria prévia registrada'); render(); }
+function act_audit(id,ok,obs){ const it=INT(id); it.st='s4'; log(it, ok?'Prévia auditada — concorda com a declaração do interveniente'+(obs?'; '+obs:'')+'. Processo enviado para análise':'Prévia auditada — DIVERGE: '+obs+'. Interveniente tem 5 dias úteis para contestar. Processo enviado para análise com ressalva'); notify('pref',id,'Prévia auditada — analisar LAV (Obras) e LFT (SESTRA)'); notify('terc:'+it.interv,id, ok?'Vistoria prévia auditada sem ressalva':'Vistoria prévia auditada com divergência — 5 dias úteis para contestar'); toast('Auditoria registrada'); render(); }
+function act_analise(id){ const it=INT(id); it.st='s4'; log(it,'Enviada para análise — Obras (LAV) e SESTRA (LFT)'); render(); }
+function act_sign(id,doc){ const it=INT(id); const u=U(); it.sig[doc]={w:u.nome,t:now()}; log(it,`${doc} assinada (${u.cert})`);
+  if(it.sig.LAV&&it.sig.LFT){ it.st='s5'; it.caucao=caucaoDe(it); const n=String(31+INTS.filter(i=>i.docs.some(d=>d[0]==='LAV')).length).padStart(4,'0');
+    it.docs.push(['LAV',`Licença de Abertura de Vala nº ${n}/2026`,now().slice(0,10)],['LFT',`Licença de Fechamento de Trânsito nº ${n}/2026`,now().slice(0,10)],['PEX',`Padrão executivo — ${SEG[it.seg].pav}`,now().slice(0,10)]);
+    log(it,`Licenciada — LAV + LFT emitidas; caução ${brl(it.caucao)} (${it.ext} m × ${brl(PARAMS.caucaoM)}/m)`); notify('terc:'+it.interv,id,'Licença emitida — LAV, LFT e padrão executivo disponíveis'); notify('grav',id,'Licenciada — acompanhar execução'); toast('Licença emitida; caução calculada'); }
+  else { toast(doc+' assinada — falta '+(doc==='LAV'?'LFT (SESTRA)':'LAV (Obras)')); notify('pref',id,`${doc} assinada — falta ${doc==='LAV'?'LFT':'LAV'}`); }
+  render(); }
+function act_start(id){ const it=INT(id); it.st='s6'; log(it,'Início de execução informado — sinalização conforme LFT'); notify('pref',id,'Execução iniciada'); toast('Início registrado — a rua aparece como aberta no mapa público'); render(); }
+function act_done(id,f){ const it=INT(id); it.st='s7'; it.docs.push(['CT',`Controle tecnológico do executor — ${f.pts} pontos`,now().slice(0,10)]); log(it,`Conclusão informada — ${it.ext} m repavimentados; controle tecnológico anexado (${f.pts} pontos, espessura média ${f.esp} cm)`); notify('grav',id,'Conclusão informada — vistoria de recebimento'); notify('pref',id,'Conclusão informada — análise crítica do controle tecnológico'); toast('Conclusão informada'); render(); }
+function act_recv(id,ok,ap){ const it=INT(id);
+  if(ok){ it.st='s10'; it.docs.push(['TRP','Termo de Recebimento Provisório',now().slice(0,10)]); it.vgar=addM(now().slice(0,10),1); log(it,'Vistoria de recebimento sem apontamento — TRP emitido; medição liberada; vistoria de garantia 1 mês em '+it.vgar); notify('terc:'+it.interv,id,'Recebida provisoriamente — TRP disponível'); notify('pref',id,'TRP emitido'); }
+  else { it.st='s9b'; it.apont=ap; log(it,`Vistoria de recebimento — ${ap.length} apontamento(s); laudo VG-${String(31+AUDIT.length).padStart(4,'0')}`); notify('pref',id,'Laudo com apontamentos — emitir notificação'); notify('terc:'+it.interv,id,'Laudo de recebimento com apontamentos'); }
+  toast(ok?'Recebida provisoriamente':'Laudo emitido — prefeitura notifica'); render(); }
+function act_not(id,prazo,txt){ const it=INT(id); const n=String(8+INTS.filter(i=>i.docs.some(d=>d[0]==='NOT')).length).padStart(4,'0'); it.docs.push(['NOT',`Notificação nº ${n}/2026 — prazo ${prazo} dias`,now().slice(0,10)]); it.prazo=prazo; log(it,`Notificação ${n}/2026 emitida — refazimento em ${prazo} dias. ${txt||''}`); notify('terc:'+it.interv,id,`Notificação ${n}/2026 — refazimento em ${prazo} dias`); toast('Notificação assinada e enviada'); render(); }
+function act_fix(id,txt){ const it=INT(id); it.st= it.st==='s13b'?'s12':'s8'; log(it,'Refazimento informado pelo interveniente: '+txt); notify('grav',id,'Refazimento informado — nova vistoria'); notify('pref',id,'Interveniente respondeu à notificação'); toast('Resposta enviada — Gravitas fará nova vistoria'); render(); }
+function act_gar(id,ok,obs){ const it=INT(id); const nxt={s10:'s11',s11:'s12',s12:'s13a'}[it.st]; const lbl={s10:'1 mês',s11:'6 meses',s12:'12 meses'}[it.st];
+  if(ok){ it.docs.push(['VG',`Vistoria de garantia ${lbl} — sem patologia`,now().slice(0,10)]); it.st=nxt; if(nxt==='s13a'){ it.docs.push(['TRD','Termo de Recebimento Definitivo — caução liberada',now().slice(0,10)]); log(it,`Vistoria de garantia ${lbl} sem patologia — TRD emitido; caução ${brl(it.caucao)} liberada`); it.caucao=0; it.vgar=null; notify('terc:'+it.interv,id,'Recebida definitivamente — caução liberada'); } else { it.vgar=addM(now().slice(0,10),nxt==='s11'?5:6); log(it,`Vistoria de garantia ${lbl} — sem patologia; próxima em ${it.vgar}`); } }
+  else { it.st='s13b'; it.apont=[{n:obs,g:'grave'}]; it.docs.push(['VG',`Vistoria de garantia ${lbl} — patologia`,now().slice(0,10)]); log(it,`Vistoria de garantia ${lbl} — patologia: ${obs}`); notify('pref',id,'Patologia em garantia — notificar refazimento'); notify('terc:'+it.interv,id,'Patologia constatada em garantia'); }
+  toast('Vistoria de garantia registrada'); render(); }
+function act_parecer(id,causa,txt){ const it=INT(id); const n='PP-'+String(9+INTS.filter(i=>i.docs.some(d=>d[0]==='PP')).length).padStart(4,'0'); it.docs.push(['PP',`Parecer de patologia ${n} — ${causa}`,now().slice(0,10)]); log(it,`Parecer de patologia ${n}: causa provável ${causa}. ${txt}`); notify('pref',id,`Parecer ${n} disponível — fundamenta notificação e ofício`); toast('Parecer assinado (ICP-Brasil) e publicado'); render(); }
+function act_ensaio(id,tipo,pts){ const it=INT(id); const e={id:'OE-2026-'+String(12+INTS.reduce((a,i)=>a+i.ensaios.length,0)).padStart(3,'0'), tipo, pts:+pts, st:'pendente', ped:now().slice(0,10), por:U().nome}; it.ensaios.push(e); it.st='s8'; log(it,`Ordem de ensaio ${e.id} — ${tipo}, ${pts} ponto(s) — laboratório independente`); notify('lab',id,`Ordem de ensaio ${e.id} — ${SEG[it.seg].rua}`); toast('Ordem de ensaio enviada ao laboratório'); render(); }
+function act_lab(id,oe,f){ const it=INT(id); const e=it.ensaios.find(x=>x.id===oe); const esp=+f.esp, proj=+f.proj, gc=+f.gc, lig=+f.lig, ligp=+f.ligp;
+  const chk=[ {k:'Espessura', v:`${esp.toFixed(1)} cm × ${proj.toFixed(1)} cm (${((esp/proj-1)*100).toFixed(1)}%)`, ok:Math.abs(esp/proj-1)<=0.05},
+              {k:'Grau de compactação', v:`${gc.toFixed(1)}%`, ok:gc>=97&&gc<=101},
+              {k:'Teor de ligante', v:`${lig.toFixed(2)}% × ${ligp.toFixed(2)}% (Δ ${(lig-ligp).toFixed(2)})`, ok:Math.abs(lig-ligp)<=0.3} ];
+  e.st='lançado'; e.res=chk; e.ok=chk.every(c=>c.ok); e.lanc=now(); e.hash=h(oe+JSON.stringify(chk)+e.lanc);
+  log(it,`Resultado ${oe} lançado pelo laboratório — ${e.ok?'CONFORME':'NÃO CONFORME'} (DNIT 112/2009). hash ${e.hash}`, U().nome+' · Laboratório');
+  notify('pref',id,`Ensaio ${oe} ${e.ok?'conforme':'NÃO conforme'}`); notify('grav',id,`Ensaio ${oe} lançado — concluir recebimento`); toast('Resultado lançado — registro imutável'); render(); }
+function act_multa(id,m){ const it=INT(id); m.id='AI-2026-'+String(13+INTS.reduce((a,i)=>a+i.multas.length,0)).padStart(4,'0'); m.dt=now().slice(0,10); m.st='emitida'; it.multas.push(m); it.docs.push(['AI',`Auto de infração ${m.id} — ${m.base}`,m.dt]); log(it,`Auto de infração ${m.id} — ${m.base}: ${brl(m.total)}`); notify('terc:'+it.interv,id,`Auto de infração ${m.id} — ${brl(m.total)}`); toast('Auto de infração assinado e notificado'); render(); }
+function act_of(id,dest){ const it=INT(id); const n=String(42+INTS.filter(i=>i.docs.some(d=>d[0]==='OF')).length).padStart(4,'0'); it.docs.push(['OF',`Ofício nº ${n}/2026 — ${dest}`,now().slice(0,10)]); if(it.st!=='s14'){ it.stPrev=it.st; it.st='s14'; } log(it,`Ofício ${n}/2026 assinado e protocolado — ${dest}. Laudo, notificação e trilha anexados`); notify('terc:'+it.interv,id,`Ofício ${n}/2026 encaminhado — ${dest}`); toast('Ofício protocolado'); render(); }
+function act_susp(interv){ PARAMS.susp[interv]=!PARAMS.susp[interv]; AUDIT.push({t:now(),w:U().nome,int:'—',e:(PARAMS.susp[interv]?'Suspensa':'Restabelecida')+' a emissão de novas LAV para '+interv+' (poder de polícia — ato motivado)',hash:h(interv+now())}); toast((PARAMS.susp[interv]?'Suspensa':'Restabelecida')+' a emissão de licenças para '+interv); render(); }
+function act_user(f){ USERS.splice(USERS.length-1,0,{id:'u'+Date.now(), nome:f.nome, org:f.org, perfil:f.perfil, papel:f.papel, cert:f.cert, interv:f.interv||undefined, assina:f.papel==='Signatário'?['LAV','NOT','AI','OF']:[]}); toast('Usuário criado — convite enviado por e-mail'); render(); }
+function addM(d,m){ const x=new Date(d+'T12:00:00'); x.setMonth(x.getMonth()+m); return x.toISOString().slice(0,10); }
+function F(form){ const o={}; new FormData(form).forEach((v,k)=>o[k]=v); return o; }
+</script>
+<script>
+/* ===================== MARCA E ÍCONES ===================== */
+const MARK = `<svg viewBox="-4 -4 108 108" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><ellipse cx="50" cy="50" rx="54" ry="19" fill="none" stroke="#B9C1CC" stroke-width="3.5" transform="rotate(-24 50 50)"/><circle cx="50" cy="50" r="44" fill="#1A2D4F" stroke="#B9C1CC" stroke-width="2.5"/><circle cx="92.8" cy="23.1" r="4.5" fill="#C9A227"/><path d="M 26.7 73.3 A 33 33 0 1 1 73.3 73.3" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/><path d="M 50 50 L 67.4 29.3 L 55.5 53.5 Z" fill="#C9A227"/><circle cx="50" cy="50" r="6.5" fill="#C9A227"/></svg>`;
+const IC = {
+  inbox:'<svg viewBox="0 0 24 24"><path d="M3 12h5l2 3h4l2-3h5"/><path d="M5 5h14l2 7v7H3v-7z"/></svg>',
+  lic:'<svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6z"/></svg>',
+  vist:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+  not:'<svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
+  multa:'<svg viewBox="0 0 24 24"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>',
+  of:'<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 8l8 5 8-5"/></svg>',
+  map:'<svg viewBox="0 0 24 24"><path d="M1 6l7-3 8 3 7-3v15l-7 3-8-3-7 3z"/><path d="M8 3v15M16 6v15"/></svg>',
+  todas:'<svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  nova:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>',
+  pex:'<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg>',
+  prog:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  res:'<svg viewBox="0 0 24 24"><path d="M9 3h6v6l4 9a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-9z"/><path d="M8 15h8"/></svg>',
+  aud:'<svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>',
+  rec:'<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>',
+  gar:'<svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6z"/></svg>',
+  pat:'<svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>',
+  ens:'<svg viewBox="0 0 24 24"><path d="M9 3h6v6l4 9a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-9z"/></svg>',
+  users:'<svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>',
+  params:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  audit:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h8"/></svg>',
+  k_lic:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>',
+  k_open:'<svg viewBox="0 0 24 24"><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+  k_wait:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  k_fix:'<svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-7 7a2.1 2.1 0 0 1-3-3l7-7a6 6 0 0 1 7.9-7.9z"/></svg>',
+  k_cash:'<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/></svg>',
+  k_list:'<svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
+  k_ok:'<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>',
+  k_lab:'<svg viewBox="0 0 24 24"><path d="M9 3h6v6l4 9a2 2 0 0 1-2 3H7a2 2 0 0 1-2-3l4-9z"/></svg>',
+  k_cal:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+};
+const kico = (l,c)=>{ const m={'Licenças':'k_lic','Ruas abertas':'k_open','Aguardando':'k_wait','Notificadas':'k_fix','Caução':'k_cash','Multas':'k_cash','Minhas':'k_list','Em execução':'k_open','Ordens':'k_lab','Lançados':'k_ok','Contrato':'k_lic','Prévias':'k_lic','Recebimentos':'k_ok','Em garantia':'gar','Patologias':'pat','Em correção':'k_fix','Concluídas':'k_ok','Programadas':'k_cal','Aguardando Gravitas':'k_wait','Aguardando minha':'k_wait'}; const k=Object.keys(m).find(x=>l.startsWith(x)); return IC[m[k]||'k_list']; };
+
+/* ===================== RENDER ===================== */
+function render(){
+  QF.length=0; const app=$('#app'); const p=P();
+  if(p==='pop'){ app.className='app pub'; app.innerHTML=publicPage(); return; }
+  app.className='app';
+  app.innerHTML = rail() + `<div class="main">${topbar()}<div class="content ${S.sel?'':'one'}">${view()}${S.sel?drawer(INT(S.sel)):''}</div></div>`;
+  const d=$('.drawer'); if(d&&S.scrollDrawer){d.scrollTop=0;S.scrollDrawer=false;}
+}
+function rail(){
+  const u=U(), pr=PROFILES[u.perfil], q=queue(), n=unread();
+  const opts=USERS.map(x=>`<option value="${x.id}" ${x.id===S.uid?'selected':''}>${esc(x.nome)} — ${PROFILES[x.perfil].nome}</option>`).join('');
+  const nav=pr.nav.map(([k,l])=>{ let c=''; if(k==='inbox')c=q.length; if(k==='not'&&u.perfil==='terc')c=n; return `<button class="${S.view===k?'on':''}" onclick="go('${k}')">${IC[k]||IC.todas}<span class="l">${l}</span>${c?`<span class="n">${c}</span>`:''}</button>`; }).join('');
+  return `<aside class="rail">
+    <div class="brand">${MARK}<div><b>GRAVITAS</b><span>Painel de Controle</span></div></div>
+    <div class="who"><div class="eyebrow">Entrar como (demonstração)</div>
+      <select onchange="S.uid=this.value;S.view=PROFILES[USERS.find(u=>u.id===this.value).perfil].nav[0]?.[0]||'inbox';S.sel=null;render()">${opts}</select>
+      <div class="role"><span class="tag">${PROFILES[u.perfil].nome.toUpperCase()}</span><span>${esc(u.papel)}</span>${u.cert!=='—'?`<span class="tag">${u.cert}</span>`:''}</div>
+      <div class="small faint" style="margin-top:6px">${esc(u.org)}</div></div>
+    <nav class="nav"><div class="eyebrow">Licenciamento viário · ${CITY.nome}</div>${nav}</nav>
+    <div class="railfoot"><a href="__APP_BASE__/">← Painel de Controle</a><br>Modelo de demonstração — dados fictícios sobre malha esquemática do Centro. Registros com carimbo de tempo e hash; assinaturas ICP-Brasil nos atos com efeito jurídico.</div>
+  </aside>`;
+}
+function topbar(){
+  const t={inbox:'Fila de trabalho',lic:'Licenças LAV · LFT',vist:'Vistorias e laudos',not:'Notificações',multa:'Multas',of:'Ofícios AGERGS · MP',map:'Mapa das intervenções',todas:'Todas as intervenções',nova:'Nova solicitação',pex:'Padrão executivo por pavimento',prog:'Programação mensal',res:'Resultados lançados',aud:'Auditoria da vistoria prévia',rec:'Recebimento',gar:'Vistorias de garantia',pat:'Pareceres de patologia',ens:'Ensaios',users:'Usuários e perfis',params:'Parâmetros do município',audit:'Trilha de auditoria',notifs:'Caixa de notificações'}[S.view]||'';
+  const n=unread();
+  const u=U(); const ini=u.nome.replace(/^(Eng\.|Sec\.|Cel\.|Téc\.)\s*/,'').split(' ').map(w=>w[0]).slice(0,2).join('');
+  return `<div class="topbar"><div><h1>${t}</h1><div class="city">Prefeitura Municipal de ${CITY.nome} · ${INTS.length} intervenções na base · ${SEGS.length} segmentos carregados (amostra)</div></div><div class="sp"></div>
+    <div class="search"><span class="faint">⌕</span><input placeholder="Buscar rua, código ou interveniente" value="${esc(S.q)}" oninput="S.q=this.value;S.view='todas';render();document.querySelector('.search input').focus()"></div>
+    <button class="bell" onclick="go('notifs')"><span class="av">${ini}</span>${esc(u.nome.split(' ').slice(0,2).join(' '))} <span class="n ${n?'':'zero'}">${n}</span></button></div>`;
+}
+function rows(list, actFn){
+  if(!list.length) return `<div class="empty">Nada pendente aqui.</div>`;
+  return list.map((x,k)=>{ const it=x.it||x; const s=SEG[it.seg]; const key=QF.length; if(x.fn) QF.push(x.fn);
+    const a=x.a?`<button class="btn sm ${x.pri===1?'pri':''}" ${x.fn?'':'disabled'} onclick="event.stopPropagation();QF[${key}]()">${esc(x.a)}</button>`:'';
+    return `<div class="row ${S.sel===it.id?'sel':''}" onclick="sel('${it.id}')"><div class="code">${it.id}<br><span class="faint">${s.id}</span></div><div><div class="title">${esc(s.rua)} <span class="muted">· ${esc(s.entre)}</span></div><div class="sub">${esc(it.interv)} · ${esc(it.motivo)} · ${it.ext} m · ${esc(s.pav)}</div></div><div class="act">${pill(it)}${a}</div></div>`; }).join('');
+}
+const QF=[];
+function kpis(items){ return `<div class="kpis">${items.map(([l,v,c])=>`<div class="kpi ${c||''}"><div class="ic">${kico(l)}</div><div class="v">${v}</div><div class="eyebrow">${l}</div></div>`).join('')}</div>`; }
+function panel(title, body, extra){ return `<div class="panel"><header><h3>${title}</h3>${extra||''}</header>${body}</div>`; }
+
+function view(){
+  const u=U(), p=u.perfil, v=S.view;
+  const mine = p==='terc'?INTS.filter(i=>i.interv===u.interv):INTS;
+  if(v==='notifs'){ const l=myNotifs(); l.forEach(n=>S.read.add(n.t+n.int)); return `<div class="stack">${panel('Caixa de notificações — '+PROFILES[p].nome, l.length?l.map(n=>`<div class="row" onclick="sel('${n.int}')"><div class="code">${n.t}<br><span class="faint">${n.int}</span></div><div><div class="title">${esc(n.txt)}</div><div class="sub">de ${esc(n.from)}</div></div><div class="act"><button class="btn sm">Abrir</button></div></div>`).join(''):'<div class="empty">Sem notificações.</div>')}</div>`; }
+  if(v==='map') return `<div class="stack">${mapBlock(true)}</div>`;
+  if(v==='todas'){ const q=S.q.toLowerCase(); const l=mine.filter(i=>!q||[i.id,i.interv,i.motivo,SEG[i.seg].rua,SEG[i.seg].id].join(' ').toLowerCase().includes(q)); return `<div class="stack">${panel(`${l.length} intervenções${q?' — filtro "'+esc(S.q)+'"':''}`, rows(l))}</div>`; }
+
+  if(p==='pref'){
+    if(v==='inbox'){ const q=queue(); return kpis([['Licenças em análise',INTS.filter(i=>['s3','s4'].includes(i.st)).length,'acc'],['Ruas abertas hoje',INTS.filter(i=>i.st==='s6').length,'crit'],['Aguardando recebimento',INTS.filter(i=>['s7','s8'].includes(i.st)).length,'warn'],['Notificadas / em correção',INTS.filter(i=>['s9b','s13b','s14'].includes(i.st)).length,'serious'],['Caução retida',brl(INTS.reduce((a,i)=>a+i.caucao,0)).replace(',00',''),'good']]) + `<div class="stack">${panel('Ações que dependem da prefeitura', rows(q))}</div>`; }
+    if(v==='lic'){ const l=INTS.filter(i=>['s1','s2','s3','s4','s5'].includes(i.st)); return `<div class="stack">${panel('Processos de licença em curso', rows(l.map(it=>({it,a:it.st==='s4'?`${it.sig.LAV?'LAV ✓':'LAV —'} · ${it.sig.LFT?'LFT ✓':'LFT —'}`:'',pri:3,fn:it.st==='s4'?()=>sel(it.id):null}))))}
+      <div class="callout">Uma solicitação, duas licenças. A LAV é assinada pela Secretaria de Obras; a LFT, pela SESTRA, que já detém a atribuição de fiscalizar obras que interferem na via. O padrão executivo do pavimento vai anexado à licença — o interveniente não pode alegar desconhecê-lo.</div></div>`; }
+    if(v==='vist'){ const l=INTS.filter(i=>i.apont.length||i.docs.some(d=>['VG','TRP','TRD','PP'].includes(d[0]))); return `<div class="stack">${panel('Laudos e termos emitidos pela Gravitas', rows(l))}</div>`; }
+    if(v==='not'){ const l=INTS.filter(i=>['s9b','s13b'].includes(i.st)||(i.st==='s8'&&i.ensaios.some(e=>e.st==='lançado'&&!e.ok))); const it=S.sel&&INT(S.sel); const can=(u.assina||[]).includes('NOT');
+      return `<div class="stack">${panel('Intervenções com laudo desfavorável', rows(l))}
+      ${it?panel('Emitir notificação — '+it.id, `<form class="form" onsubmit="event.preventDefault();const f=F(this);act_not('${it.id}',f.prazo,f.txt)">
+        <div class="f"><label>Fundamento</label><select name="fund"><option>Laudo de recebimento — apontamentos</option><option>Parecer de patologia em garantia</option><option>Ensaio de contraprova não conforme (DNIT 112/2009)</option></select></div>
+        <div class="f"><label>Prazo para refazimento (dias)</label><input name="prazo" type="number" value="15"></div>
+        <div class="f full"><label>Texto complementar</label><textarea name="txt">Refazimento conforme padrão executivo anexo à LAV. Vencido o prazo: auto de infração, execução da caução com 10% de administração e ofício à AGERGS (descumprimento do PMSB).</textarea></div>
+        <div class="f full"><div class="hint">Apontamentos do laudo entram automaticamente no corpo da notificação: ${it.apont.map(a=>esc(a.n)).join('; ')||'—'}</div></div>
+        <div class="formfoot"><button class="btn" type="button" onclick="S.sel=null;render()">Cancelar</button><button class="btn pri" ${can?'':'disabled'}>${can?'Assinar (ICP-Brasil) e notificar':'Somente o signatário da Obras assina'}</button></div></form>`):'<div class="callout">Selecione uma intervenção para emitir a notificação.</div>'}</div>`; }
+    if(v==='multa') return multaView();
+    if(v==='of') return oficioView();
+  }
+  if(p==='terc'){
+    if(v==='inbox'){ const q=queue(); const susp=PARAMS.susp[u.interv]; return kpis([['Minhas intervenções',mine.length],['Aguardando minha ação',q.length,'acc'],['Em execução',mine.filter(i=>i.st==='s6').length,'crit'],['Caução retida',brl(mine.reduce((a,i)=>a+i.caucao,0)).replace(',00',''),'warn'],['Multas em aberto',mine.reduce((a,i)=>a+i.multas.filter(m=>m.st==='emitida').length,0),'serious']]) + `<div class="stack">${susp?'<div class="callout crit"><b>Emissão de novas licenças suspensa para '+esc(u.interv)+'</b> — regularize as intervenções notificadas para restabelecer.</div>':''}${panel('Ações que dependem de '+esc(u.interv), rows(q))}</div>`; }
+    if(v==='nova'){ const opts=SEGS.map(s=>`<option value="${s.id}">${esc(s.rua)} — ${esc(s.entre)} (${esc(s.pav)})</option>`).join(''); return `<div class="stack">${panel('Nova solicitação de intervenção — LAV + LFT num único processo', `<form class="form" onsubmit="event.preventDefault();act_nova(F(this))">
+      <div class="f full"><label>Segmento (quadra)</label><select name="seg">${opts}</select><div class="hint">Uma licença por quadra. Obras em mais de uma quadra: uma solicitação por segmento, protocolo agrupado.</div></div>
+      <div class="f"><label>Motivo</label><input name="motivo" value="Reparo de vazamento — rede DN 100" required></div>
+      <div class="f"><label>Tipo</label><select name="tipo"><option>Reparo (emergencial ≤ 48 h)</option><option>Reparo programado</option><option>Rede nova / substituição</option><option>Ligação domiciliar</option></select></div>
+      <div class="f"><label>Extensão da vala (m)</label><input name="ext" type="number" value="12" min="1"></div>
+      <div class="f"><label>Largura (m)</label><input name="larg" type="number" step="0.1" value="0.8"></div>
+      <div class="f"><label>Início previsto</label><input name="prev" type="date" value="2026-09-15"></div>
+      <div class="f"><label>Duração (dias)</label><input name="dias" type="number" value="3"></div>
+      <div class="f full"><label>Interferência no trânsito (define a LFT)</label><div class="radio"><label><input type="radio" name="bloq" value="meia pista" checked> Meia pista</label><label><input type="radio" name="bloq" value="interdição total"> Interdição total</label><label><input type="radio" name="bloq" value="só calçada"> Só calçada</label></div></div>
+      <div class="f full"><div class="hint">Ao registrar, o sistema abre a etapa de vistoria prévia: fotos georreferenciadas do pavimento antes da abertura, declaradas por ${esc(u.interv)} e auditadas por amostragem pela Gravitas (${PARAMS.auditPct}%; 100% nos corredores de carga).</div></div>
+      <div class="formfoot"><button class="btn pri" ${PARAMS.susp[u.interv]?'disabled':''}>${PARAMS.susp[u.interv]?'Emissão suspensa':'Registrar solicitação'}</button></div></form>`)}</div>`; }
+    if(v==='pex'){ const cur=S.tab.pex||'CBUQ'; return `<div class="stack">${panel('Padrão executivo de recomposição — anexo obrigatório de toda LAV', `<div class="pex" style="padding:16px">${Object.entries(PEX).map(([k,x])=>`<div class="pexc ${k===cur?'on':''}"><h4>${x.t}</h4><ul>${x.r.map(r=>`<li>${r}</li>`).join('')}</ul></div>`).join('')}</div><div class="callout" style="margin:0 16px 16px">Fonte: Caderno de Referência Gravitas (edição Uruguaiana), compatível com o Caderno de Encargos Corsan cap. 10 e IR-01/2018. É o mesmo padrão que a Gravitas usa na vistoria — sem surpresa no recebimento.</div>`)}</div>`; }
+    if(v==='lic'){ const l=mine.filter(i=>i.docs.length); return `<div class="stack">${panel('Licenças e documentos recebidos', l.length?l.map(it=>`<div class="row" onclick="sel('${it.id}')"><div class="code">${it.id}</div><div><div class="title">${esc(SEG[it.seg].rua)} · ${esc(SEG[it.seg].entre)}</div><div class="docs" style="margin-top:6px">${it.docs.map(d=>`<div class="doc"><span class="k">${d[0]}</span>${esc(d[1])}<span class="s">${d[2]} · PDF assinado</span></div>`).join('')}</div></div><div class="act">${pill(it)}</div></div>`).join(''):'<div class="empty">Nenhuma licença emitida ainda.</div>')}</div>`; }
+    if(v==='not'){ const l=myNotifs(); l.forEach(n=>S.read.add(n.t+n.int)); return `<div class="stack">${panel('Notificações recebidas', l.map(n=>`<div class="row" onclick="sel('${n.int}')"><div class="code">${n.t}<br><span class="faint">${n.int}</span></div><div><div class="title">${esc(n.txt)}</div><div class="sub">de ${esc(n.from)}</div></div><div class="act"><button class="btn sm">Abrir</button></div></div>`).join('')||'<div class="empty">Sem notificações.</div>')}</div>`; }
+    if(v==='multa'){ const l=mine.filter(i=>i.multas.length); return `<div class="stack">${panel('Autos de infração recebidos', l.length?`<div class="tabwrap"><table class="table"><tr><th>Auto</th><th>Intervenção</th><th>Fundamento</th><th class="r">Base</th><th class="r">Dias</th><th class="r">Total</th><th>Situação</th><th></th></tr>${l.flatMap(it=>it.multas.map(m=>`<tr><td class="mono">${m.id}</td><td>${esc(SEG[it.seg].rua)}</td><td>${esc(m.base)}</td><td class="r">${brl(m.v)}</td><td class="r">${m.dias}</td><td class="r"><b>${brl(m.total)}</b></td><td><span class="pill ${m.st==='emitida'?'crit':'good'}"><i></i>${m.st}</span></td><td><button class="btn sm" onclick="toast('Recurso: prazo de 30 dias, protocolado no próprio sistema')">Recorrer</button></td></tr>`)).join('')}</table></div>`:'<div class="empty">Nenhum auto de infração.</div>')}</div>`; }
+    if(v==='prog'){ const l=PROG.filter(x=>x.interv===u.interv); return `<div class="stack">${panel('Programação mensal declarada — alimenta o cronograma público', `<div class="tabwrap"><table class="table"><tr><th>Mês</th><th>Segmento</th><th>Rua</th><th>Motivo</th><th></th></tr>${l.map(x=>`<tr><td class="mono">${x.mes}</td><td class="mono">${x.seg}</td><td>${esc(SEG[x.seg].rua)} · ${esc(SEG[x.seg].entre)}</td><td>${esc(x.motivo)}</td><td><button class="btn sm" onclick="toast('Converte a programação em solicitação de LAV/LFT')">Solicitar licença</button></td></tr>`).join('')}</table></div><div class="callout" style="margin:16px">A programação é declarada até o dia 25 do mês anterior. O que está aqui aparece no mapa público como <b>Programada</b> — a população vê antes de a rua abrir, e a prefeitura evita repavimentar o que vai ser aberto no mês seguinte.</div>`)}</div>`; }
+  }
+  if(p==='lab'){
+    const pend=INTS.flatMap(it=>it.ensaios.filter(e=>e.st==='pendente').map(e=>({it,e}))), done=INTS.flatMap(it=>it.ensaios.filter(e=>e.st==='lançado').map(e=>({it,e})));
+    if(v==='inbox'){ return kpis([['Ordens pendentes',pend.length,'acc'],['Lançados no mês',done.length,'good'],['Contrato','Laboratório independente','']]) + `<div class="stack">${panel('Ordens de ensaio emitidas pela Engenharia', pend.length?pend.map(({it,e})=>`<div class="row ${S.sel===it.id?'sel':''}" onclick="sel('${it.id}')"><div class="code">${e.id}<br><span class="faint">${it.id}</span></div><div><div class="title">${esc(e.tipo)}</div><div class="sub">${esc(SEG[it.seg].rua)} · ${esc(SEG[it.seg].entre)} · ${e.pts} ponto(s) · pedido em ${e.ped} por ${esc(e.por)}</div></div><div class="act"><button class="btn sm pri" onclick="event.stopPropagation();sel('${it.id}')">Lançar resultado</button></div></div>`).join(''):'<div class="empty">Nenhuma ordem pendente.</div>')}
+      <div class="callout">O laboratório lança o resultado direto no sistema, contra a ordem emitida pela Engenharia. O registro recebe carimbo de tempo e hash e não pode ser editado — é isso que sustenta o laudo em recurso. Regra do TCE/SC: o fiscal valida o controle do executor; a contraprova é dirigida, só onde houver divergência.</div></div>`; }
+    if(v==='res'){ return `<div class="stack">${panel('Resultados lançados', done.length?`<div class="tabwrap"><table class="table"><tr><th>Ordem</th><th>Intervenção</th><th>Parâmetros</th><th>Resultado</th><th>Registro</th></tr>${done.map(({it,e})=>`<tr><td class="mono">${e.id}</td><td>${esc(SEG[it.seg].rua)}</td><td>${e.res.map(c=>`${c.k}: ${c.v}`).join('<br>')}</td><td><span class="pill ${e.ok?'good':'crit'}"><i></i>${e.ok?'Conforme':'Não conforme'}</span></td><td class="mono small">${e.lanc}<br>${e.hash}</td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhum resultado lançado ainda.</div>')}</div>`; }
+  }
+  if(p==='grav'){
+    if(v==='inbox'){ const q=queue(); return kpis([['Aguardando Gravitas',q.length,'acc'],['Prévias a auditar',INTS.filter(i=>i.st==='s2').length],['Recebimentos',INTS.filter(i=>['s7','s8'].includes(i.st)).length,'warn'],['Em garantia',INTS.filter(i=>['s10','s11','s12'].includes(i.st)).length,'good'],['Patologias abertas',INTS.filter(i=>i.st==='s13b').length,'serious']]) + `<div class="stack">${panel('Fila técnica', rows(q))}</div>`; }
+    if(v==='aud'){ const l=INTS.filter(i=>['s2','s3','s4'].includes(i.st)); return `<div class="stack">${panel('Vistorias prévias declaradas pelos intervenientes', rows(l.map(it=>({it,a:it.st==='s2'?'Auditar':'',pri:1,fn:it.st==='s2'?()=>sel(it.id):null}))))}<div class="callout">Amostra: ${PARAMS.auditPct}% das prévias, 100% nos corredores de carga (BR-290, BR-472, acesso ao Porto Seco) e nas vias da planície de inundação. A auditoria divergente dá ao interveniente 5 dias úteis para contestar antes da licença.</div></div>`; }
+    if(v==='rec'){ const l=INTS.filter(i=>['s7','s8','s9a','s9b'].includes(i.st)); return `<div class="stack">${panel('Recebimento provisório', rows(l))}</div>`; }
+    if(v==='gar'){ const l=INTS.filter(i=>['s10','s11','s12','s13a','s13b'].includes(i.st)); return `<div class="stack">${panel('Garantia 1 · 6 · 12 meses', `<div class="tabwrap"><table class="table">${l.map(it=>`<tr class="${S.sel===it.id?'on':''}" onclick="sel('${it.id}')" style="cursor:pointer"><td class="mono">${it.id}</td><td>${esc(SEG[it.seg].rua)} · ${esc(SEG[it.seg].entre)}</td><td>${esc(it.interv)}</td><td>${pill(it)}</td><td class="mono">${it.vgar?'próxima '+it.vgar:'—'}</td><td class="r">${it.caucao?brl(it.caucao):'liberada'}</td><td>${due(it)?'<span class="pill warn"><i></i>devida</span>':''}</td></tr>`).join('')}</table></div>`)}</div>`; }
+    if(v==='pat'){ const l=INTS.filter(i=>i.st==='s13b'||i.docs.some(d=>d[0]==='PP')); return `<div class="stack">${panel('Pareceres de patologia', rows(l))}</div>`; }
+    if(v==='ens'){ const l=INTS.filter(i=>i.ensaios.length); return `<div class="stack">${panel('Ensaios — análise crítica e contraprova', `<div class="tabwrap"><table class="table"><tr><th>Ordem</th><th>Intervenção</th><th>Tipo</th><th>Situação</th><th>Resultado</th></tr>${l.flatMap(it=>it.ensaios.map(e=>`<tr onclick="sel('${it.id}')" style="cursor:pointer"><td class="mono">${e.id}</td><td>${esc(SEG[it.seg].rua)}</td><td>${esc(e.tipo)}</td><td><span class="pill ${e.st==='pendente'?'warn':'neutral'}"><i></i>${e.st}</span></td><td>${e.res?e.res.map(c=>`<span class="pill ${c.ok?'good':'crit'}" style="margin:1px"><i></i>${c.k}</span>`).join(''):'—'}</td></tr>`)).join('')}</table></div>`)}</div>`; }
+  }
+  if(p==='adm'){
+    if(v==='users'){ return `<div class="stack">${panel('Usuários cadastrados', `<div class="tabwrap"><table class="table"><tr><th>Nome</th><th>Órgão</th><th>Perfil</th><th>Papel</th><th>Assina</th><th>Certificado</th><th></th></tr>${USERS.filter(x=>x.perfil!=='pop').map(x=>`<tr><td>${esc(x.nome)}</td><td>${esc(x.org)}</td><td><span class="pill neutral">${PROFILES[x.perfil].nome}</span></td><td>${esc(x.papel)}</td><td class="mono small">${(x.assina||[]).join(' ')||'—'}</td><td class="small">${x.cert}</td><td><button class="btn sm" onclick="toast('Convite reenviado')">Reenviar convite</button></td></tr>`).join('')}</table></div>`)}
+      ${panel('Novo usuário', `<form class="form" onsubmit="event.preventDefault();act_user(F(this))"><div class="f"><label>Nome</label><input name="nome" required placeholder="Nome completo"></div><div class="f"><label>Órgão / empresa</label><input name="org" required placeholder="Ex.: Corsan — Unidade Fronteira Oeste"></div><div class="f"><label>Perfil</label><select name="perfil"><option value="pref">Prefeitura</option><option value="terc">Interveniente</option><option value="lab">Laboratório</option><option value="grav">Gravitas</option><option value="adm">Administração</option></select></div><div class="f"><label>Papel</label><select name="papel"><option>Operador</option><option>Signatário</option><option>Responsável técnico</option></select></div><div class="f"><label>Interveniente (se terceiro)</label><select name="interv"><option value="">—</option><option>Corsan</option><option>RGE</option><option>CEEE Equatorial</option><option>Claro (fibra)</option><option>Sulgás</option></select></div><div class="f"><label>Certificado digital</label><select name="cert"><option>—</option><option>ICP-Brasil A1</option><option>ICP-Brasil A3</option><option>gov.br (prata/ouro)</option></select><div class="hint">Signatários assinam LAV, notificações, autos e ofícios; operadores preparam.</div></div><div class="formfoot"><button class="btn pri">Criar e convidar</button></div></form>`)}</div>`; }
+    if(v==='params'){ return `<div class="stack">${panel('Parâmetros — decisões da administração municipal', `<form class="form" onsubmit="event.preventDefault();const f=F(this);PARAMS.auditPct=+f.aud;PARAMS.garantiaMeses=+f.gar;PARAMS.caucaoM=+f.cau;PARAMS.leiMulta=f.lei==='sim';PARAMS.ufm=+f.ufm;toast('Parâmetros salvos — registrados na trilha de auditoria');AUDIT.push({t:now(),w:U().nome,int:'—',e:'Parâmetros alterados: auditoria '+f.aud+'%, garantia '+f.gar+' meses, caução '+f.cau+'/m',hash:h(now()+f.aud)});render()">
+      <div class="f"><label>Auditoria amostral da vistoria prévia (%)</label><input name="aud" type="number" value="${PARAMS.auditPct}"><div class="hint">100% nos corredores de carga e na planície de inundação, sempre.</div></div>
+      <div class="f"><label>Garantia da recomposição (meses)</label><select name="gar"><option ${PARAMS.garantiaMeses===12?'selected':''}>12</option><option ${PARAMS.garantiaMeses===24?'selected':''}>24</option></select><div class="hint">12 cobre a primeira estação chuvosa; 24 pega o segundo inverno.</div></div>
+      <div class="f"><label>Caução por metro de vala (R$/m)</label><input name="cau" type="number" step="0.01" value="${PARAMS.caucaoM}"><div class="hint">Referência SINAPI 102098 (jul/2026). Ressarcimento, não taxa — STF Tema 261.</div></div>
+      <div class="f"><label>Lei municipal de multa por dano à via</label><select name="lei"><option value="nao" ${!PARAMS.leiMulta?'selected':''}>Não identificada em Uruguaiana</option><option value="sim" ${PARAMS.leiMulta?'selected':''}>Vigente — escala em UFM</option></select><div class="hint">Enquanto não houver lei, o motor usa CTB art. 95 §3º (SESTRA) e execução da caução.</div></div>
+      <div class="f"><label>Valor da UFM (R$)</label><input name="ufm" type="number" step="0.01" value="${PARAMS.ufm}"><div class="hint">Valor de exemplo — confirmar no decreto anual.</div></div>
+      <div class="f"><label>Licenças suspensas</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">${['Corsan','RGE','CEEE Equatorial','Claro (fibra)'].map(i=>`<button type="button" class="btn sm ${PARAMS.susp[i]?'danger':''}" onclick="act_susp('${i}')">${i}: ${PARAMS.susp[i]?'suspensa':'normal'}</button>`).join('')}</div></div>
+      <div class="formfoot"><button class="btn pri">Salvar parâmetros</button></div></form>`)}</div>`; }
+    if(v==='audit'){ const l=[...AUDIT].reverse(); return `<div class="stack">${panel('Trilha de auditoria — registros desta sessão', l.length?`<div class="tabwrap"><table class="table"><tr><th>Quando</th><th>Quem</th><th>Intervenção</th><th>Evento</th><th>Hash</th></tr>${l.map(a=>`<tr><td class="mono small">${a.t}</td><td>${esc(a.w)}</td><td class="mono">${a.int}</td><td>${esc(a.e)}</td><td class="mono small">${a.hash}</td></tr>`).join('')}</table></div>`:'<div class="empty">Nenhum ato registrado ainda nesta sessão. Cada ação em qualquer perfil entra aqui com carimbo de tempo e hash.</div>')}</div>`; }
+  }
+  return '<div class="empty">Vista não disponível para este perfil.</div>';
+}
+
+/* ---------- Multa ---------- */
+function mset(k,v){ S.tab.multa=Object.assign({fund:'ctb',base:488.10,dias:0,quadras:1},S.tab.multa||{},{[k]:v}); render(); }
+function multaView(){
+  const u=U(); const cands=INTS.filter(i=>['s9b','s13b','s14'].includes(i.st)); const it=S.sel&&INT(S.sel)&&cands.includes(INT(S.sel))?INT(S.sel):cands[0];
+  const m=S.tab.multa||{fund:'ctb',base:488.10,dias:0,quadras:1};
+  const all=INTS.filter(i=>i.multas.length);
+  let calc='';
+  if(it){
+    if(m.fund==='ctb'){ const tot=(m.base+m.base*m.dias)*m.quadras; calc=`<div class="calc"><span>Valor base (CTB art. 95 §3º, graduado)</span><span class="r">${brl(m.base)}</span><span>Diária × ${m.dias} dia(s) de descumprimento</span><span class="r">${brl(m.base*m.dias)}</span><span>× ${m.quadras} quadra(s) licenciada(s) separadamente</span><span class="r">×${m.quadras}</span><span class="tot">Total do auto — competência SESTRA (órgão do SNT)</span><span class="tot r">${brl(tot)}</span></div>`; m.total=tot; m.baseTxt='CTB art. 95, §3º — via SESTRA'; }
+    if(m.fund==='cau'){ const ref=it.ext*PARAMS.caucaoM*3.75, adm=ref*0.10, tot=ref+adm; calc=`<div class="calc"><span>Refazimento orçado — ${it.ext} m × faixa completa 3,00 m × SINAPI 102098</span><span class="r">${brl(ref)}</span><span>Taxa de administração 10%</span><span class="r">${brl(adm)}</span><span>Caução retida</span><span class="r">− ${brl(it.caucao)}</span><span class="tot">Saldo a cobrar do interveniente</span><span class="tot r">${brl(Math.max(0,tot-it.caucao))}</span></div>`; m.total=tot; m.baseTxt='Execução da recomposição pela prefeitura — caução + 10%'; }
+    if(m.fund==='lei'){ calc=`<div class="calc"><span class="muted">Sem lei municipal de multa por dano à via identificada em Uruguaiana. A Gravitas fornece a minuta (escala em UFM: leve 500–2.000, média 2.000–10.000, grave 10.000–30.000, gravíssima 30.000–50.000, diária 10%) — a aprovação é decisão da administração.</span><span class="r">—</span></div>`; m.total=0; }
+  }
+  const can=(u.assina||[]).includes('AI')||(u.assina||[]).includes('AI-CTB');
+  return `<div class="stack">${it?panel('Calcular e emitir auto de infração — '+it.id, `<div class="form">
+    <div class="f full"><label>Intervenção</label><select onchange="S.sel=this.value;render()">${cands.map(c=>`<option value="${c.id}" ${c.id===it.id?'selected':''}>${c.id} — ${esc(SEG[c.seg].rua)} · ${esc(c.interv)} · ${ST[c.st].n}</option>`).join('')}</select></div>
+    <div class="f full"><label>Fundamento</label><div class="radio">${[['ctb','CTB art. 95 §3º — obra sem licença / sinalização (SESTRA)'],['cau','Execução da caução + 10% (refazimento pela prefeitura)'],['lei','Lei municipal — dano à via (UFM)']].map(([k,l])=>`<label><input type="radio" name="fund" ${m.fund===k?'checked':''} onchange="mset('fund','${k}')"> ${l}</label>`).join('')}</div></div>
+    ${m.fund==='ctb'?`<div class="f"><label>Gravidade → valor base</label><select onchange="mset('base',+this.value)">${[['81.35','Leve — R$ 81,35'],['195.23','Média — R$ 195,23'],['325.40','Grave — R$ 325,40'],['488.10','Gravíssima — R$ 488,10']].map(([v,l])=>`<option value="${v}" ${+v===m.base?'selected':''}>${l}</option>`).join('')}</select></div><div class="f"><label>Dias de descumprimento (diária)</label><input type="number" value="${m.dias}" min="0" onchange="mset('dias',+this.value)"></div><div class="f"><label>Quadras (autos separados)</label><input type="number" value="${m.quadras}" min="1" onchange="mset('quadras',+this.value)"></div><div class="f"><div class="hint" style="margin-top:22px">A multa municipal não paga a rua — pune iniciar sem licença. O refazimento sai da caução; a sanção pesada vai pela AGERGS (ofícios).</div></div>`:''}
+    </div>${calc}<div class="formfoot" style="padding:12px 16px"><button class="btn pri" ${can&&m.total?'':'disabled'} onclick="act_multa('${it.id}',{base:'${m.baseTxt}',v:${m.fund==='ctb'?m.base:0},dias:${m.dias||0},diaria:${m.fund==='ctb'?m.base:0},total:${m.total||0}})">${can?'Assinar (ICP-Brasil) e emitir auto':'Somente o signatário (SESTRA / Obras) emite'}</button></div>`):'<div class="callout">Nenhuma intervenção passível de auto no momento.</div>'}
+    ${panel('Autos emitidos', all.length?`<div class="tabwrap"><table class="table"><tr><th>Auto</th><th>Intervenção</th><th>Interveniente</th><th>Fundamento</th><th class="r">Total</th><th>Situação</th></tr>${all.flatMap(i=>i.multas.map(x=>`<tr onclick="sel('${i.id}')" style="cursor:pointer"><td class="mono">${x.id}</td><td>${esc(SEG[i.seg].rua)}</td><td>${esc(i.interv)}</td><td>${esc(x.base)}</td><td class="r"><b>${brl(x.total)}</b></td><td><span class="pill ${x.st==='emitida'?'crit':'good'}"><i></i>${x.st}</span></td></tr>`)).join('')}</table></div>`:'<div class="empty">Nenhum auto emitido.</div>')}</div>`;
+}
+/* ---------- Ofício ---------- */
+function oficioView(){
+  const u=U(); const cands=INTS.filter(i=>['s9b','s13b','s14'].includes(i.st)); const it=S.sel&&cands.includes(INT(S.sel))?INT(S.sel):cands[0]; const dest=S.tab.of||'AGERGS';
+  const can=(u.assina||[]).includes('OF');
+  if(!it) return '<div class="callout">Nenhuma intervenção em escalonamento.</div>';
+  const s=SEG[it.seg]; const nots=it.docs.filter(d=>d[0]==='NOT').map(d=>d[1]).join('; ')||'—'; const laudo=it.log.filter(l=>/laudo|parecer|patologia|apontamento/i.test(l.e)).map(l=>l.t+' — '+l.e).join('\n')||'—';
+  const txt = dest==='AGERGS'
+   ? `À Agência Estadual de Regulação dos Serviços Públicos Delegados do RS — AGERGS\n\nAssunto: descumprimento, pela ${it.interv}, das obrigações de recomposição do pavimento — ${s.rua}, ${s.entre} (${s.id})\n\nA Prefeitura de ${CITY.nome} informa que a intervenção ${it.id} (${it.motivo}, ${it.ext} m) foi objeto de vistoria técnica com o seguinte resultado:\n${laudo}\n\nNotificação(ões) emitida(s): ${nots}. Prazo vencido sem regularização.\n\nO padrão executivo de recomposição integra o Plano Municipal de Saneamento Básico (Lei 11.445/2007, art. 19, §6º). Requer-se a apuração nos termos das Resoluções Normativas AGERGS 13/2014 e 37/2017, a exemplo do processo relativo a Venâncio Aires.\n\nAnexos: LAV, laudo de vistoria, fotos georreferenciadas, notificações, trilha de auditoria (hash).`
+   : `Ao Ministério Público do RS — Promotoria de Justiça de ${CITY.nome}\n\nAssunto: dano ao patrimônio público viário — ${s.rua}, ${s.entre} (${s.id}) — interveniente ${it.interv}\n\nA Prefeitura comunica, para as providências cabíveis, que a intervenção ${it.id} apresentou:\n${laudo}\n\nNotificação(ões): ${nots}. Não houve regularização no prazo. Requer-se a instauração de procedimento para reparação do dano e obrigação de fazer.\n\nAnexos: laudo, parecer de patologia, notificações, autos de infração e trilha de auditoria.`;
+  return `<div class="stack">${panel('Ofício — escalonamento aos órgãos reguladores', `<div class="form">
+    <div class="f"><label>Intervenção</label><select onchange="S.sel=this.value;render()">${cands.map(c=>`<option value="${c.id}" ${c.id===it.id?'selected':''}>${c.id} — ${esc(SEG[c.seg].rua)} · ${esc(c.interv)}</option>`).join('')}</select></div>
+    <div class="f"><label>Destinatário</label><div class="radio">${['AGERGS','MP-RS'].map(d=>`<label><input type="radio" ${dest===d?'checked':''} onchange="S.tab.of='${d}';render()"> ${d}</label>`).join('')}</div></div>
+    <div class="f full"><label>Minuta gerada a partir do laudo, das notificações e da trilha</label><textarea style="min-height:300px;font-family:var(--mono);font-size:12px">${esc(txt)}</textarea></div>
+    <div class="formfoot"><button class="btn" onclick="toast('Minuta salva como rascunho')">Salvar rascunho</button><button class="btn pri" ${can?'':'disabled'} onclick="act_of('${it.id}','${dest}')">${can?'Assinar (ICP-Brasil) e protocolar':'Somente o signatário da Obras assina'}</button></div></div>`)}
+    <div class="callout">Ordem de escalonamento adotada: notificação → auto de infração → suspensão de novas licenças ao interveniente → ofício à AGERGS (PMSB) → MP. Nunca "embargo da obra": interfere na concessão estadual e cai em liminar.</div></div>`;
+}
+</script>
+<script>
+/* ===================== DRAWER (detalhe da intervenção) ===================== */
+function drawer(it){
+  if(!it) return '';
+  const s=SEG[it.seg], p=P(), u=U(), idx=stepIdx(it.st);
+  const steps=ORDER.map((k,i)=>`<i class="${it.st==='s14'?'bad':i<idx?'done':i===idx?(['s9b','s13b'].includes(it.st)?'bad':'cur'):''}" title="${ST[k].n}"></i>`).join('')+`<i class="${it.st==='s14'?'bad':''}" title="Suspensa / escalonada"></i>`;
+  const area=(it.ext*it.larg).toFixed(1);
+  return `<aside class="drawer">
+    <div class="head"><div class="code">${it.id} · ${s.id}</div><h3>${esc(s.rua)}</h3><div class="sub">${esc(s.entre)} · ${esc(it.interv)} · ${esc(it.motivo)}</div><div style="margin-top:10px">${pill(it)} <span class="pill step">etapa ${it.st.replace('s','')}/14</span></div><div class="steps">${steps}</div></div>
+    ${actions(it)}
+    <section><h4>Dados da intervenção</h4><dl class="kv"><dt>Pavimento</dt><dd>${esc(s.pav)}</dd><dt>Vala</dt><dd class="mono">${it.ext} m × ${it.larg} m = ${area} m²</dd><dt>Recomposição devida</dt><dd class="mono">${(it.ext*3).toFixed(0)} m² (faixa completa 3,00 m — IR-01 4.2.2)</dd><dt>Caução</dt><dd class="mono">${it.caucao?brl(it.caucao)+' retida':(it.docs.some(d=>d[0]==='TRD')?'liberada':'—')}</dd><dt>Solicitada em</dt><dd class="mono">${it.dt}</dd>${it.vgar?`<dt>Próxima vistoria</dt><dd class="mono">${it.vgar}</dd>`:''}<dt>Assinaturas</dt><dd class="small">LAV ${it.sig.LAV?'✓ '+esc(it.sig.LAV.w):'—'}<br>LFT ${it.sig.LFT?'✓ '+esc(it.sig.LFT.w):'—'}</dd></dl></section>
+    ${it.prev?`<section><h4>Vistoria prévia (declarada por ${esc(it.interv)})</h4><dl class="kv"><dt>Pavimento</dt><dd>${esc(it.prev.pav)}</dd><dt>Trincas</dt><dd>${esc(it.prev.trincas)}</dd><dt>Afundamentos</dt><dd>${esc(it.prev.afund)}</dd><dt>Observações</dt><dd>${esc(it.prev.obs)}</dd></dl></section>`:''}
+    ${it.fotos?`<section><h4>Fotos georreferenciadas — ${it.fotos}</h4><div class="photos">${Array.from({length:Math.min(4,it.fotos)},(_,i)=>`<div class="ph">#${i+1} · ${['prévia','abertura','reaterro','pós'][i]}</div>`).join('')}</div></section>`:''}
+    ${it.apont.length?`<section><h4>Apontamentos do laudo</h4>${it.apont.map(a=>`<div class="callout ${a.g==='gravíssima'||a.g==='grave'?'crit':'warn'}" style="margin-bottom:6px"><b>${a.g}</b> — ${esc(a.n)}</div>`).join('')}</section>`:''}
+    ${it.ensaios.length?`<section><h4>Ensaios</h4>${it.ensaios.map(e=>`<div class="doc" style="flex-wrap:wrap"><span class="k">${e.id}</span>${esc(e.tipo)} · ${e.pts} pt<span class="s">${e.st}</span>${e.res?`<div style="width:100%;margin-top:4px">${e.res.map(c=>`<span class="pill ${c.ok?'good':'crit'}" style="margin:2px 2px 0 0"><i></i>${c.k}: ${c.v}</span>`).join('')}<div class="h mono faint small">hash ${e.hash}</div></div>`:''}</div>`).join('')}</section>`:''}
+    ${it.multas.length?`<section><h4>Autos de infração</h4>${it.multas.map(m=>`<div class="doc"><span class="k">${m.id}</span>${esc(m.base)}<span class="s"><b>${brl(m.total)}</b> · ${m.st}</span></div>`).join('')}</section>`:''}
+    ${it.docs.length?`<section><h4>Documentos</h4><div class="docs">${it.docs.map(d=>`<div class="doc"><span class="k">${d[0]}</span>${esc(d[1])}<span class="s">${d[2]}</span></div>`).join('')}</div></section>`:''}
+    <section><h4>Histórico (imutável)</h4><ul class="tl">${[...it.log].reverse().map(l=>`<li class="${/notifica|apontamento|patologia|NÃO CONFORME|infração|sem licença/i.test(l.e)?'bad':/recebid|licenciad|TRD|conforme|sem patologia/i.test(l.e)?'ok':'acc'}"><div><div class="t">${l.t} · ${esc(l.w)}</div><div class="e">${esc(l.e)}</div><div class="h">${l.hash}</div></div></li>`).join('')}</ul></section>
+  </aside>`;
+}
+function actions(it){
+  const p=P(), u=U(), s=SEG[it.seg];
+  const box=(title,inner)=>`<section style="background:var(--surface-2)"><h4>${title}</h4>${inner}</section>`;
+  if(p==='terc'&&it.interv!==u.interv) return '';
+  if(p==='terc'){
+    if(it.st==='s1') return box('Registrar vistoria prévia', `<form onsubmit="event.preventDefault();act_prev('${it.id}',F(this))" class="form" style="padding:0;grid-template-columns:1fr 1fr">
+      <div class="f"><label>Estado do pavimento</label><select name="pav"><option>Bom</option><option>Regular</option><option>Ruim</option></select></div><div class="f"><label>Fotos georreferenciadas</label><input name="fotos" type="number" value="8" min="4"><div class="hint">mín. 4: duas por lado</div></div>
+      <div class="f"><label>Trincas</label><select name="trincas"><option>Ausentes</option><option>Isoladas</option><option>Couro de jacaré</option></select></div><div class="f"><label>Afundamentos</label><select name="afund"><option>Ausentes</option><option>Localizados</option><option>Generalizados</option></select></div>
+      <div class="f full"><label>Observações (patologias pré-existentes ficam registradas a seu favor)</label><textarea name="obs">Sarjeta íntegra; sem patologia pré-existente no trecho.</textarea></div>
+      <div class="formfoot"><button class="btn pri">Registrar prévia</button></div></form>`);
+    if(it.st==='s5') return box('Licença emitida', `<div class="btnrow"><button class="btn pri" onclick="act_start('${it.id}')">Informar início da execução</button><button class="btn" onclick="toast('LAV, LFT e PEX baixados em PDF assinado')">Baixar LAV · LFT · PEX</button></div>`);
+    if(it.st==='s6') return box('Informar conclusão', `<form onsubmit="event.preventDefault();act_done('${it.id}',F(this))" class="form" style="padding:0"><div class="f"><label>Pontos do controle tecnológico</label><input name="pts" type="number" value="${Math.max(1,Math.round(it.ext/40))}"></div><div class="f"><label>Espessura média (cm)</label><input name="esp" type="number" step="0.1" value="5.0"></div><div class="f full"><div class="hint">Anexe o controle tecnológico do executor (obrigação do Caderno de Encargos). A Gravitas faz a análise crítica; contraprova só onde houver divergência.</div></div><div class="formfoot"><button class="btn pri">Informar conclusão</button></div></form>`);
+    if(it.st==='s9b'||it.st==='s13b') return box('Responder à notificação', `<form onsubmit="event.preventDefault();act_fix('${it.id}',F(this).txt)" class="form" style="padding:0"><div class="f full"><label>Refazimento executado</label><textarea name="txt">Trecho reaberto, reaterro recompactado em camadas (GC 98%), recomposição na faixa completa conforme PEX. Fotos anexadas.</textarea></div><div class="formfoot"><button class="btn" onclick="event.preventDefault();toast('Contestação protocolada — prazo suspenso até resposta da Obras')">Contestar</button><button class="btn pri">Informar refazimento</button></div></form>`);
+    if(it.st==='s14') return box('Regularização', `<div class="callout crit">Intervenção aberta sem licença. Solicite LAV/LFT de regularização; o auto de infração permanece.</div><div class="btnrow" style="margin-top:8px"><button class="btn pri" onclick="go('nova')">Solicitar regularização</button></div>`);
+  }
+  if(p==='grav'){
+    if(it.st==='s2') return box('Auditoria da vistoria prévia', `<div class="callout" style="margin-bottom:8px">${s.rua.includes('Duque')||s.rua.includes('XV')?'Corredor prioritário — auditoria obrigatória (100%).':'Sorteada na amostra de '+PARAMS.auditPct+'%.'}</div><form onsubmit="event.preventDefault();const f=F(this);act_audit('${it.id}',f.res==='ok',f.obs)" class="form" style="padding:0"><div class="f full"><div class="radio"><label><input type="radio" name="res" value="ok" checked> Concorda com a declaração</label><label><input type="radio" name="res" value="div"> Diverge</label></div></div><div class="f full"><label>Observação</label><textarea name="obs">Patologia pré-existente delimitada em foto; sarjeta íntegra.</textarea></div><div class="formfoot"><button class="btn green">Assinar auditoria</button></div></form>`);
+    if(it.st==='s7'||(it.st==='s8'&&it.ensaios.some(e=>e.st==='lançado'))) return box('Vistoria de recebimento', `<form onsubmit="event.preventDefault();const f=F(this);act_recv('${it.id}',f.res==='ok',[{n:f.a1,g:f.g1}].filter(a=>a.n))" class="form" style="padding:0">
+      ${it.ensaios.some(e=>e.st==='lançado')?`<div class="f full"><div class="callout ${it.ensaios.every(e=>e.ok)?'good':'crit'}">Contraprova ${it.ensaios.every(e=>e.ok)?'conforme':'NÃO conforme'} — ${it.ensaios.filter(e=>e.res).map(e=>e.res.map(c=>c.k+' '+c.v).join(', ')).join('; ')}</div></div>`:''}
+      <div class="f full"><div class="radio"><label><input type="radio" name="res" value="ok" ${it.ensaios.some(e=>e.st==='lançado'&&!e.ok)?'':'checked'}> Sem apontamento — emitir TRP</label><label><input type="radio" name="res" value="nok" ${it.ensaios.some(e=>e.st==='lançado'&&!e.ok)?'checked':''}> Com apontamentos</label></div></div>
+      <div class="f"><label>Apontamento</label><input name="a1" value="${it.ensaios.some(e=>e.st==='lançado'&&!e.ok)?'Espessura de CBUQ abaixo do projeto — contraprova não conforme':'Afundamento de 2,5 cm na régua de 3 m'}"></div><div class="f"><label>Gravidade</label><select name="g1"><option>leve</option><option>média</option><option selected>grave</option><option>gravíssima</option></select></div>
+      <div class="formfoot">${it.st==='s7'?`<button type="button" class="btn" onclick="act_ensaio('${it.id}','Extração de testemunho — espessura, GC, ligante',2)">Pedir contraprova</button>`:''}<button class="btn green">Assinar laudo</button></div></form>`);
+    if(it.st==='s8') return box('Recebimento em curso', `<div class="callout warn">Aguardando resultado de ${it.ensaios.filter(e=>e.st==='pendente').map(e=>e.id).join(', ')} pelo laboratório.</div>`);
+    if(['s10','s11','s12'].includes(it.st)) return box('Vistoria de garantia — '+ST[it.st].n.split('— ')[1], `<form onsubmit="event.preventDefault();const f=F(this);act_gar('${it.id}',f.res==='ok',f.obs)" class="form" style="padding:0"><div class="f full"><div class="radio"><label><input type="radio" name="res" value="ok" checked> Sem patologia</label><label><input type="radio" name="res" value="nok"> Patologia</label></div></div><div class="f full"><label>Descrição</label><input name="obs" value="Afundamento longitudinal 3 cm sobre a vala — recalque do reaterro"></div><div class="formfoot"><button class="btn green">Assinar vistoria</button></div></form>`);
+    if(it.st==='s13b') return box('Parecer de patologia', `<form onsubmit="event.preventDefault();const f=F(this);act_parecer('${it.id}',f.causa,f.txt)" class="form" style="padding:0"><div class="f full"><label>Causa provável</label><select name="causa"><option>recalque do reaterro (GC insuficiente)</option><option>espessura de CBUQ abaixo do projeto</option><option>ausência de base granular</option><option>rejunte/colchão de areia inadequado</option><option>drenagem — infiltração na vala</option></select></div><div class="f full"><label>Fundamentação</label><textarea name="txt">Afundamento restrito à projeção da vala, sem trincas no entorno: exclui causa estrutural do pavimento existente. Compatível com reaterro não compactado em camadas. Refazimento devido em garantia.</textarea></div><div class="formfoot"><button class="btn green">Assinar parecer (ART)</button></div></form>`);
+  }
+  if(p==='lab'){ const e=it.ensaios.find(x=>x.st==='pendente'); if(e) return box('Lançar resultado — '+e.id, `<form onsubmit="event.preventDefault();act_lab('${it.id}','${e.id}',F(this))" class="form" style="padding:0">
+      <div class="f"><label>Espessura medida (cm)</label><input name="esp" type="number" step="0.1" value="4.5"></div><div class="f"><label>Espessura de projeto (cm)</label><input name="proj" type="number" step="0.1" value="5.0"></div>
+      <div class="f"><label>Grau de compactação (%)</label><input name="gc" type="number" step="0.1" value="96.2"></div><div class="f"><label>Teor de ligante (%)</label><input name="lig" type="number" step="0.01" value="5.10"></div>
+      <div class="f"><label>Ligante de projeto (%)</label><input name="ligp" type="number" step="0.01" value="5.50"></div><div class="f"><div class="hint" style="margin-top:22px">Tolerâncias DNIT 112/2009: espessura ±5%, GC 97–101%, ligante ±0,3%. O sistema classifica; você assina.</div></div>
+      <div class="formfoot"><button class="btn pri">Assinar e lançar (imutável)</button></div></form>`); }
+  if(p==='pref'){
+    if(it.st==='s4'){ const mine=(u.assina||[]).filter(d=>['LAV','LFT'].includes(d)&&!it.sig[d]); return box('Análise e assinatura', `<dl class="kv" style="margin-bottom:10px"><dt>LAV (Obras)</dt><dd>${it.sig.LAV?'✓ '+esc(it.sig.LAV.w)+' · '+it.sig.LAV.t:'pendente'}</dd><dt>LFT (SESTRA)</dt><dd>${it.sig.LFT?'✓ '+esc(it.sig.LFT.w)+' · '+it.sig.LFT.t:'pendente'}</dd><dt>Caução ao licenciar</dt><dd class="mono">${brl(caucaoDe(it))}</dd></dl><div class="btnrow">${mine.map(d=>`<button class="btn pri" onclick="act_sign('${it.id}','${d}')">Assinar ${d} (${u.cert})</button>`).join('')||`<span class="small muted">${u.papel==='Signatário'?'Sua assinatura já consta.':'Operador: prepare o processo; a assinatura é do signatário.'}</span>`}<button class="btn" onclick="toast('Exigência enviada ao interveniente — prazo 5 dias úteis')">Exigência</button></div>`); }
+    if(it.st==='s3') return box('Prévia auditada', `<button class="btn pri" onclick="act_analise('${it.id}')">Enviar para análise (Obras + SESTRA)</button>`);
+    if(it.st==='s9b'&&!it.docs.some(d=>d[0]==='NOT')) return box('Laudo com apontamentos', `<button class="btn pri" onclick="go('not','${it.id}')">Emitir notificação</button>`);
+    if(['s9b','s13b','s14'].includes(it.st)) return box('Escalonamento', `<div class="btnrow"><button class="btn" onclick="go('multa','${it.id}')">Calcular multa</button><button class="btn" onclick="go('of','${it.id}')">Ofício AGERGS / MP</button><button class="btn danger" onclick="act_susp('${it.interv}')">${PARAMS.susp[it.interv]?'Restabelecer':'Suspender'} novas licenças — ${esc(it.interv)}</button></div>`);
+    if(it.st==='s8') return box('Análise crítica', `<div class="callout warn">Contraprova ${it.ensaios.map(e=>e.id+' ('+e.st+')').join(', ')} — resultado entra direto do laboratório.</div>`);
+  }
+  return '';
+}
+
+/* ===================== MAPA ===================== */
+function mapBlock(clickable){
+  const segs=SEGS.map(sg=>{ const it=cur(sg.id); const pr=PROG.find(x=>x.seg===sg.id); const st=it?popOf(it):(pr?POP.prog:null);
+    const col=st?st.col:'var(--line)'; const dash=st&&st.dash?`stroke-dasharray="${st.dash}"`:''; const on=(it&&S.sel===it.id)||(S.segSel===sg.id);
+    const ttl=`${sg.rua} — ${sg.entre}${it?' · '+ST[it.st].n+' · '+it.interv:pr?' · programada '+pr.mes+' · '+pr.interv:' · sem intervenção'}`;
+    const click = clickable?`onclick="${it?`sel('${it.id}')`:`pickSeg('${sg.id}')`}"`:'';
+    const mid=[(sg.x1+sg.x2)/2,(sg.y1+sg.y2)/2];
+    return `<g ${click}><title>${esc(ttl)}</title><line class="seg hit" x1="${sg.x1}" y1="${sg.y1}" x2="${sg.x2}" y2="${sg.y2}"/><line class="seg ${on?'on':''}" x1="${sg.x1}" y1="${sg.y1}" x2="${sg.x2}" y2="${sg.y2}" style="stroke:${col}" ${dash}/>${st?`<rect x="${mid[0]-7}" y="${mid[1]-7}" width="14" height="14" fill="${col}"/><text x="${mid[0]}" y="${mid[1]+3.5}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="9" font-weight="600" fill="#fff">${st.g}</text>`:''}${on?`<circle class="ring" cx="${mid[0]}" cy="${mid[1]}" r="13"/>`:''}</g>`; }).join('');
+  const labels = EW.map((r,j)=>`<text class="lbl" x="${VX[0]-12}" y="${HY[j]+3}" text-anchor="end">${esc(r)}</text>`).join('') + NS.map((r,i)=>`<text class="lbl" transform="rotate(-90 ${VX[i]+3} ${HY[0]-14})" x="${VX[i]+3}" y="${HY[0]-14}" text-anchor="start">${esc(r)}</text>`).join('');
+  const legend=`<div class="legend">${Object.values(POP).map(p=>`<span><i style="background:${p.col}"></i><span class="glyph" style="background:${p.col}">${p.g}</span>${p.n}</span>`).join('')}<span><i style="background:var(--ink);opacity:.35"></i>corredor de carga</span></div>`;
+  return `<div class="map"><svg viewBox="0 -70 800 550" role="img" aria-label="Mapa esquemático das intervenções — Centro de Uruguaiana"><line class="corr" x1="20" y1="455" x2="780" y2="455"/><text class="lbl" x="22" y="447">BR-472 · acesso ao Porto Seco (corredor de carga — auditoria 100%)</text><text class="lbl" x="778" y="-52" text-anchor="end">Centro · malha esquemática · N ↑</text>${labels}${segs}</svg>${legend}</div>`;
+}
+function pickSeg(id){ S.segSel=(S.segSel===id?null:id); S.sel=null; render(); }
+
+/* ===================== ÁREA PÚBLICA ===================== */
+function publicPage(){
+  const q=(S.q||'').toLowerCase();
+  const ruas=[...EW,...NS];
+  const rua = S.rua || (q? ruas.find(r=>r.toLowerCase().includes(q)) : null);
+  const kp = kpis([['Ruas abertas hoje',INTS.filter(i=>i.st==='s6').length,'crit'],['Aguardando repavimentação',INTS.filter(i=>['s7','s8'].includes(i.st)).length,'warn'],['Em correção pelo responsável',INTS.filter(i=>['s9b','s13b','s14'].includes(i.st)).length,'serious'],['Concluídas e aprovadas em 2026',INTS.filter(i=>ST[i.st].pop==='ok').length,'good'],['Programadas para os próximos meses',PROG.length,'']]);
+  let side='';
+  const it = S.sel && INT(S.sel);
+  if(it){ const s=SEG[it.seg], p=popOf(it);
+    side=`<div class="panel"><header><h3>${esc(s.rua)} <span class="muted">· ${esc(s.entre)}</span></h3><button class="btn sm" onclick="S.sel=null;render()">Fechar</button></header>
+      <div style="padding:14px 16px"><div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><span class="glyph" style="background:${p.col}">${p.g}</span><b>${p.n}</b></div>
+      <dl class="kv"><dt>Responsável</dt><dd>${esc(it.interv)}</dd><dt>O que está sendo feito</dt><dd>${esc(it.motivo)}</dd><dt>Extensão</dt><dd class="mono">${it.ext} m</dd><dt>Licença</dt><dd>${it.docs.find(d=>d[0]==='LAV')?esc(it.docs.find(d=>d[0]==='LAV')[1]):(it.st==='s14'?'<span class="pill crit"><i></i>sem licença</span>':'em análise')}</dd><dt>Garantia</dt><dd>${it.st==='s13a'?'encerrada — aprovada':(['s10','s11','s12','s13b'].includes(it.st)?'em garantia até '+addM(it.dt,14):'—')}</dd></dl>
+      ${it.st==='s6'?'<div class="callout crit" style="margin-top:10px">Rua com interdição — desvio sinalizado conforme a licença de trânsito.</div>':''}
+      ${['s9b','s13b','s14'].includes(it.st)?'<div class="callout" style="margin-top:10px">A prefeitura constatou problema na recomposição e exigiu o refazimento pelo responsável, sem custo para o município.</div>':''}
+      ${ST[it.st].pop==='ok'?`<div style="margin-top:12px"><div class="eyebrow" style="margin-bottom:6px">Antes / depois — arraste</div><div class="ba" id="ba"><div class="a"></div><div class="b"></div><span class="cap" style="left:6px">ANTES</span><span class="cap" style="right:6px">DEPOIS</span><input type="range" min="0" max="100" value="50" oninput="document.getElementById('ba').style.setProperty('--cut',this.value+'%')" aria-label="Comparar antes e depois"></div></div>`:''}
+      <h4 class="eyebrow" style="margin:14px 0 6px">Histórico desta intervenção</h4><ul class="tl">${[...it.log].reverse().filter(l=>!/hash|análise crítica/i.test(l.e)).map(l=>`<li class="${/notifica|apontamento|patologia|infração|sem licença/i.test(l.e)?'bad':/recebid|licenciad|TRD|sem patologia/i.test(l.e)?'ok':'acc'}"><div><div class="t">${l.t.slice(0,10)}</div><div class="e">${esc(l.e.replace(/\s*\(ICP-Brasil.*?\)/,'').replace(/;?\s*hash.*$/,''))}</div></div></li>`).join('')}</ul>
+      <div class="btnrow" style="margin-top:12px"><button class="btn sm" onclick="toast('Você receberá aviso quando esta rua mudar de situação')">Seguir esta rua</button><button class="btn sm" onclick="toast('Relato registrado com foto e localização — vai direto à fiscalização')">Relatar problema</button></div></div></div>`;
+  } else if(rua){
+    const segs=SEGS.filter(s=>s.rua===rua);
+    side=`<div class="panel"><header><h3>${esc(rua)}</h3><button class="btn sm" onclick="S.rua=null;S.q='';render()">Limpar</button></header><div style="padding:14px 16px" class="rua">
+      <div class="eyebrow" style="margin-bottom:4px">Cronograma — o que está acontecendo e o que vem</div>
+      ${segs.map(s=>{ const it=cur(s.id), pr=PROG.find(x=>x.seg===s.id); const p=it?popOf(it):(pr?POP.prog:null);
+        return `<div class="it" ${it?`onclick="sel('${it.id}')" style="cursor:pointer"`:''}><span class="glyph" style="background:${p?p.col:'var(--line)'}">${p?p.g:'·'}</span><div><b>${esc(s.entre)}</b><div class="d">${it?ST[it.st].n+' · '+it.interv+' · '+it.motivo:pr?'Programada para '+pr.mes+' · '+pr.interv+' · '+pr.motivo:'Sem intervenção prevista'}</div></div><span class="q">${s.id.split('-').slice(2).join('-')}</span></div>`; }).join('')}
+      <div class="callout" style="margin-top:8px">A programação futura vem da declaração mensal de cada concessionária. Se sua rua aparece como <b>Programada</b>, ela será aberta no mês indicado — a prefeitura não repavimenta antes disso.</div></div></div>`;
+  } else {
+    side=`<div class="panel"><header><h3>Encontre a sua rua</h3></header><div style="padding:14px 16px"><div class="search" style="min-width:0"><span class="faint">⌕</span><input placeholder="Digite o nome da rua" value="${esc(S.q)}" oninput="S.q=this.value;S.rua=null;render();document.querySelector('.pub .search input').focus()"></div>
+      <div class="rua" style="margin-top:12px">${ruas.map(r=>{ const n=SEGS.filter(s=>s.rua===r).filter(s=>cur(s.id)||PROG.find(x=>x.seg===s.id)).length; return `<div class="it" onclick="S.rua='${esc(r)}';render()" style="cursor:pointer"><span class="glyph" style="background:${n?'var(--ink)':'var(--line)'}">${n}</span><div><b>${esc(r)}</b><div class="d">${n?n+' quadra(s) com intervenção ou programação':'sem intervenções'}</div></div><span class="q">ver</span></div>`; }).join('')}</div></div></div>`;
+  }
+  return `<div class="pubhead"><div class="pb">${MARK}<div><h1>Obras nas ruas de <em>${CITY.nome}</em></h1><div class="sub">Quem abriu, com que licença, quando fecha e se a prefeitura aprovou — atualizado a cada registro · Prefeitura Municipal de ${CITY.nome} com Gravitas</div></div></div><div class="sp"></div><button class="btn" onclick="S.uid='obr1';S.view='inbox';S.sel=null;render()">Acesso restrito</button></div>
+    <div class="content">${kp}<div class="stack">${mapBlock(true)}<div class="callout">Não aparecem aqui: valores de caução e multa, dados pessoais dos responsáveis, laudos em recurso. O que aparece: o estado de cada quadra, a licença e o histórico datado. Dados de demonstração.</div></div>${side}</div>`;
+}
+
+render();
+</script>
+</body>
+</html>

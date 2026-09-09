@@ -327,6 +327,18 @@ if ($uri === '/trechos/importar') {
 }
 
 /* ==========================
+   LICENCIAMENTO VIÁRIO (demonstração — Uruguaiana)
+   Rota autenticada de propósito: o .htaccess entrega direto qualquer arquivo
+   que exista no disco, então o protótipo fica guardado em app/views e sai por
+   aqui, já protegido pelo auth_required() do topo deste arquivo.
+========================== */
+if ($uri === '/licenciamento') {
+    require_once __DIR__ . '/app/controllers/LicenciamentoController.php';
+    (new LicenciamentoController())->index();
+    exit;
+}
+
+/* ==========================
    TOPOGRAFIA
 ========================== */
 if ($uri === '/topografia') {
