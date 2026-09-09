@@ -1,0 +1,14 @@
+# Esta pasta guarda o código do painel (controllers, views, helpers e config) e
+# nunca deve ser aberta pelo navegador: as páginas saem sempre pelo index.php da
+# raiz do app. A reescrita do .htaccess da raiz só manda para o index.php os
+# caminhos que NÃO existem no disco, ou seja, um arquivo que exista aqui dentro
+# (por exemplo um .html) seria entregue cru pelo Apache, sem passar pelo login.
+Options -Indexes
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
