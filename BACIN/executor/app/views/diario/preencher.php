@@ -5,6 +5,8 @@ $totalSteps = 21;
 $pct = (int)round($stepAtual / $totalSteps * 100);
 $diarioId = (int)$diario['id'];
 $bloqueado = $diario['status'] === 'enviado';
+$redeConcluida = (($trecho['status_rede'] ?? '') === 'concluido');
+$nomeTrecho = trim(($trecho['pv_montante'] ?? '') . ' → ' . ($trecho['pv_jusante'] ?? ''));
 
 // Helpers
 function isFeito(int $step, int $stepAtual): bool { return $step <= $stepAtual; }
@@ -27,7 +29,7 @@ foreach ($fotos as $f) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#1A2D4F">
 <meta name="robots" content="noindex,nofollow">
-<meta name="csrf" content="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
+<meta name="csrf" content="<?= htmlspecialchars(csrf_token_executor()) ?>">
 <title>Diário <?= date('d/m/Y', strtotime($diario['data'])) ?> · BACIN</title>
 <link rel="stylesheet" href="<?= EXECUTOR_BASE ?>/assets/css/executor.css">
 </head>
@@ -55,16 +57,43 @@ foreach ($fotos as $f) {
   <div class="barra"><i id="prog-bar" style="width:<?= $pct ?>%"></i></div>
 </div>
 
+<?php if (!empty($devolucao)): ?>
+<!-- Devolução do Planejador (PA26) — aparece no topo do diário -->
+<?= devolucao_aviso_html(
+        $devolucao,
+        'O escritório devolveu este trecho: a rede tem que ser refeita.',
+        'Lance aqui o serviço refeito. Só marque "rede concluída" quando estiver resolvido.'
+    ) ?>
+<?php endif; ?>
+
 <?php if ($bloqueado): ?>
-<div class="info" style="border-color:var(--ok)">
+<div class="info" style="border-color:<?= $redeConcluida ? 'var(--ok)' : 'var(--aviso)' ?>">
   <div class="info-h">
-    <span class="ic i-ok">✅</span>
-    <div><b>Diário enviado</b><span>Este diário já foi enviado ao Planejador e não pode ser editado.</span></div>
+    <span class="ic <?= $redeConcluida ? 'i-ok' : 'i-aviso' ?>"><?= $redeConcluida ? '✅' : '🔧' ?></span>
+    <div>
+      <b>Diário enviado</b>
+      <span>Este diário já foi enviado ao Planejador e não pode ser editado.</span>
+    </div>
+  </div>
+  <div style="margin-top:9px">
+    <?php if ($redeConcluida): ?>
+    <span class="badge b-ok">✅ Rede concluída<?= !empty($trecho['rede_concluida_em']) ? ' em ' . date('d/m/Y', strtotime($trecho['rede_concluida_em'])) : '' ?></span>
+    <div class="hint">Ramais e pavimento já foram liberados neste trecho. Não há nada a concluir de novo.</div>
+    <?php else: ?>
+    <span class="badge b-aviso">🔧 Trecho continua — rede não concluída</span>
+    <div class="hint">Se a rede de <?= htmlspecialchars($nomeTrecho) ?> terminou, marque abaixo: isso libera a equipe de ramais e a de pavimento.</div>
+    <form method="post" action="<?= EXECUTOR_BASE ?>/diario/<?= $diarioId ?>/encerrar"
+          onsubmit="return confirm('Confirmar que a REDE do trecho <?= htmlspecialchars($nomeTrecho, ENT_QUOTES) ?> está CONCLUÍDA?\n\nIsso libera a equipe de ramais e a de pavimento.')">
+      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token_executor()) ?>">
+      <input type="hidden" name="rede_concluida" value="1">
+      <button type="submit" class="btn-step-ok">✅ Terminei o trecho — rede concluída</button>
+    </form>
+    <?php endif; ?>
   </div>
 </div>
 <?php endif; ?>
 
-<input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
+<input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token_executor()) ?>">
 
 <!-- ================================================================
      PASSOS DO DIÁRIO
@@ -331,6 +360,8 @@ foreach ($obraSteps as $sn => [$titulo, $desc]):
             <?php endforeach; ?>
           </select>
           <input type="text" name="interf_esp[<?= $idx ?>]" value="<?= htmlspecialchars($interf['especificacao'] ?? '') ?>" placeholder="Especificação" style="margin-top:6px">
+          <input type="hidden" name="interf_foto[<?= $idx ?>]" id="foto-interf-<?= $idx ?>" value="<?= !empty($interf['foto_id']) ? (int)$interf['foto_id'] : '' ?>">
+          <input type="hidden" name="interf_remover[<?= $idx ?>]" id="rm-interf-<?= $idx ?>" value="">
           <input type="hidden" name="interf_lat[<?= $idx ?>]" id="lat-interf-<?= $idx ?>" value="<?= htmlspecialchars($interf['lat'] ?? '') ?>">
           <input type="hidden" name="interf_lng[<?= $idx ?>]" id="lng-interf-<?= $idx ?>" value="<?= htmlspecialchars($interf['lng'] ?? '') ?>">
           <div class="gps-chip <?= $interf['lat'] ? 'ok' : 'aguardando' ?>" id="gps-interf-<?= $idx ?>">
@@ -339,6 +370,7 @@ foreach ($obraSteps as $sn => [$titulo, $desc]):
           <?php if (!$interf['lat']): ?>
           <button type="button" onclick="capturarGPS(document.getElementById('lat-interf-<?= $idx ?>'),document.getElementById('lng-interf-<?= $idx ?>'),document.getElementById('gps-interf-<?= $idx ?>'))" style="margin-top:4px;width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:7px;font-size:12px;font-weight:700">📍 Capturar GPS</button>
           <?php endif; ?>
+          <button type="button" class="btn-remover" onclick="removerItem(this, 'rm-interf-<?= $idx ?>')">🗑 Remover esta interferência</button>
         </div>
         <?php endforeach; ?>
       </div>
@@ -424,24 +456,48 @@ foreach ($obraSteps as $sn => [$titulo, $desc]):
   </div>
 </div>
 
-<!-- Passo 14: Pontões de espera -->
+<!-- Passo 14: Pontões de ramal (espera) — registro oficial do pontão -->
 <div class="<?= stepClass(14, $stepAtual) ?>" data-step="14">
   <div class="step-h">
     <span class="n">14</span>
-    <div class="tt"><b>Pontões de espera</b><span>Foto + nº residência</span></div>
+    <div class="tt"><b>Pontões de ramal (espera)</b><span>Lançamento da rede até a cota do ramal (padrão 0,80 m)</span></div>
     <span class="ck"><?= isFeito(14, $stepAtual) ? '✅' : '○' ?></span>
     <span class="chev">▼</span>
   </div>
   <div class="step-body">
     <?php if (!$bloqueado): ?>
+    <div class="hint">Registre o pontão de espera: nº do imóvel (obrigatório), profundidade da cota de lançamento (entre 0,40 m e 4,00 m), foto e GPS. A extensão do ramal em pista e calçada é lançada depois pela equipe de ramais. Salvar com a tela vazia NÃO apaga os pontões já lançados — para tirar um, use o 🗑 Remover dele.</div>
     <form id="form-step-14" onsubmit="return false">
       <div id="lista-pontoes">
-        <?php foreach ($pontoes as $pi => $p): ?>
+        <?php foreach ($pontoes as $pi => $p):
+          // Profundidade NULL aparece VAZIA (antes voltava como 0,80 e virava 0,80 de verdade)
+          $pProf = ($p['profundidade_m'] !== null && $p['profundidade_m'] !== '') ? (string)$p['profundidade_m'] : '';
+          $pLat  = $p['lat'] ?? '';
+          $pLng  = $p['lng'] ?? '';
+        ?>
         <div class="card-mini">
-          <input type="text" name="pontao_res[<?= $pi ?>]" value="<?= htmlspecialchars($p['nro_residencia'] ?? '') ?>" placeholder="Nº da residência">
-          <div class="fotos" id="fotos-pontao-<?= $pi ?>" style="margin-top:6px">
-            <label class="cam"><span class="cic">📷</span><input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFotoUpload(this, <?= $diarioId ?>, 14, 'pontao', 14)"></label>
+          <input type="text" name="pontao_res[<?= $pi ?>]" value="<?= htmlspecialchars($p['nro_residencia'] ?? '') ?>" placeholder="Nº do imóvel">
+          <div class="row2">
+            <input type="number" inputmode="decimal" step="0.01" min="0.40" max="4.00"
+                   name="pontao_prof[<?= $pi ?>]" value="<?= htmlspecialchars($pProf) ?>"
+                   placeholder="Profundidade 0,40 a 4,00 m">
+            <div class="fotos" id="fotos-pontao-<?= $pi ?>">
+              <?php if (!empty($p['foto_thumb'])): ?>
+              <div class="foto"><img src="<?= EXECUTOR_BASE ?>/uploads/<?= htmlspecialchars($p['foto_thumb']) ?>" alt=""><?php if ($pLat): ?><span class="gpsb">GPS</span><?php endif; ?></div>
+              <?php endif; ?>
+              <label class="cam"><span class="cic">📷</span><input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFotoUpload(this, <?= $diarioId ?>, 14, 'pontao', 14, 'foto-pontao-<?= $pi ?>')"></label>
+            </div>
           </div>
+          <input type="hidden" name="pontao_foto[<?= $pi ?>]" id="foto-pontao-<?= $pi ?>" value="<?= !empty($p['foto_id']) ? (int)$p['foto_id'] : '' ?>">
+          <input type="text" name="pontao_obs[<?= $pi ?>]" maxlength="255" value="<?= htmlspecialchars($p['observacao'] ?? '') ?>" placeholder="Observação (opcional)" style="margin-top:6px">
+          <input type="hidden" name="pontao_lat[<?= $pi ?>]" id="lat-pontao-<?= $pi ?>" value="<?= htmlspecialchars((string)$pLat) ?>">
+          <input type="hidden" name="pontao_lng[<?= $pi ?>]" id="lng-pontao-<?= $pi ?>" value="<?= htmlspecialchars((string)$pLng) ?>">
+          <div class="gps-chip <?= $pLat ? '' : 'aguardando' ?>" id="gps-pontao-<?= $pi ?>" style="margin-top:6px">
+            <?= $pLat ? '📍 ' . htmlspecialchars(round((float)$pLat, 5) . ', ' . round((float)$pLng, 5)) : '📍 GPS não capturado' ?>
+          </div>
+          <button type="button" onclick="capturarGPS(document.getElementById('lat-pontao-<?= $pi ?>'),document.getElementById('lng-pontao-<?= $pi ?>'),document.getElementById('gps-pontao-<?= $pi ?>'))" style="margin-top:6px;width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px;font-size:12px;font-weight:700">📍 Capturar GPS do pontão</button>
+          <input type="hidden" name="pontao_remover[<?= $pi ?>]" id="rm-pontao-<?= $pi ?>" value="">
+          <button type="button" class="btn-remover" onclick="removerItem(this, 'rm-pontao-<?= $pi ?>')">🗑 Remover este pontão</button>
         </div>
         <?php endforeach; ?>
       </div>
@@ -449,7 +505,16 @@ foreach ($obraSteps as $sn => [$titulo, $desc]):
       <button type="button" class="btn-step-ok" onclick="salvarStep(document.getElementById('form-step-14'), <?= $diarioId ?>, 14)">✔ Salvar pontões</button>
     </form>
     <?php else: ?>
-    <div class="hint"><?= count($pontoes) ?> pontão(ões) registrado(s).</div>
+      <?php if (!$pontoes): ?>
+      <div class="hint">Nenhum pontão registrado.</div>
+      <?php else: ?>
+        <?php foreach ($pontoes as $p): ?>
+        <div class="mat-li">
+          <span>🏠 <?= htmlspecialchars($p['nro_residencia'] ?? '—') ?><?= !empty($p['observacao']) ? ' · ' . htmlspecialchars($p['observacao']) : '' ?></span>
+          <span class="q"><?= $p['profundidade_m'] !== null ? number_format((float)$p['profundidade_m'], 2, ',', '.') . ' m' : '—' ?></span>
+        </div>
+        <?php endforeach; ?>
+      <?php endif; ?>
     <?php endif; ?>
   </div>
 </div>
@@ -476,10 +541,14 @@ foreach ($cargaSteps as $sn => [$titulo, $tipo, $desc]):
       <div class="fotos" id="fotos-carga-<?= $sn ?>">
         <?php foreach ($cargasFiltradas as $c): ?>
         <div class="foto">
-          <?php if ($c['foto_id'] && !empty($fotosStep[14])): ?>
-          <img src="<?= EXECUTOR_BASE ?>/uploads/<?= htmlspecialchars($c['foto_id']) ?>" alt="">
+          <?php if (!empty($c['foto_thumb'])): ?>
+          <img src="<?= EXECUTOR_BASE ?>/uploads/<?= htmlspecialchars($c['foto_thumb']) ?>" alt="">
           <?php else: ?><span style="font-size:20px">📦</span><?php endif; ?>
           <div style="position:absolute;bottom:3px;left:0;right:0;text-align:center;font-size:8px;font-weight:800;color:#fff;background:#00000066;padding:1px">Carga <?= (int)$c['numero'] ?></div>
+          <?php if (!empty($c['foto_id'])): ?>
+          <!-- devolve a carga já gravada para o POST: substituir o conjunto não perde nada -->
+          <input type="hidden" name="carga_foto[]" value="<?= (int)$c['foto_id'] ?>">
+          <?php endif; ?>
         </div>
         <?php endforeach; ?>
         <label class="cam">
@@ -519,9 +588,12 @@ foreach ($cargaSteps as $sn => [$titulo, $tipo, $desc]):
           <div class="row2">
             <input type="number" step="0.5" name="reat_esp[<?= $ri ?>]" value="<?= htmlspecialchars($r['espessura_cm'] ?? '') ?>" placeholder="Espessura (cm)">
             <div class="fotos" id="fotos-reat-<?= $ri ?>">
-              <label class="cam"><span class="cic">📷</span><input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFotoUpload(this, <?= $diarioId ?>, 17, 'reaterro', 17)"></label>
+              <label class="cam"><span class="cic">📷</span><input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFotoUpload(this, <?= $diarioId ?>, 17, 'reaterro', 17, 'foto-reat-<?= $ri ?>')"></label>
             </div>
           </div>
+          <input type="hidden" name="reat_foto[<?= $ri ?>]" id="foto-reat-<?= $ri ?>" value="<?= !empty($r['foto_id']) ? (int)$r['foto_id'] : '' ?>">
+          <input type="hidden" name="reat_remover[<?= $ri ?>]" id="rm-reat-<?= $ri ?>" value="">
+          <button type="button" class="btn-remover" onclick="removerItem(this, 'rm-reat-<?= $ri ?>')">🗑 Remover esta camada</button>
         </div>
         <?php endforeach; ?>
       </div>
@@ -532,33 +604,30 @@ foreach ($cargaSteps as $sn => [$titulo, $tipo, $desc]):
   </div>
 </div>
 
-<!-- Passo 18: Ramais -->
+<!-- Passo 18: ramal completo saiu do diário de rede (PA25) -->
 <div class="<?= stepClass(18, $stepAtual) ?>" data-step="18">
   <div class="step-h">
     <span class="n">18</span>
-    <div class="tt"><b>Ramais executados</b><span>Dimensão pontão, extensões, nº residência</span></div>
+    <div class="tt"><b>Ramais executados</b><span>Agora lançados pela equipe de ramais</span></div>
     <span class="ck"><?= isFeito(18, $stepAtual) ? '✅' : '○' ?></span>
     <span class="chev">▼</span>
   </div>
   <div class="step-body">
+    <div class="info" style="margin-top:12px;margin-bottom:0;border-color:var(--aviso)">
+      <div class="info-h">
+        <span class="ic i-aviso">⚠️</span>
+        <div><b>Ramal não é mais lançado aqui</b><span>Extensão em pista e calçada, tipo de pavimento e fotos do ramal são registrados depois pela equipe de ramais, no app próprio.</span></div>
+      </div>
+      <div class="corpo">Na rede você registra apenas o <b>pontão de espera</b>, no passo 14: nº do imóvel, profundidade da cota de lançamento, foto e GPS.</div>
+    </div>
+    <?php if ($ramais): ?>
+    <div class="hint"><?= count($ramais) ?> ramal(is) lançado(s) neste diário antes da mudança — mantidos como histórico.</div>
+    <?php endif; ?>
     <?php if (!$bloqueado): ?>
     <form id="form-step-18" onsubmit="return false">
-      <div id="lista-ramais">
-        <?php foreach ($ramais as $ri => $r): ?>
-        <div class="card-mini">
-          <input type="text" name="ramal_nro[<?= $ri ?>]" value="<?= htmlspecialchars($r['nro_residencia'] ?? '') ?>" placeholder="Nº residência">
-          <div class="row2" style="margin-top:6px">
-            <input type="text" name="ramal_pontao[<?= $ri ?>]" value="<?= htmlspecialchars($r['dimensao_pontao'] ?? '') ?>" placeholder="Dim. pontão">
-            <input type="number" step="0.1" name="ramal_pista[<?= $ri ?>]" value="<?= htmlspecialchars($r['ext_pista'] ?? '') ?>" placeholder="Ext. pista (m)">
-          </div>
-          <input type="number" step="0.1" name="ramal_calcada[<?= $ri ?>]" value="<?= htmlspecialchars($r['ext_calcada'] ?? '') ?>" placeholder="Ext. calçada (m)" style="margin-top:6px">
-        </div>
-        <?php endforeach; ?>
-      </div>
-      <button type="button" class="add-item" onclick="adicionarRamal()">+ Adicionar ramal</button>
-      <button type="button" class="btn-step-ok" onclick="salvarStep(document.getElementById('form-step-18'), <?= $diarioId ?>, 18)">✔ Salvar ramais</button>
+      <button type="button" class="btn-step-ok" onclick="salvarStep(document.getElementById('form-step-18'), <?= $diarioId ?>, 18)">✔ Ciente, seguir</button>
     </form>
-    <?php else: ?><div class="hint"><?= count($ramais) ?> ramal(is) registrado(s).</div><?php endif; ?>
+    <?php endif; ?>
   </div>
 </div>
 
@@ -613,6 +682,43 @@ foreach ($finSteps as $sn => [$titulo, $desc]):
   </div>
 </div>
 
+<?php if (!$bloqueado): ?>
+<!-- ================================================================
+     ENCERRAMENTO — quem conclui a rede é quem executou (19/09/2026)
+     ================================================================ -->
+<div class="info" id="bloco-encerrar" style="border-color:var(--gold);border-width:2px">
+  <div class="info-h">
+    <span class="ic i-gold" style="font-size:18px">🏁</span>
+    <div><b>Como ficou o trecho <?= htmlspecialchars($nomeTrecho) ?></b><span>Responda antes de enviar o diário</span></div>
+  </div>
+  <div>
+    <div class="hint">Só quem está na obra sabe se a rede deste trecho terminou. Marcar <b>rede concluída</b> libera a equipe de ramais e a de pavimento para entrar aqui — por isso a pergunta vem no envio.</div>
+    <form method="post" action="<?= EXECUTOR_BASE ?>/diario/<?= $diarioId ?>/encerrar" id="form-encerrar" onsubmit="return confirmarEnvio()">
+      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token_executor()) ?>">
+
+      <label class="card-mini" style="display:flex;gap:10px;align-items:flex-start">
+        <input type="radio" name="rede_concluida" value="1" style="width:22px;height:22px;margin-top:2px" onchange="verificarEncerramento()">
+        <span>
+          <b style="font-size:14px">✅ Terminei o trecho — rede concluída</b>
+          <span class="hint" style="display:block;margin-top:2px">A rede de <?= htmlspecialchars($nomeTrecho) ?> está pronta. Libera a equipe de ramais e a fila de repavimentação.</span>
+        </span>
+      </label>
+
+      <label class="card-mini" style="display:flex;gap:10px;align-items:flex-start">
+        <input type="radio" name="rede_concluida" value="0" style="width:22px;height:22px;margin-top:2px" onchange="verificarEncerramento()">
+        <span>
+          <b style="font-size:14px">🔧 Continua amanhã</b>
+          <span class="hint" style="display:block;margin-top:2px">O trecho não terminou hoje. Ninguém entra atrás ainda; amanhã a equipe segue nele.</span>
+        </span>
+      </label>
+
+      <button type="submit" class="btn-step-ok" id="btn-encerrar" disabled>Encerrar &amp; enviar 🚀</button>
+      <div class="hint" id="hint-encerrar">Confirme o passo 21 e marque como o trecho ficou para liberar o envio.</div>
+    </form>
+  </div>
+</div>
+<?php endif; ?>
+
 </div><!-- /scroll -->
 
 <!-- Rodapé -->
@@ -623,11 +729,8 @@ foreach ($finSteps as $sn => [$titulo, $desc]):
   </div>
   <?php if (!$bloqueado): ?>
   <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-    <form method="post" action="<?= EXECUTOR_BASE ?>/diario/<?= $diarioId ?>/encerrar" id="form-encerrar" onsubmit="return confirmarEnvio()">
-      <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '') ?>">
-      <button type="submit" class="btn-encerrar" id="btn-encerrar" disabled>Encerrar & enviar 🚀</button>
-    </form>
-    <span id="hint-encerrar" style="font-size:10.5px;color:#9FB4D6;text-align:right">Confirme o passo 21 para habilitar o envio</span>
+    <button type="button" class="btn-encerrar" onclick="irParaEncerramento()">Encerrar &amp; enviar 🚀</button>
+    <span style="font-size:10.5px;color:var(--muted);text-align:right">Diga como o trecho ficou no fim da tela</span>
   </div>
   <?php else: ?>
   <a href="<?= EXECUTOR_BASE ?>/" class="btn-sair" style="margin-left:auto">← Início</a>
@@ -640,29 +743,72 @@ foreach ($finSteps as $sn => [$titulo, $desc]):
 <script>
 const DIARIO_ID = <?= $diarioId ?>;
 
+const NOME_TRECHO = <?= json_encode($nomeTrecho, JSON_UNESCAPED_UNICODE) ?>;
+
+function escolhaRede() {
+  return document.querySelector('input[name="rede_concluida"]:checked');
+}
+
 function verificarEncerramento() {
-  const ok = document.querySelector('[data-step="21"].feito');
+  const ok   = document.querySelector('[data-step="21"].feito');
   const btn  = document.getElementById('btn-encerrar');
   const hint = document.getElementById('hint-encerrar');
   if (!btn) return;
-  btn.disabled = !ok;
-  if (hint) hint.style.display = ok ? 'none' : 'block';
+  const esc = escolhaRede();
+  btn.disabled = !(ok && esc);
+  if (esc) {
+    btn.textContent = esc.value === '1'
+      ? 'Encerrar — rede concluída ✅'
+      : 'Encerrar — continua amanhã 🔧';
+  }
+  if (hint) {
+    if (!ok)       hint.textContent = 'Confirme o passo 21 para liberar o envio.';
+    else if (!esc) hint.textContent = 'Marque como o trecho ficou: rede concluída ou continua amanhã.';
+    else           hint.textContent = esc.value === '1'
+      ? 'Ao enviar, o trecho fica CONCLUÍDO e libera ramais e pavimento.'
+      : 'Ao enviar, o trecho continua em execução com a sua equipe.';
+  }
 }
 document.addEventListener('DOMContentLoaded', verificarEncerramento);
 
+function irParaEncerramento() {
+  const bloco = document.getElementById('bloco-encerrar');
+  if (bloco) bloco.scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+
+function removerItem(btn, hiddenId) {
+  const hid = document.getElementById(hiddenId);
+  const card = btn.closest('.card-mini');
+  if (!hid || !card) return;
+  if (!confirm('Tirar este item do diário? Ele sai quando você salvar o passo.')) return;
+  hid.value = '1';
+  card.style.display = 'none';
+}
+
 function confirmarEnvio() {
+  const esc = escolhaRede();
+  if (!esc) {
+    alert('Antes de enviar, marque como o trecho ficou: "Terminei o trecho — rede concluída" ou "Continua amanhã".');
+    return false;
+  }
   const total = 21;
   const feitos = document.querySelectorAll('[data-step].feito').length;
-  if (feitos >= total) return confirm('Encerrar e enviar o diário? Esta ação não pode ser desfeita.');
-  const faltam = total - feitos;
-  const passosFaltando = [];
-  for (let s = 1; s <= total; s++) {
-    if (!document.querySelector('[data-step="'+s+'"].feito')) passosFaltando.push(s);
+  let aviso = '';
+  if (feitos < total) {
+    const passosFaltando = [];
+    for (let s = 1; s <= total; s++) {
+      if (!document.querySelector('[data-step="'+s+'"].feito')) passosFaltando.push(s);
+    }
+    aviso = 'Atenção: ' + (total - feitos) + ' passo(s) não confirmados: ' + passosFaltando.join(', ') +
+            '. O Planejador verá o diário como incompleto.\n\n';
   }
-  return confirm(
-    'Atenção: ' + faltam + ' passo(s) não foram confirmados: ' + passosFaltando.join(', ') + '.\n\n' +
-    'Enviar mesmo assim? O Planejador verá o diário como incompleto.'
-  );
+  if (esc.value === '1') {
+    return confirm(aviso +
+      'Confirmar que a REDE do trecho ' + NOME_TRECHO + ' está CONCLUÍDA?\n\n' +
+      'Isso envia o diário e libera a equipe de ramais e a de pavimento para entrar neste trecho.');
+  }
+  return confirm(aviso +
+    'Enviar o diário? O trecho ' + NOME_TRECHO + ' CONTINUA — a rede não será marcada como concluída.');
 }
 
 // Override de marcarStepFeito para verificar encerramento
@@ -687,9 +833,14 @@ function toggleFaltasMat() {
 }
 
 // Upload helper
-async function handleFotoUpload(input, diarioId, step, tipo, stepNum) {
+async function handleFotoUpload(input, diarioId, step, tipo, stepNum, alvoId) {
   const fotoId = await uploadFoto(input, diarioId, step, tipo);
   if (fotoId) {
+    // alvoId: hidden específico do item (ex.: foto do pontão do passo 14)
+    if (alvoId) {
+      const alvo = document.getElementById(alvoId);
+      if (alvo) { alvo.value = fotoId; return; }
+    }
     const hidInput = document.createElement('input');
     hidInput.type = 'hidden'; hidInput.name = 'foto_id'; hidInput.value = fotoId;
     input.closest('.step-body').appendChild(hidInput);
@@ -724,6 +875,7 @@ function adicionarInterferencia() {
       <option value="outros">Outros</option>
     </select>
     <input type="text" name="interf_esp[${interfIdx}]" placeholder="Especificação" style="margin-top:6px">
+    <input type="hidden" name="interf_foto[${interfIdx}]" id="foto-interf-${interfIdx}">
     <div class="gps-chip aguardando" id="gps-interf-${interfIdx}">📍 GPS não capturado</div>
     <input type="hidden" name="interf_lat[${interfIdx}]" id="lat-interf-${interfIdx}">
     <input type="hidden" name="interf_lng[${interfIdx}]" id="lng-interf-${interfIdx}">
@@ -736,49 +888,50 @@ function adicionarInterferencia() {
 let pontaoIdx = <?= count($pontoes) ?>;
 function adicionarPontao() {
   const li = document.getElementById('lista-pontoes');
+  const i  = pontaoIdx;
   const div = document.createElement('div'); div.className = 'card-mini';
-  div.innerHTML = `<input type="text" name="pontao_res[${pontaoIdx}]" placeholder="Nº da residência">
-    <div class="fotos" id="fotos-pontao-${pontaoIdx}" style="margin-top:6px">
-      <label class="cam"><span class="cic">📷</span><input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFotoUpload(this, ${DIARIO_ID}, 14, 'pontao', 14)"></label>
-    </div>`;
-  li.appendChild(div); pontaoIdx++;
+  div.innerHTML = `<input type="text" name="pontao_res[${i}]" placeholder="Nº do imóvel">
+    <div class="row2">
+      <input type="number" inputmode="decimal" step="0.01" min="0" max="99.99" name="pontao_prof[${i}]" value="0.80" placeholder="Profundidade (m)">
+      <div class="fotos" id="fotos-pontao-${i}">
+        <label class="cam"><span class="cic">📷</span><input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFotoUpload(this, ${DIARIO_ID}, 14, 'pontao', 14, 'foto-pontao-${i}')"></label>
+      </div>
+    </div>
+    <input type="hidden" name="pontao_foto[${i}]" id="foto-pontao-${i}">
+    <input type="text" name="pontao_obs[${i}]" maxlength="255" placeholder="Observação (opcional)" style="margin-top:6px">
+    <input type="hidden" name="pontao_lat[${i}]" id="lat-pontao-${i}">
+    <input type="hidden" name="pontao_lng[${i}]" id="lng-pontao-${i}">
+    <div class="gps-chip aguardando" id="gps-pontao-${i}" style="margin-top:6px">📍 GPS não capturado</div>
+    <button type="button" onclick="capturarGPS(document.getElementById('lat-pontao-${i}'),document.getElementById('lng-pontao-${i}'),document.getElementById('gps-pontao-${i}'))" style="margin-top:6px;width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px;font-size:12px;font-weight:700">📍 Capturar GPS do pontão</button>`;
+  li.appendChild(div);
+  pontaoIdx++;
+  // GPS já vai sendo capturado assim que o pontão é criado
+  capturarGPS(document.getElementById('lat-pontao-' + i), document.getElementById('lng-pontao-' + i), document.getElementById('gps-pontao-' + i));
 }
 
 let reaterroIdx = <?= count($reaterros) ?>;
 function adicionarReaterro() {
   const li = document.getElementById('lista-reaterros');
+  const i  = reaterroIdx;
   const div = document.createElement('div'); div.className = 'card-mini';
   div.innerHTML = `
-    <select name="reat_tipo[${reaterroIdx}]">
+    <select name="reat_tipo[${i}]">
       <option value="lastro_brita">Lastro de brita</option><option value="colchao_areia_po_brita">Colchão areia/pó de brita</option>
       <option value="reaterro_importado">Reaterro importado</option><option value="compactacao_importado">Compactação importado</option>
       <option value="reaterro_local">Reaterro local</option><option value="compactacao_local">Compactação local</option>
       <option value="base_brita_graduada">Base brita graduada</option><option value="compactacao_base">Compactação base</option>
     </select>
     <div class="row2">
-      <input type="number" step="0.5" name="reat_esp[${reaterroIdx}]" placeholder="Espessura (cm)">
-      <div class="fotos" id="fotos-reat-${reaterroIdx}">
-        <label class="cam"><span class="cic">📷</span><input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFotoUpload(this, ${DIARIO_ID}, 17, 'reaterro', 17)"></label>
+      <input type="number" step="0.5" min="1" max="200" name="reat_esp[${i}]" placeholder="Espessura (cm)">
+      <div class="fotos" id="fotos-reat-${i}">
+        <label class="cam"><span class="cic">📷</span><input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleFotoUpload(this, ${DIARIO_ID}, 17, 'reaterro', 17, 'foto-reat-${i}')"></label>
       </div>
     </div>
+    <input type="hidden" name="reat_foto[${i}]" id="foto-reat-${i}">
   `;
   li.appendChild(div); reaterroIdx++;
 }
 
-let ramalIdx = <?= count($ramais) ?>;
-function adicionarRamal() {
-  const li = document.getElementById('lista-ramais');
-  const div = document.createElement('div'); div.className = 'card-mini';
-  div.innerHTML = `
-    <input type="text" name="ramal_nro[${ramalIdx}]" placeholder="Nº residência">
-    <div class="row2" style="margin-top:6px">
-      <input type="text" name="ramal_pontao[${ramalIdx}]" placeholder="Dim. pontão">
-      <input type="number" step="0.1" name="ramal_pista[${ramalIdx}]" placeholder="Ext. pista (m)">
-    </div>
-    <input type="number" step="0.1" name="ramal_calcada[${ramalIdx}]" placeholder="Ext. calçada (m)" style="margin-top:6px">
-  `;
-  li.appendChild(div); ramalIdx++;
-}
 
 iniciarAcordeao(DIARIO_ID);
 iniciarAutoSave(DIARIO_ID);

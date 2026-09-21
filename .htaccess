@@ -9,8 +9,9 @@ Options -Indexes
 # completo do sistema e, em alguns casos, hashes de senha. Ficam versionados
 # aqui só para serem executados no phpMyAdmin, nunca pelo navegador.
 # Esta regra vale para esta pasta e todas as subpastas, cobrindo tanto os
-# .sql soltos na raiz quanto database/migrations/ e painel/database/migrations/.
-<FilesMatch "\.sql$">
+# .sql soltos na raiz quanto database/migrations/. Os .md (LEIA-ME de cada
+# instância) trazem instruções internas e senhas temporárias — também fora da web.
+<FilesMatch "\.(sql|md)$">
     <IfModule mod_authz_core.c>
         Require all denied
     </IfModule>

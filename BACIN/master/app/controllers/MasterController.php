@@ -53,7 +53,7 @@ class MasterController {
         $data   = $this->validarData($_GET['data']   ?? '') ?: date('Y-m-d');
         $inicio = $this->validarData($_GET['inicio'] ?? '') ?: date('Y-m-d', strtotime('-30 days'));
         $fim    = $this->validarData($_GET['fim']    ?? '') ?: date('Y-m-d');
-        $fmt    = $_GET['fmt'] === 'csv' ? 'csv' : 'html';
+        $fmt    = ($_GET['fmt'] ?? '') === 'csv' ? 'csv' : 'html';
 
         $dados = match($tipo) {
             'rdo'     => $this->dadosDia($data),
@@ -146,10 +146,23 @@ class MasterController {
         $stmt = $this->db->prepare("SELECT MAX(updated_at) FROM diarios_execucao WHERE data=?");
         $stmt->execute([$hoje]); $ultimaSinc = $stmt->fetchColumn();
 
+        // Pontoes de espera lancados pela equipe de rede hoje (diario_pontoes).
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) FROM diario_pontoes dp
+            JOIN diarios_execucao de ON de.id=dp.diario_id WHERE de.data=?
+        ");
+        $stmt->execute([$hoje]); $pontoesHoje = (int)$stmt->fetchColumn();
+
+        // Producao da equipe de ramais (app Executor de Ramais) - hoje.
+        // Fonte INDEPENDENTE do pontao de espera da rede: nao somar.
+        $ramaisEqp     = $this->producaoRamaisEquipe($hoje, $hoje);
+        $frentesRamais = $this->frentesRamaisDoDia($hoje);
+
         return compact(
             'hoje','totalEquipes','equipesCampo','metrosHoje',
             'presentes','ausentes','totalAlertas','alertasMat','trechosSemOs','docsVencer',
-            'equipes','interfs','totalInterfs','equipsTotal','equipsManut','ultimaSinc'
+            'equipes','interfs','totalInterfs','equipsTotal','equipsManut','ultimaSinc',
+            'pontoesHoje','ramaisEqp','frentesRamais'
         );
     }
 
@@ -167,6 +180,8 @@ class MasterController {
         $stmt->execute([$data]); $producaoPorEquipe = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $metrosDia = (float)array_sum(array_column($producaoPorEquipe, 'extensao_gps_m'));
 
+        // HISTORICO: diario_ramais nao recebe mais lancamento novo (ate 18/09/2026).
+        // Nao entra na producao; fica so como memoria do periodo antigo.
         $stmt = $this->db->prepare("
             SELECT COUNT(*) AS qtd, COALESCE(SUM(dr.ext_pista),0) AS m_pista, COALESCE(SUM(dr.ext_calcada),0) AS m_calcada
             FROM diario_ramais dr JOIN diarios_execucao de ON de.id=dr.diario_id WHERE de.data=?
@@ -180,6 +195,7 @@ class MasterController {
         $stmt->execute([$data]); $cargasArr = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $cargas = []; foreach ($cargasArr as $c) $cargas[$c['tipo']] = (int)$c['qtd'];
 
+        // Pontoes de espera (rede): lancamento atual da equipe de rede.
         $stmt = $this->db->prepare("
             SELECT COUNT(*) FROM diario_pontoes dp JOIN diarios_execucao de ON de.id=dp.diario_id WHERE de.data=?
         ");
@@ -210,7 +226,10 @@ class MasterController {
         ");
         $stmt->execute([$data]); $fotosGaleria = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        return compact('data','metrosDia','producaoPorEquipe','ramais','cargas','pontoes','presentes','ausentes','interfs','fotosGaleria');
+        // Producao da equipe de ramais no dia (fonte propria, nao soma com o pontao da rede)
+        $ramaisEqp = $this->producaoRamaisEquipe($data, $data);
+
+        return compact('data','metrosDia','producaoPorEquipe','ramais','cargas','pontoes','presentes','ausentes','interfs','fotosGaleria','ramaisEqp');
     }
 
     // ─── Modo: Acumulado por Período ──────────────────────────────────
@@ -249,6 +268,14 @@ class MasterController {
             $projecao = date('d/m/Y', strtotime("+$dias days"));
         }
 
+        // Pontoes de espera (rede) no periodo: indicador atual da equipe de rede.
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) FROM diario_pontoes dp
+            JOIN diarios_execucao de ON de.id=dp.diario_id WHERE de.data BETWEEN ? AND ?
+        ");
+        $stmt->execute([$inicio, $fim]); $pontoesTotal = (int)$stmt->fetchColumn();
+
+        // HISTORICO: ramais lancados no diario de rede ate 18/09/2026. Nao somar a producao.
         $stmt = $this->db->prepare("
             SELECT COUNT(*) AS qtd, COALESCE(SUM(dr.ext_pista),0) AS m_pista, COALESCE(SUM(dr.ext_calcada),0) AS m_calcada
             FROM diario_ramais dr JOIN diarios_execucao de ON de.id=dr.diario_id WHERE de.data BETWEEN ? AND ?
@@ -290,10 +317,13 @@ class MasterController {
             $repavPeriodo = $row;
         } catch (\PDOException $e) {}
 
+        // Producao da equipe de ramais no periodo (fonte propria, nao soma com o pontao da rede)
+        $ramaisEqp = $this->producaoRamaisEquipe($inicio, $fim);
+
         return compact(
             'inicio','fim','metrosTotal','curvaProd','diasTrabalhados','mediaDiaria',
             'porBaciaEquipe','previsto','executadoTotal','pctAvanco','projecao',
-            'ramaisTotal','interfsTotal','totalInterfs','produtividade','repavPeriodo'
+            'pontoesTotal','ramaisTotal','interfsTotal','totalInterfs','produtividade','repavPeriodo','ramaisEqp'
         );
     }
 
@@ -369,6 +399,76 @@ class MasterController {
         foreach ($d['porBaciaEquipe'] ?? [] as $b)
             fputcsv($out, [$b['bacia'], $b['equipe'], number_format($b['metros'],1,',','.')], ';');
         fputcsv($out, ['TOTAL', '', number_format($d['metrosTotal'] ?? 0, 1, ',', '.')], ';');
+    }
+
+    // ─── Ramais — produção da equipe de ramais (somente leitura) ──────
+    // Fonte: frentes_ramais + ramais (app Executor de Ramais, nível 9).
+    // NÃO confundir com o pontão de espera (diario_pontoes), lançamento da equipe de rede,
+    // nem com diario_ramais, histórico do executor de rede até 18/09/2026.
+
+    private function producaoRamaisEquipe(string $inicio, string $fim): array {
+        $out = [
+            'frentes'      => 0,
+            'qtd'          => 0,
+            'via_m'        => 0.0,
+            'calcada_m'    => 0.0,
+            'porPavimento' => [],
+        ];
+        try {
+            $stmt = $this->db->prepare("
+                SELECT COUNT(DISTINCT fr.id)                       AS frentes,
+                       COUNT(r.id)                                 AS qtd,
+                       COALESCE(SUM(r.comprimento_via_m),0)        AS via_m,
+                       COALESCE(SUM(r.comprimento_calcada_m),0)    AS calcada_m
+                FROM frentes_ramais fr
+                LEFT JOIN ramais r ON r.frente_id = fr.id
+                WHERE fr.status = 'enviado' AND fr.data BETWEEN ? AND ?
+            ");
+            $stmt->execute([$inicio, $fim]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+            $out['frentes']   = (int)($row['frentes'] ?? 0);
+            $out['qtd']       = (int)($row['qtd'] ?? 0);
+            $out['via_m']     = (float)($row['via_m'] ?? 0);
+            $out['calcada_m'] = (float)($row['calcada_m'] ?? 0);
+
+            $stmt = $this->db->prepare("
+                SELECT COALESCE(r.pavimento_via,'nao_informado')   AS pavimento,
+                       COUNT(*)                                    AS qtd,
+                       COALESCE(SUM(r.comprimento_via_m),0)        AS via_m
+                FROM ramais r
+                JOIN frentes_ramais fr ON fr.id = r.frente_id
+                WHERE fr.status = 'enviado' AND fr.data BETWEEN ? AND ?
+                GROUP BY COALESCE(r.pavimento_via,'nao_informado')
+                ORDER BY via_m DESC, qtd DESC
+            ");
+            $stmt->execute([$inicio, $fim]);
+            $out['porPavimento'] = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            // Esquema de ramais ainda não publicado neste ambiente: zera.
+        }
+        return $out;
+    }
+
+    private function frentesRamaisDoDia(string $data): array {
+        try {
+            $stmt = $this->db->prepare("
+                SELECT fr.id, fr.logradouro, fr.status, fr.updated_at,
+                       COALESCE(e.nome,'—')                        AS equipe,
+                       COUNT(r.id)                                 AS qtd_ramais,
+                       COALESCE(SUM(r.comprimento_via_m),0)        AS via_m,
+                       COALESCE(SUM(r.comprimento_calcada_m),0)    AS calcada_m
+                FROM frentes_ramais fr
+                LEFT JOIN equipes e ON e.id = fr.equipe_id
+                LEFT JOIN ramais  r ON r.frente_id = fr.id
+                WHERE fr.data = ?
+                GROUP BY fr.id
+                ORDER BY fr.status DESC, fr.logradouro
+            ");
+            $stmt->execute([$data]);
+            return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        } catch (\PDOException $e) {
+            return [];
+        }
     }
 
     // ─── Helper ───────────────────────────────────────────────────────

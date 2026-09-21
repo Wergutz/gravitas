@@ -41,6 +41,7 @@ jobs:
             mkdir -p $BASE/BACIN
             cp -rT $BASE/principal/BACIN $BASE/BACIN
             mkdir -p $BASE/BACIN/topografo/uploads/os/topo
+            mkdir -p $BASE/BACIN/executor-ramais/uploads/ramais/thumbs
             mkdir -p $BASE/principal/GM/painel/uploads/os/topo
             mkdir -p $BASE/GM
             cp -rT $BASE/principal/GM $BASE/GM

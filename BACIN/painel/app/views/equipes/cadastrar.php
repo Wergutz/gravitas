@@ -1,3 +1,4 @@
+<?php $perfis = [5 => 'Rede', 7 => 'Repavimentação', 9 => 'Ramais']; ?>
 <?php
 $title = 'Nova Equipe';
 $pageTitle = 'Nova Equipe';
@@ -22,8 +23,8 @@ ob_start();
         <select name="responsavel_id" required>
             <option value="">Selecione</option>
             <?php foreach ($executores as $e): ?>
-                <option value="<?= $e['id'] ?>">
-                    <?= htmlspecialchars($e['nome']) ?>
+                <option value="<?= $e['id'] ?>"<?= isset($equipe) && (int)$equipe['responsavel_id'] === (int)$e['id'] ? ' selected' : '' ?>>
+                    <?= htmlspecialchars($e['nome']) ?> — <?= htmlspecialchars($perfis[(int)$e['tipo_usuario']] ?? 'Executor') ?>
                 </option>
             <?php endforeach; ?>
         </select>

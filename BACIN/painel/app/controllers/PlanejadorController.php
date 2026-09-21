@@ -66,10 +66,24 @@ class PlanejadorController
         $docs_vencer = (int)$stmt->fetchColumn();
 
         /* ===============================
-           KPI: Trechos aguardando repavimentação
+           KPI: Fila de repavimentação (rede e ramais)
            =============================== */
         $stmt = $pdo->query("SELECT COUNT(*) FROM trechos WHERE status_repav = 'aguardando'");
-        $repav_pendentes = (int)$stmt->fetchColumn();
+        $repav_rede_aguardando = (int)$stmt->fetchColumn();
+
+        $stmt = $pdo->query("SELECT COUNT(*) FROM trechos WHERE status_repav_ramais = 'aguardando'");
+        $repav_ramais_aguardando = (int)$stmt->fetchColumn();
+
+        $repav_pendentes = $repav_rede_aguardando + $repav_ramais_aguardando;
+
+        /* Diários de repavimentação recebidos do campo (hoje) */
+        $repav_diarios_hoje = 0;
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) FROM diarios_repav
+            WHERE data = ? AND status IN ('enviado','aprovado')
+        ");
+        $stmt->execute([$hoje]);
+        $repav_diarios_hoje = (int)$stmt->fetchColumn();
 
         /* ===============================
            Caminhamentos do dia com equipe

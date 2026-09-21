@@ -22,7 +22,7 @@ $nivel  = (int)($_SESSION['nivel'] ?? 0);
 $nome   = $_SESSION['nome'] ?? 'Usuário';
 
 // Destino após salvar
-$destinos = [5 => EXECUTOR_BASE.'/', 6 => MASTER_BASE.'/', 7 => REPAV_BASE.'/'];
+$destinos = [5 => EXECUTOR_BASE.'/', 6 => MASTER_BASE.'/', 7 => REPAV_BASE.'/', 9 => RAMAIS_BASE.'/'];
 $voltar   = $destinos[$nivel] ?? APP_BASE.'/';
 
 // ── CSRF inline ──────────────────────────────────────────

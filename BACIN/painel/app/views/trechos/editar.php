@@ -51,8 +51,8 @@ ob_start();
             </div>
             <div class="campo">
                 <label>Ramais</label>
-                <input type="number" name="ramais" min="0"
-                       value="<?= (int)($trecho['ramais'] ?? 0) ?>">
+                <input type="number" name="ramais" min="0" step="1"
+                       value="<?= htmlspecialchars((string)($trecho['ramais'] ?? 0)) ?>">
             </div>
         </div>
 

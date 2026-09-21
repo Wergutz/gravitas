@@ -210,8 +210,11 @@ window.salvarStep = async function (form, diarioId, step) {
     if (data.ok) {
       marcarStepFeito(step);
       limparRascunho(diarioId, step);
+      if (data.msg) mostrarToast(data.msg);
     } else {
-      mostrarToast('Erro ao salvar. Verifique a conexão.', true);
+      // O servidor recusou (falta dado ou medida fora da faixa) — o passo NÃO fica verde
+      mostrarToast(data.msg || 'Não deu para salvar. Confira os campos e tente de novo.', true);
+      if (data.msg) alert(data.msg);
     }
   } catch {
     const dados = {};

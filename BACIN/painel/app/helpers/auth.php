@@ -23,7 +23,7 @@ function auth_required($niveis = []) {
     if ($nivel === 1) return; // superadmin: acesso total
     if (!in_array($nivel, $niveis, true)) {
         $_SESSION['flash_aviso'] = 'Acesso restrito. Você não tem permissão para esta área.';
-        $destinos = [5 => EXECUTOR_BASE . '/', 6 => MASTER_BASE . '/', 7 => REPAV_BASE . '/'];
+        $destinos = [5 => EXECUTOR_BASE . '/', 6 => MASTER_BASE . '/', 7 => REPAV_BASE . '/', 9 => RAMAIS_BASE . '/'];
         $destino = $destinos[$nivel] ?? '/login/';
         header('Location: ' . $destino);
         exit;

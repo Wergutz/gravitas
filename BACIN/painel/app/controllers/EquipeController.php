@@ -38,7 +38,7 @@ class EquipeController
         $executores = $pdo->query("
             SELECT id, nome, tipo_usuario
             FROM usuarios
-            WHERE tipo_usuario IN (5, 7) AND ativo = 1
+            WHERE tipo_usuario IN (5, 7, 9) AND ativo = 1
             ORDER BY tipo_usuario, nome
         ")->fetchAll(PDO::FETCH_ASSOC);
 
@@ -169,7 +169,7 @@ public function edit()
     $executores = $pdo->query("
         SELECT id, nome, tipo_usuario
         FROM usuarios
-        WHERE tipo_usuario IN (5, 7) AND ativo = 1
+        WHERE tipo_usuario IN (5, 7, 9) AND ativo = 1
         ORDER BY tipo_usuario, nome
     ")->fetchAll(PDO::FETCH_ASSOC);
 

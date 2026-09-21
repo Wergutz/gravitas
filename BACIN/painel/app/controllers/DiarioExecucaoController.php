@@ -163,8 +163,13 @@ class DiarioExecucaoController {
         $reaterros->execute([$id]);
         $reaterros = $reaterros->fetchAll(PDO::FETCH_ASSOC);
 
-        // Ramais
-        $ramais = $pdo->prepare("SELECT * FROM diario_ramais WHERE diario_id = ?");
+        // Ramais lançados no diário de rede — HISTÓRICO (até 18/09/2026).
+        // A tabela diario_ramais não recebe mais lançamento novo: o ramal completo
+        // passou a ser executado pela equipe de ramais (app /BACIN/executor-ramais).
+        $ramais = $pdo->prepare("
+            SELECT nro_residencia, dimensao_pontao, ext_pista, ext_calcada
+            FROM diario_ramais WHERE diario_id = ? ORDER BY id
+        ");
         $ramais->execute([$id]);
         $ramais = $ramais->fetchAll(PDO::FETCH_ASSOC);
 
@@ -205,12 +210,17 @@ class DiarioExecucaoController {
         $cargas->execute([$id]);
         $cargas = $cargas->fetchAll(PDO::FETCH_ASSOC);
 
-        // Pontões
+        // Pontões de ramal — lançamento atual da equipe de rede
+        // (rede lançada até a cota do ramal, normalmente 0,80 m).
         $pontoes = $pdo->prepare("
-            SELECT dp2.nro_residencia, df.thumb AS foto_thumb
+            SELECT dp2.nro_residencia, dp2.profundidade_m, dp2.observacao,
+                   COALESCE(dp2.lat, df.lat) AS lat,
+                   COALESCE(dp2.lng, df.lng) AS lng,
+                   df.arquivo AS foto_arquivo, df.thumb AS foto_thumb
             FROM diario_pontoes dp2
             LEFT JOIN diario_fotos df ON df.id = dp2.foto_id
             WHERE dp2.diario_id = ?
+            ORDER BY dp2.id
         ");
         $pontoes->execute([$id]);
         $pontoes = $pontoes->fetchAll(PDO::FETCH_ASSOC);
@@ -294,8 +304,8 @@ class DiarioExecucaoController {
             5=>'Sinalização e EPIs', 6=>'Equipamentos', 7=>'Corte de asfalto',
             8=>'Retirada de pavimento', 9=>'Escavação', 10=>'Escoramento',
             11=>'Interferências', 12=>'GPS início', 13=>'GPS fim',
-            14=>'Pontões', 15=>'Cargas bota-fora', 16=>'Cargas importado',
-            17=>'Reaterro', 18=>'Ramais', 19=>'Rua limpa', 20=>'Equipe final', 21=>'Finalização',
+            14=>'Pontões de ramal', 15=>'Cargas bota-fora', 16=>'Cargas importado',
+            17=>'Reaterro', 18=>'Ramais (histórico)', 19=>'Rua limpa', 20=>'Equipe final', 21=>'Finalização',
         ];
 
         $executorUploads = '/BACIN/executor/uploads';

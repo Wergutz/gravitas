@@ -167,3 +167,8 @@ select{width:100%;font-family:inherit;font-size:13.5px;padding:11px 12px;border:
 
 /* offline badge */
 #conn-badge.offline{color:var(--erro);font-weight:700}
+
+/* remover item de um conjunto (pontão, interferência, camada) */
+.btn-remover{width:100%;margin-top:8px;border:1px solid var(--erro);background:var(--erro-bg);
+     color:var(--erro);border-radius:9px;padding:9px;font-size:12px;font-weight:700}
+.btn-remover:hover{background:#c0392b24}

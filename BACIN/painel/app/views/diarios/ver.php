@@ -190,20 +190,42 @@ $stepNomes = [
 </div>
 <?php endif; ?>
 
-<!-- Ramais -->
-<?php if ($ramais): ?>
+<!-- Pontões de ramal (lançamento atual da equipe de rede) -->
+<?php if ($pontoes): ?>
 <div class="card">
-    <div class="label">Ramais executados (<?= count($ramais) ?>)</div>
+    <div class="label">Pontões de ramal (<?= count($pontoes) ?>)</div>
+    <p style="font-size:11.5px;color:var(--muted);margin:0 0 8px">
+        Rede lançada até a cota do ramal (normalmente 0,80 m). O ramal completo — extensões em pista e calçada,
+        pavimentos e fotos — é executado depois pela equipe de ramais.
+    </p>
     <div class="table-wrap">
     <table>
-        <thead><tr><th>Nº Residência</th><th>Dim. Pontão</th><th>Ext. Pista</th><th>Ext. Calçada</th></tr></thead>
+        <thead><tr><th>Nº do imóvel</th><th>Profundidade</th><th>Observação</th><th>Coordenadas</th><th>Foto</th></tr></thead>
         <tbody>
-        <?php foreach ($ramais as $r): ?>
+        <?php foreach ($pontoes as $p):
+            $pNro  = trim((string)($p['nro_residencia'] ?? ''));
+            $pObs  = trim((string)($p['observacao'] ?? ''));
+            $pProf = $p['profundidade_m'] !== null && $p['profundidade_m'] !== ''
+                   ? number_format((float)$p['profundidade_m'], 2, ',', '.') . ' m' : '—';
+            $pCoord = ($p['lat'] !== null && $p['lng'] !== null)
+                    ? number_format((float)$p['lat'], 6, ',', '.') . ' / ' . number_format((float)$p['lng'], 6, ',', '.')
+                    : '—';
+            $pFoto = $p['foto_arquivo'] ?? null;
+            $pThumb = $p['foto_thumb'] ?: $p['foto_arquivo'];
+        ?>
         <tr>
-            <td><?= htmlspecialchars($r['nro_residencia'] ?? '—') ?></td>
-            <td><?= htmlspecialchars($r['dimensao_pontao'] ?? '—') ?></td>
-            <td><?= $r['ext_pista']   ? number_format($r['ext_pista'],   2, ',', '.') . ' m' : '—' ?></td>
-            <td><?= $r['ext_calcada'] ? number_format($r['ext_calcada'], 2, ',', '.') . ' m' : '—' ?></td>
+            <td><?= $pNro !== '' ? htmlspecialchars($pNro) : '—' ?></td>
+            <td><?= htmlspecialchars($pProf) ?></td>
+            <td><?= $pObs !== '' ? htmlspecialchars($pObs) : '—' ?></td>
+            <td style="font-size:11.5px"><?= htmlspecialchars($pCoord) ?></td>
+            <td>
+                <?php if ($pThumb): ?>
+                <a href="<?= $executorUploads ?>/<?= htmlspecialchars($pFoto ?: $pThumb) ?>" target="_blank">
+                    <img src="<?= $executorUploads ?>/<?= htmlspecialchars($pThumb) ?>" alt="Foto do pontão"
+                         style="width:48px;height:48px;object-fit:cover;border-radius:6px">
+                </a>
+                <?php else: ?>—<?php endif; ?>
+            </td>
         </tr>
         <?php endforeach; ?>
         </tbody>
@@ -212,19 +234,27 @@ $stepNomes = [
 </div>
 <?php endif; ?>
 
-<!-- Pontões -->
-<?php if ($pontoes): ?>
+<!-- Ramais do diário de rede — histórico -->
+<?php if ($ramais): ?>
 <div class="card">
-    <div class="label">Pontões de espera (<?= count($pontoes) ?>)</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;padding:4px 0">
-        <?php foreach ($pontoes as $p): ?>
-        <div style="border:1px solid var(--line);border-radius:10px;padding:10px;font-size:12.5px;min-width:100px;text-align:center">
-            <?php if ($p['foto_thumb']): ?>
-            <img src="<?= $executorUploads ?>/<?= htmlspecialchars($p['foto_thumb']) ?>" style="width:64px;height:64px;object-fit:cover;border-radius:6px;display:block;margin:0 auto 6px"><br>
-            <?php endif; ?>
-            🏠 <?= htmlspecialchars($p['nro_residencia'] ?? '?') ?>
-        </div>
+    <div class="label">Ramais lançados no diário de rede até 18/09/2026 — histórico (<?= count($ramais) ?>)</div>
+    <p style="font-size:11.5px;color:var(--muted);margin:0 0 8px">
+        Registros antigos, quando a equipe de rede ainda executava o ramal completo. Não entram na produção atual.
+    </p>
+    <div class="table-wrap">
+    <table>
+        <thead><tr><th>Nº do imóvel</th><th>Dim. pontão</th><th>Ext. pista</th><th>Ext. calçada</th></tr></thead>
+        <tbody>
+        <?php foreach ($ramais as $r): ?>
+        <tr>
+            <td><?= htmlspecialchars((string)($r['nro_residencia'] ?? '')) !== '' ? htmlspecialchars((string)$r['nro_residencia']) : '—' ?></td>
+            <td><?= htmlspecialchars((string)($r['dimensao_pontao'] ?? '')) !== '' ? htmlspecialchars((string)$r['dimensao_pontao']) : '—' ?></td>
+            <td><?= $r['ext_pista']   ? number_format((float)$r['ext_pista'],   2, ',', '.') . ' m' : '—' ?></td>
+            <td><?= $r['ext_calcada'] ? number_format((float)$r['ext_calcada'], 2, ',', '.') . ' m' : '—' ?></td>
+        </tr>
         <?php endforeach; ?>
+        </tbody>
+    </table>
     </div>
 </div>
 <?php endif; ?>

@@ -33,6 +33,10 @@ match (true) {
     $uri === '/' || $uri === ''
         => $ctrl->home(),
 
+    // Equipe do dia (executor responsável por mais de uma equipe)
+    $uri === '/equipe' && $_SERVER['REQUEST_METHOD'] === 'POST'
+        => $ctrl->escolherEquipe(),
+
     // Diário — iniciar/continuar
     $uri === '/diario/novo'
         => $ctrl->novo(),

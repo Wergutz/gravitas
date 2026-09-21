@@ -57,7 +57,8 @@ ob_start();
                             <th>PV Jusante</th>
                             <th>Bacia</th>
                             <th>Extensão</th>
-                            <th>Status</th>
+                            <th>Status rede</th>
+                            <th>Repav.</th>
                             <th>OS</th>
                         </tr>
                     </thead>
@@ -88,6 +89,18 @@ ob_start();
                                 <td><?= htmlspecialchars($t['bacia'] ?? '—') ?></td>
                                 <td><?= $t['extensao'] ? number_format((float)$t['extensao'], 1, ',', '.') . ' m' : '—' ?></td>
                                 <td><span class="chip <?= $statusClass ?>"><?= $statusLabel ?></span></td>
+                                <td style="font-size:11px;">
+                                    <?php if ($t['status_repav'] === null && $t['status_repav_ramais'] === null): ?>
+                                        <span style="color:var(--muted)">—</span>
+                                    <?php else: ?>
+                                        <?php if ($t['status_repav'] !== null): ?>
+                                            <span class="chip <?= $t['status_repav'] === 'medido' ? 'c-ok' : 'c-aviso' ?>">Rede: <?= htmlspecialchars($t['status_repav']) ?></span>
+                                        <?php endif; ?>
+                                        <?php if ($t['status_repav_ramais'] !== null): ?>
+                                            <span class="chip <?= $t['status_repav_ramais'] === 'medido' ? 'c-ok' : 'c-aviso' ?>">Ramais: <?= htmlspecialchars($t['status_repav_ramais']) ?></span>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <?php if ($t['os_id']): ?>
                                         <span class="chip c-ok">v<?= (int)$t['os_versao'] ?></span>
@@ -151,6 +164,71 @@ ob_start();
                     </div>
                     <button type="submit" class="btn btn-pri btn-sm">Enviar OS</button>
                 </form>
+            </div>
+
+            <!-- Devolver etapa para a equipe (único lugar do Painel) -->
+            <div id="devolucao" style="border-top:1px solid var(--line);padding-top:16px;margin-top:16px;">
+                <div class="label">Devolver etapa para a equipe</div>
+                <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">
+                    A conclusão das etapas é feita pelo campo. Use este formulário apenas para
+                    devolver uma etapa que precisa ser refeita.
+                </p>
+
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+                    <span class="chip c-neutro">Rede: <?= htmlspecialchars($trecho_sel['status_rede']) ?></span>
+                    <span class="chip c-neutro">Repav. rede: <?= htmlspecialchars($trecho_sel['status_repav'] ?? '—') ?></span>
+                    <span class="chip c-neutro">Repav. ramais: <?= htmlspecialchars($trecho_sel['status_repav_ramais'] ?? '—') ?></span>
+                </div>
+
+                <form method="post" action="<?= APP_BASE ?>/trechos/devolver"
+                      data-confirmar="Devolver esta etapa para a equipe de campo?">
+                    <?= csrf_input() ?>
+                    <input type="hidden" name="trecho_id" value="<?= (int)$trecho_sel['id'] ?>">
+
+                    <div class="campo" style="margin-bottom:10px;">
+                        <label>Etapa a devolver <span style="color:var(--erro)">*</span></label>
+                        <select name="etapa" required>
+                            <?php foreach ($etapas_devolucao as $valor => $rotulo): ?>
+                                <option value="<?= htmlspecialchars($valor) ?>"><?= htmlspecialchars($rotulo) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="campo" style="margin-bottom:10px;">
+                        <label>Motivo <span style="color:var(--erro)">*</span></label>
+                        <textarea name="motivo" rows="3" required minlength="5"
+                                  placeholder="Ex.: reaterro cedeu no meio do trecho, refazer compactação"></textarea>
+                        <small style="color:var(--muted);font-size:11px;">Mínimo de 5 caracteres. Fica registrado no histórico.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger btn-sm">Devolver etapa</button>
+                </form>
+            </div>
+
+            <!-- Histórico de devoluções -->
+            <div style="border-top:1px solid var(--line);padding-top:16px;margin-top:16px;">
+                <div class="label">Histórico de devoluções (<?= count($devolucoes) ?>)</div>
+                <?php if (empty($devolucoes)): ?>
+                    <p style="color:var(--muted);font-size:12.5px;">Nenhuma devolução registrada neste trecho.</p>
+                <?php else: ?>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr><th>Etapa</th><th>Motivo</th><th>Quem</th><th>Quando</th></tr>
+                            </thead>
+                            <tbody>
+                            <?php foreach ($devolucoes as $dv): ?>
+                                <tr>
+                                    <td><span class="chip c-aviso"><?= htmlspecialchars($etapas_devolucao[$dv['etapa']] ?? $dv['etapa']) ?></span></td>
+                                    <td style="font-size:12.5px;"><?= htmlspecialchars($dv['motivo']) ?></td>
+                                    <td style="font-size:12.5px;"><?= htmlspecialchars($dv['usuario_nome'] ?? '—') ?></td>
+                                    <td style="font-size:12.5px;white-space:nowrap;"><?= date('d/m/Y H:i', strtotime($dv['created_at'])) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <!-- Histórico de OS -->

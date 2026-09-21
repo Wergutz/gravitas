@@ -324,6 +324,12 @@ if ($uri === '/trechos/material-remove') {
     (new TrechoController())->removeMaterial();
     exit;
 }
+if ($uri === '/trechos/devolver') {
+    require_once __DIR__ . '/app/controllers/TrechoController.php';
+    (new TrechoController())->devolver();
+    exit;
+}
+
 if ($uri === '/trechos/importar') {
     require_once __DIR__ . '/app/controllers/TrechoController.php';
     (new TrechoController())->importar();
@@ -370,12 +376,6 @@ if ($uri === '/caminhamentos/publicar') {
 if ($uri === '/caminhamentos/detalhe') {
     require_once __DIR__ . '/app/controllers/CaminhamentoController.php';
     (new CaminhamentoController())->detalhe();
-    exit;
-}
-
-if ($uri === '/caminhamentos/concluir-trecho') {
-    require_once __DIR__ . '/app/controllers/CaminhamentoController.php';
-    (new CaminhamentoController())->concluirTrecho();
     exit;
 }
 
@@ -472,6 +472,12 @@ if ($uri === '/repavimentacao') {
     exit;
 }
 
+if ($uri === '/repavimentacao/diario') {
+    require_once __DIR__ . '/app/controllers/RepavimentacaoController.php';
+    (new RepavimentacaoController())->verDiario();
+    exit;
+}
+
 if ($uri === '/repavimentacao/medicao') {
     require_once __DIR__ . '/app/controllers/RepavimentacaoController.php';
     (new RepavimentacaoController())->create();
@@ -528,6 +534,25 @@ if ($uri === '/diarios/resolver-alerta') {
 if ($uri === '/diarios/resolver-manutencao') {
     require_once __DIR__ . '/app/controllers/DiarioExecucaoController.php';
     (new DiarioExecucaoController())->resolverManutencao();
+    exit;
+}
+
+/* ==========================
+   RAMAIS (Executor de Ramais → Planejador)
+========================== */
+if ($uri === '/ramais') {
+    require_once __DIR__ . '/app/controllers/RamaisController.php';
+    (new RamaisController())->index();
+    exit;
+}
+if ($uri === '/ramais/ver') {
+    require_once __DIR__ . '/app/controllers/RamaisController.php';
+    (new RamaisController())->ver((int)($_GET['id'] ?? 0));
+    exit;
+}
+if ($uri === '/ramais/relatorio') {
+    require_once __DIR__ . '/app/controllers/RamaisController.php';
+    (new RamaisController())->relatorio();
     exit;
 }
 

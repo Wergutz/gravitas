@@ -3,6 +3,26 @@ $usuario    = $_SESSION['user'] ?? null;
 $iniciais   = strtoupper(substr($usuario['nome'] ?? 'M', 0, 1));
 $hoje_fmt   = date('d/m/Y');
 $repavPeriodo = $repavPeriodo ?? null;
+// Producao da equipe de ramais (app Executor de Ramais). Fonte propria,
+// independente dos pontoes de espera lancados pela equipe de rede (diario_pontoes).
+$ramaisEqp     = $ramaisEqp     ?? ['frentes'=>0,'qtd'=>0,'via_m'=>0.0,'calcada_m'=>0.0,'porPavimento'=>[]];
+$frentesRamais = $frentesRamais ?? [];
+// Pontao de espera (rede) = lancamento da equipe de rede ate a cota do ramal (diario_pontoes).
+$pontoesHoje   = $pontoesHoje   ?? 0;
+
+function labelPavVia(?string $k): string {
+    $m = [
+        'asfalto'                 => 'Asfalto',
+        'asfalto_paralelepipedo'  => 'Asfalto sobre paralelepípedo',
+        'paralelepipedo_regular'  => 'Paralelepípedo regular',
+        'paralelepipedo_irregular'=> 'Paralelepípedo irregular',
+        'bloco_concreto'          => 'Bloco de concreto',
+        'chao_batido'             => 'Chão batido',
+        'nao_informado'           => 'Não informado',
+    ];
+    $k = (string)$k;
+    return $m[$k] ?? ucfirst(str_replace('_', ' ', $k));
+}
 
 function seloStatus(string $camStatus, ?string $diarioStatus): string {
     if ($diarioStatus === 'enviado')  return '<span class="selo s-conc">enviado</span>';
@@ -168,6 +188,22 @@ function svgIcon(string $path): string {
         <?php endforeach; endif; ?>
       </div>
 
+      <div class="card">
+        <p class="label">Frentes de ramais hoje <span style="font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0">· equipe de ramais</span></p>
+        <?php if (empty($frentesRamais)): ?>
+        <p style="color:var(--muted);font-size:13px">Nenhuma frente de ramais aberta hoje.</p>
+        <?php else: foreach ($frentesRamais as $fr): ?>
+        <div class="eqrow">
+          <span class="nm"><?= htmlspecialchars((string)$fr['equipe']) ?></span>
+          <div class="tr">
+            <div class="pv"><?= htmlspecialchars((string)$fr['logradouro']) ?></div>
+            <div class="mini"><?= (int)$fr['qtd_ramais'] ?> ramal(is) · <?= fmtM1((float)$fr['via_m']) ?> m via + <?= fmtM1((float)$fr['calcada_m']) ?> m calçada</div>
+          </div>
+          <span class="selo <?= ($fr['status'] ?? '') === 'enviado' ? 's-conc' : 's-rasc' ?>"><?= htmlspecialchars((string)($fr['status'] ?? '')) ?></span>
+        </div>
+        <?php endforeach; endif; ?>
+      </div>
+
       <?php if (!empty($interfs)): ?>
       <div class="card">
         <p class="label">Interferências encontradas hoje</p>
@@ -207,6 +243,21 @@ function svgIcon(string $path): string {
         <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Total cadastrado</span><b><?= $equipsTotal ?></b></div>
         <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Em manutenção</span><b style="color:<?= $equipsManut > 0 ? 'var(--aviso)' : 'var(--ok)' ?>"><?= $equipsManut ?></b></div>
       </div>
+
+      <div class="card">
+        <p class="label">Pontões de espera (rede)</p>
+        <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Pontões lançados hoje</span><b><?= (int)$pontoesHoje ?></b></div>
+        <p style="font-size:11px;color:var(--muted);margin-top:6px">Equipe de rede: lançamento até a cota do ramal. O ramal completo é da equipe de ramais.</p>
+      </div>
+
+      <div class="card">
+        <p class="label">Ramais — equipe de ramais</p>
+        <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Ramais enviados hoje</span><b><?= (int)$ramaisEqp['qtd'] ?></b></div>
+        <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Comprimento em via</span><b><?= fmtM1((float)$ramaisEqp['via_m']) ?> m</b></div>
+        <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Comprimento em calçada</span><b><?= fmtM1((float)$ramaisEqp['calcada_m']) ?> m</b></div>
+        <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Frentes enviadas</span><b><?= (int)$ramaisEqp['frentes'] ?></b></div>
+        <p style="font-size:11px;color:var(--muted);margin-top:6px">Produção do app Executor de Ramais — não se soma aos pontões de espera lançados pela equipe de rede.</p>
+      </div>
     </div>
   </div>
 
@@ -223,8 +274,8 @@ function svgIcon(string $path): string {
     </div>
     <div class="kpi">
       <div class="ic ic-info"><?= svgIcon('<circle cx="5" cy="12" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M7 11 17 6.8M7 13l10 4.2"/>') ?></div>
-      <b><?= $ramaisQtd ?></b><span>ramais executados</span>
-      <?php if ($ramaisQtd > 0): ?><div class="delta d-neutro"><?= fmtM1((float)$ramais['m_pista']) ?>m pista + <?= fmtM1((float)$ramais['m_calcada']) ?>m calçada</div><?php endif; ?>
+      <b><?= (int)$pontoes ?></b><span>pontões de espera (rede)</span>
+      <?php if ($ramaisQtd > 0): ?><div class="delta d-neutro"><?= $ramaisQtd ?> ramal(is) no diário — histórico</div><?php endif; ?>
     </div>
     <div class="kpi">
       <div class="ic ic-navy"><?= svgIcon('<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>') ?></div>
@@ -306,8 +357,19 @@ function svgIcon(string $path): string {
         <p class="label">Fechamento do dia</p>
         <div class="eqrow" style="padding:9px 0"><span style="flex:1;font-size:13px">Cargas bota-fora</span><b><?= $cargas['bota_fora'] ?? 0 ?></b></div>
         <div class="eqrow" style="padding:9px 0"><span style="flex:1;font-size:13px">Cargas importado</span><b><?= $cargas['importado'] ?? 0 ?></b></div>
-        <div class="eqrow" style="padding:9px 0"><span style="flex:1;font-size:13px">Pontões deixados</span><b><?= $pontoes ?></b></div>
-        <div class="eqrow" style="padding:9px 0"><span style="flex:1;font-size:13px">Ramais executados</span><b><?= $ramaisQtd ?></b></div>
+        <div class="eqrow" style="padding:9px 0"><span style="flex:1;font-size:13px">Pontões de espera (rede)</span><b><?= (int)$pontoes ?></b></div>
+        <?php if ($ramaisQtd > 0): ?>
+        <div class="eqrow" style="padding:9px 0"><span style="flex:1;font-size:13px">Ramais no diário de rede — histórico</span><b><?= $ramaisQtd ?></b></div>
+        <?php endif; ?>
+      </div>
+
+      <div class="card">
+        <p class="label">Ramais — equipe de ramais</p>
+        <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Ramais enviados em <?= date('d/m', strtotime($data)) ?></span><b><?= (int)$ramaisEqp['qtd'] ?></b></div>
+        <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Comprimento em via</span><b><?= fmtM1((float)$ramaisEqp['via_m']) ?> m</b></div>
+        <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Comprimento em calçada</span><b><?= fmtM1((float)$ramaisEqp['calcada_m']) ?> m</b></div>
+        <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Frentes enviadas</span><b><?= (int)$ramaisEqp['frentes'] ?></b></div>
+        <p style="font-size:11px;color:var(--muted);margin-top:6px">Produção do app Executor de Ramais — fonte independente dos pontões de espera da rede, não somar.</p>
       </div>
 
       <div class="card">
@@ -342,9 +404,9 @@ function svgIcon(string $path): string {
     </div>
     <div class="kpi">
       <div class="ic ic-info"><?= svgIcon('<circle cx="5" cy="12" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M7 11 17 6.8M7 13l10 4.2"/>') ?></div>
-      <b><?= (int)($ramaisTotal['qtd'] ?? 0) ?></b><span>ramais no período</span>
+      <b><?= (int)($pontoesTotal ?? 0) ?></b><span>pontões de espera (rede) no período</span>
       <?php if (($ramaisTotal['qtd'] ?? 0) > 0): ?>
-      <div class="delta d-neutro"><?= fmtM1((float)$ramaisTotal['m_pista']) ?>m pista + <?= fmtM1((float)$ramaisTotal['m_calcada']) ?>m calçada</div>
+      <div class="delta d-neutro"><?= (int)$ramaisTotal['qtd'] ?> ramal(is) no diário — histórico</div>
       <?php endif; ?>
     </div>
     <div class="kpi">
@@ -454,6 +516,29 @@ function svgIcon(string $path): string {
         <?php endif; ?>
       </div>
 
+      <div class="card">
+        <p class="label">Ramais — equipe de ramais</p>
+        <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Ramais enviados no período</span><b><?= (int)$ramaisEqp['qtd'] ?></b></div>
+        <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Comprimento em via</span><b><?= fmtM1((float)$ramaisEqp['via_m']) ?> m</b></div>
+        <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Comprimento em calçada</span><b><?= fmtM1((float)$ramaisEqp['calcada_m']) ?> m</b></div>
+        <div class="eqrow" style="padding:8px 0"><span style="flex:1;font-size:13px">Frentes enviadas</span><b><?= (int)$ramaisEqp['frentes'] ?></b></div>
+        <?php if (!empty($ramaisEqp['porPavimento'])): ?>
+        <table class="tab" style="margin-top:10px">
+          <tr><th>Pavimento da via</th><th style="text-align:right">Ramais</th><th style="text-align:right">Via (m)</th></tr>
+          <?php foreach ($ramaisEqp['porPavimento'] as $pv): ?>
+          <tr>
+            <td><?= htmlspecialchars(labelPavVia($pv['pavimento'] ?? '')) ?></td>
+            <td class="n"><?= (int)$pv['qtd'] ?></td>
+            <td class="n"><?= fmtM1((float)$pv['via_m']) ?></td>
+          </tr>
+          <?php endforeach; ?>
+        </table>
+        <?php else: ?>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px">Nenhuma frente de ramais enviada no período.</p>
+        <?php endif; ?>
+        <p style="font-size:11px;color:var(--muted);margin-top:6px">Produção do app Executor de Ramais — grandeza distinta do pontão de espera da rede (<?= (int)($pontoesTotal ?? 0) ?> no período), não somar.<?php if (($ramaisTotal['qtd'] ?? 0) > 0): ?> Histórico do diário de rede: <?= (int)$ramaisTotal['qtd'] ?> ramal(is) até 18/09/2026.<?php endif; ?></p>
+      </div>
+
       <?php if (!empty($repavPeriodo)): ?>
       <div class="card">
         <p class="label">Repavimentação no período</p>
@@ -490,7 +575,7 @@ function svgIcon(string $path): string {
       $base_url = MASTER_BASE . '/relatorio/';
       $periodo_qs = "?inicio={$inicio}&fim={$fim}";
       $rels = [
-        ['boletim',      'ic-gold',  'Boletim de Medição do Período',    'rede + ramais — base de faturamento',  'PDF · CSV'],
+        ['boletim',      'ic-gold',  'Boletim de Medição do Período',    'rede, pontões e ramais — base de medição', 'PDF · CSV'],
         ['avanco',       'ic-navy',  'Relatório de Avanço Físico',        '% concluído, curva e projeção',         'PDF'],
         ['interferencias','ic-info', 'Relatório de Interferências',       'por tipo, com foto e GPS — aditivos',   'PDF · CSV'],
         ['produtividade','ic-aviso', 'Relatório de Produtividade',        'm por equipe-dia e ranking',            'PDF · CSV'],

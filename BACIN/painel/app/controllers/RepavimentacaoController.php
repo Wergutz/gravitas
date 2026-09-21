@@ -7,27 +7,177 @@ require_once dirname(__DIR__) . '/helpers/csrf.php';
 class RepavimentacaoController
 {
     /* =====================================================
-       LISTAR
+       LISTAR — diários de repavimentação recebidos do campo
+       (separados por escopo: rede x ramais) + fila de trechos
     ===================================================== */
     public function index()
     {
         auth_required([4]);
         global $pdo;
 
+        /* ---- Diários enviados pela equipe de pavimentação ---- */
+        $stmt = $pdo->query("
+            SELECT d.id, d.escopo, d.data, d.status, d.versao, d.mat_ok,
+                   d.area_total_m2, d.volume_asf_m3,
+                   e.nome AS equipe_nome,
+                   t.id AS trecho_id, t.pv_montante, t.pv_jusante, t.rua, t.bacia,
+                   (SELECT COUNT(*) FROM diario_repav_cargas c
+                     WHERE c.diario_id = d.id) AS n_cargas,
+                   (SELECT GROUP_CONCAT(NULLIF(TRIM(c2.numero_nf), '')
+                            ORDER BY c2.sequencia SEPARATOR ' / ')
+                      FROM diario_repav_cargas c2
+                     WHERE c2.diario_id = d.id) AS nfs
+            FROM diarios_repav d
+            JOIN equipes e ON e.id = d.equipe_id
+            JOIN trechos t ON t.id = d.trecho_id
+            WHERE d.status IN ('enviado', 'aprovado')
+            ORDER BY d.data DESC, d.id DESC
+        ");
+        $diarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $diarios_rede   = [];
+        $diarios_ramais = [];
+        $totais = [
+            'rede'   => ['area' => 0.0, 'volume' => 0.0, 'cargas' => 0],
+            'ramais' => ['area' => 0.0, 'volume' => 0.0, 'cargas' => 0],
+        ];
+
+        foreach ($diarios as $d) {
+            $esc = ($d['escopo'] === 'ramais') ? 'ramais' : 'rede';
+            $totais[$esc]['area']   += (float)$d['area_total_m2'];
+            $totais[$esc]['volume'] += (float)$d['volume_asf_m3'];
+            $totais[$esc]['cargas'] += (int)$d['n_cargas'];
+            if ($esc === 'ramais') {
+                $diarios_ramais[] = $d;
+            } else {
+                $diarios_rede[] = $d;
+            }
+        }
+
+        /* ---- Fila de trechos (rede e ramais) ---- */
         $stmt = $pdo->query("
             SELECT t.id, t.pv_montante, t.pv_jusante, t.bacia, t.rua, t.extensao,
-                   t.status_repav,
+                   t.status_repav, t.status_repav_ramais,
                    mr.id AS medicao_id, mr.status AS medicao_status
             FROM trechos t
             LEFT JOIN medicoes_repavimentacao mr ON mr.trecho_id = t.id
-            WHERE t.status_repav IS NOT NULL
+            WHERE t.status_repav IS NOT NULL OR t.status_repav_ramais IS NOT NULL
             ORDER BY
                 FIELD(t.status_repav, 'aguardando', 'execucao', 'medido'),
                 t.bacia, t.pv_montante
         ");
         $trechos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $repavUploads = REPAV_BASE . '/uploads/repav';
+
         require __DIR__ . '/../views/repavimentacao/listar.php';
+    }
+
+    /* =====================================================
+       DETALHE DE UM DIÁRIO DE REPAVIMENTAÇÃO
+    ===================================================== */
+    public function verDiario()
+    {
+        auth_required([4]);
+        global $pdo;
+
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            header('Location: ' . APP_BASE . '/repavimentacao');
+            exit;
+        }
+
+        $stmt = $pdo->prepare("
+            SELECT d.*, e.nome AS equipe_nome, u.nome AS autor_nome,
+                   t.id AS trecho_id, t.pv_montante, t.pv_jusante, t.rua, t.bacia,
+                   t.extensao, t.contrato, t.cidade
+            FROM diarios_repav d
+            JOIN equipes e ON e.id = d.equipe_id
+            JOIN trechos t ON t.id = d.trecho_id
+            LEFT JOIN usuarios u ON u.id = d.autor_id
+            WHERE d.id = ?
+        ");
+        $stmt->execute([$id]);
+        $diario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$diario) {
+            $_SESSION['flash_erro'] = 'Diário de repavimentação não encontrado.';
+            header('Location: ' . APP_BASE . '/repavimentacao');
+            exit;
+        }
+
+        /* Presenças */
+        $stmt = $pdo->prepare("
+            SELECT p.status, f.nome, f.funcao
+            FROM diario_repav_presencas p
+            JOIN funcionarios f ON f.id = p.funcionario_id
+            WHERE p.diario_id = ?
+            ORDER BY f.nome
+        ");
+        $stmt->execute([$id]);
+        $presencas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        /* Cargas (NF + massa) */
+        $stmt = $pdo->prepare("
+            SELECT sequencia, numero_nf, massa_t, foto_carga, foto_nf
+            FROM diario_repav_cargas
+            WHERE diario_id = ?
+            ORDER BY sequencia, id
+        ");
+        $stmt->execute([$id]);
+        $cargas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $massa_total = 0.0;
+        foreach ($cargas as $c) $massa_total += (float)$c['massa_t'];
+
+        /* Fotos */
+        $stmt = $pdo->prepare("
+            SELECT id, step_num, filename, thumb, lat, lng, captured_at
+            FROM diario_repav_fotos
+            WHERE diario_id = ?
+            ORDER BY step_num, id
+        ");
+        $stmt->execute([$id]);
+        $fotos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        /* Áreas — discriminadas por local, tipo de pavimento e imóvel do ramal */
+        $stmt = $pdo->prepare("
+            SELECT a.id, a.tipo_pavimento, a.local, a.ramal_id, a.sequencia,
+                   a.base_m, a.largura_m, a.area_m2, a.espessura_m, a.volume_m3,
+                   COALESCE(NULLIF(TRIM(a.numero_imovel), ''), r.numero_imovel) AS numero_imovel
+            FROM diario_repav_areas a
+            LEFT JOIN ramais r ON r.id = a.ramal_id
+            WHERE a.diario_id = ?
+            ORDER BY a.local, a.tipo_pavimento, a.sequencia, a.id
+        ");
+        $stmt->execute([$id]);
+        $areas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        /* Somatório por tipo de pavimento (isto é o que vira medição) */
+        $por_tipo  = [];
+        $por_local = ['via' => 0.0, 'calcada' => 0.0];
+        $area_total = 0.0;
+        $volume_total = 0.0;
+
+        foreach ($areas as $a) {
+            $tipo = trim((string)$a['tipo_pavimento']) !== '' ? $a['tipo_pavimento'] : 'Não informado';
+            $loc  = ($a['local'] === 'calcada') ? 'calcada' : 'via';
+            if (!isset($por_tipo[$tipo])) {
+                $por_tipo[$tipo] = ['area' => 0.0, 'volume' => 0.0, 'via' => 0.0, 'calcada' => 0.0, 'linhas' => 0];
+            }
+            $por_tipo[$tipo]['area']   += (float)$a['area_m2'];
+            $por_tipo[$tipo]['volume'] += (float)$a['volume_m3'];
+            $por_tipo[$tipo][$loc]     += (float)$a['area_m2'];
+            $por_tipo[$tipo]['linhas'] += 1;
+            $por_local[$loc]           += (float)$a['area_m2'];
+            $area_total                += (float)$a['area_m2'];
+            $volume_total              += (float)$a['volume_m3'];
+        }
+        ksort($por_tipo);
+
+        $repavUploads = REPAV_BASE . '/uploads/repav';
+
+        require __DIR__ . '/../views/repavimentacao/diario.php';
     }
 
     /* =====================================================

@@ -76,7 +76,7 @@ tfoot td.n{text-align:right}
 
 <div class="resumo-kpi">
   <div class="kp"><b><?= number_format($total, 1, ',', '.') ?> m</b><span>Rede executada</span></div>
-  <div class="kp"><b><?= (int)($ramaisTotal['qtd'] ?? 0) ?></b><span>Ramais domiciliares</span></div>
+  <div class="kp"><b><?= (int)($pontoesTotal ?? 0) ?></b><span>Pontões de espera (rede)</span></div>
   <div class="kp"><b><?= number_format((float)($repavPeriodo['area_total'] ?? 0), 1, ',', '.') ?> m²</b><span>Área repavimentada</span></div>
   <div class="kp"><b><?= number_format($mediaDiaria, 1, ',', '.') ?> m</b><span>Média diária</span></div>
 </div>
@@ -124,6 +124,25 @@ if ($baciaAtual !== null): ?>
       <td class="n"><?= number_format($total, 1, ',', '.') ?> m</td>
     </tr>
   </tfoot>
+</table>
+
+<?php
+$ramaisEqp    = $ramaisEqp ?? ['frentes'=>0,'qtd'=>0,'via_m'=>0.0,'calcada_m'=>0.0,'porPavimento'=>[]];
+$pontoesTotal = (int)($pontoesTotal ?? 0);
+$ramaisHist   = (int)($ramaisTotal['qtd'] ?? 0);
+?>
+<p class="secao">Serviços Complementares no Período</p>
+<table>
+  <thead><tr><th>Item</th><th style="text-align:right">Valor</th></tr></thead>
+  <tbody>
+    <tr><td>Pontões de espera — equipe de rede</td><td class="n"><?= $pontoesTotal ?></td></tr>
+    <tr><td>Ramais executados — equipe de ramais</td><td class="n"><?= (int)$ramaisEqp['qtd'] ?></td></tr>
+    <tr><td>Ramais — comprimento em via (m)</td><td class="n"><?= number_format((float)$ramaisEqp['via_m'], 1, ',', '.') ?></td></tr>
+    <tr><td>Ramais — comprimento em calçada (m)</td><td class="n"><?= number_format((float)$ramaisEqp['calcada_m'], 1, ',', '.') ?></td></tr>
+    <?php if ($ramaisHist > 0): ?>
+    <tr><td>Ramais no diário de rede — histórico (até 18/09/2026)</td><td class="n"><?= $ramaisHist ?></td></tr>
+    <?php endif; ?>
+  </tbody>
 </table>
 
 <?php if (!empty($repavPeriodo) && ((float)$repavPeriodo['area_total'] > 0 || (int)$repavPeriodo['trechos_medidos'] > 0)): ?>

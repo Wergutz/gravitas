@@ -126,6 +126,8 @@ ob_start();
       <option value="5">Executor de Rede</option>
       <option value="6">Cliente Master</option>
       <option value="7">Executor de Repavimentação</option>
+      <option value="8">Topógrafo</option>
+      <option value="9">Executor de Ramais</option>
     </select>
     <select id="f-status" onchange="filtrar()">
       <option value="">Todos</option>
@@ -241,6 +243,8 @@ ob_start();
           <option value="5">Executor de Rede</option>
           <option value="6">Cliente Master</option>
           <option value="7">Executor de Repavimentação</option>
+          <option value="8">Topógrafo</option>
+          <option value="9">Executor de Ramais</option>
           <option value="3">Master Gravitas</option>
         </select>
       </div>
@@ -380,7 +384,7 @@ function fecharSeFundo(e) { if (e.target.id === 'modal-bd') fecharModal(); }
 
 function ajustarCamposModal() {
   const p = parseInt(document.getElementById('m-perfil').value);
-  document.getElementById('campo-equipe').style.display = (p === 5 || p === 7) ? '' : 'none';
+  document.getElementById('campo-equipe').style.display = (p === 5 || p === 7 || p === 9) ? '' : 'none';
 }
 
 function toggleSenhaVisivel() {

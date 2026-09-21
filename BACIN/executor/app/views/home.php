@@ -4,6 +4,21 @@ $hoje = date('d/m/Y');
 $diaDaSemana = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'][date('w')];
 $stepAtual = $diarioHoje ? (int)$diarioHoje['step_atual'] : 0;
 $pct       = (int)round($stepAtual / 21 * 100);
+
+/** Estado da rede do trecho, em linguagem de obra. */
+function estadoRede(array $t): array {
+    $sr = $t['status_rede'] ?? 'livre';
+    if ($sr === 'concluido' || ($t['ct_status'] ?? '') === 'concluido') {
+        $quando = !empty($t['rede_concluida_em'])
+            ? ' em ' . date('d/m/Y', strtotime($t['rede_concluida_em'])) : '';
+        return ['b-ok', '✅ Rede concluída' . $quando];
+    }
+    if ($sr === 'execucao' || ($t['ct_status'] ?? '') === 'execucao') {
+        return ['b-aviso', '🔧 Em execução — continua'];
+    }
+    if ($sr === 'programado') return ['b-info', '📋 Programado — ainda não começou'];
+    return ['b-neutro', '⏳ Livre'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -26,7 +41,7 @@ $pct       = (int)round($stepAtual / 21 * 100);
       <div class="nm">BACIN<small>EXECUTOR</small></div>
       <div class="eq">
         <b><?= htmlspecialchars($_SESSION['nome']) ?></b>
-        <?= $diaDaSemana ?>, <?= $hoje ?>
+        <?= $equipeNome !== '' ? htmlspecialchars($equipeNome) . ' · ' : '' ?><?= $diaDaSemana ?>, <?= $hoje ?>
       </div>
     </div>
     <div class="hoje">
@@ -37,6 +52,58 @@ $pct       = (int)round($stepAtual / 21 * 100);
 
   <div class="scroll">
 
+    <?php if ($flash): ?>
+    <div class="info" style="border-color:<?= $flash['tipo'] === 'ok' ? 'var(--ok)' : ($flash['tipo'] === 'erro' ? 'var(--erro)' : 'var(--aviso)') ?>">
+      <div class="info-h">
+        <span class="ic <?= $flash['tipo'] === 'ok' ? 'i-ok' : 'i-aviso' ?>"><?= $flash['tipo'] === 'ok' ? '✅' : '⚠️' ?></span>
+        <div><b><?= htmlspecialchars($flash['msg']) ?></b></div>
+      </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if (!empty($devolucao)): ?>
+    <!-- O escritório devolveu este trecho: a rede tem que ser refeita -->
+    <?= devolucao_aviso_html(
+            $devolucao,
+            'O escritório devolveu este trecho: a rede tem que ser refeita.',
+            'Continue o diário deste trecho e só marque "rede concluída" depois que o serviço estiver refeito. Enquanto isso, o pavimento não vai asfaltar por cima.'
+        ) ?>
+    <?php endif; ?>
+
+    <?php if (count($equipes) > 1): ?>
+    <!-- Executor responsável por mais de uma equipe: ele escolhe a equipe do dia -->
+    <div class="sec-tit">👷 Equipe do dia</div>
+    <div class="info">
+      <div class="info-h">
+        <span class="ic i-navy" style="font-size:18px">👷</span>
+        <div>
+          <b><?= $equipeNome !== '' ? htmlspecialchars($equipeNome) : 'Escolha a equipe' ?></b>
+          <span>Você responde por <?= count($equipes) ?> equipes — diga com qual está hoje.</span>
+        </div>
+      </div>
+      <form method="post" action="<?= EXECUTOR_BASE ?>/equipe" style="margin-top:10px">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'] ?? csrf_token_executor()) ?>">
+        <select name="equipe_id" style="width:100%;padding:11px;border:1px solid var(--line);border-radius:10px;font-size:14px">
+          <?php foreach ($equipes as $eq): ?>
+          <option value="<?= (int)$eq['id'] ?>" <?= (int)$eq['id'] === (int)$equipeId ? 'selected' : '' ?>>
+            <?= htmlspecialchars($eq['nome']) ?>
+          </option>
+          <?php endforeach; ?>
+        </select>
+        <button type="submit" class="btn-step-ok" style="margin-top:9px">✔ Usar esta equipe hoje</button>
+      </form>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($precisaEscolherEquipe): ?>
+    <div class="info">
+      <div class="info-h">
+        <span class="ic i-aviso" style="font-size:20px">⚠️</span>
+        <div><b>Escolha a equipe acima</b><span>A programação do dia aparece depois que você disser com qual equipe está.</span></div>
+      </div>
+    </div>
+    <?php else: ?>
+
     <!-- ── Progresso do diário ───────────────────────────── -->
     <div class="prog-card">
       <div class="t">Diário de hoje <b id="prog-pct"><?= $pct ?>%</b></div>
@@ -44,6 +111,27 @@ $pct       = (int)round($stepAtual / 21 * 100);
     </div>
 
     <?php if (!$trechoAtual): ?>
+    <?php if ($tudoConcluido): ?>
+    <!-- Todos os trechos do caminhamento com a rede concluída -->
+    <div class="info" style="border-color:var(--ok)">
+      <div class="info-h">
+        <span class="ic i-ok" style="font-size:20px">✅</span>
+        <div>
+          <b>Rede concluída em todos os trechos</b>
+          <span>Nada pendente nesta programação. A equipe de ramais e a de pavimento já foram liberadas.</span>
+        </div>
+      </div>
+      <div style="margin-top:10px">
+        <?php foreach ($filaTrechos as $tc): [$fcls, $ftxt] = estadoRede($tc); ?>
+        <div class="next">
+          <span class="o"><?= (int)$tc['ordem'] ?></span>
+          <span><?= htmlspecialchars($tc['pv_montante'] ?? '') ?> → <?= htmlspecialchars($tc['pv_jusante'] ?? '') ?></span>
+          <span class="badge <?= $fcls ?>" style="margin-left:auto"><?= htmlspecialchars($ftxt) ?></span>
+        </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <?php else: ?>
     <!-- Sem programação -->
     <div class="info">
       <div class="info-h">
@@ -54,6 +142,7 @@ $pct       = (int)round($stepAtual / 21 * 100);
         </div>
       </div>
     </div>
+    <?php endif; ?>
 
     <?php else: ?>
 
@@ -86,6 +175,8 @@ $pct       = (int)round($stepAtual / 21 * 100);
           ]); echo implode(' · ', $partes); ?>
         </div>
         <div style="margin-top:8px">
+          <?php [$bcls, $btxt] = estadoRede($trechoAtual); ?>
+          <span class="badge <?= $bcls ?>"><?= htmlspecialchars($btxt) ?></span>
           <?php if ($osPdf): ?>
           <span class="badge b-ok">OS anexada</span>
           <?php endif; ?>
@@ -170,7 +261,7 @@ $pct       = (int)round($stepAtual / 21 * 100);
       <div style="margin-top:10px">
         <?php foreach ($filaTrechos as $idx => $tc):
           $ehHoje = ($tc['id'] == ($trechoAtual['id'] ?? -1));
-          $concluido = $tc['ct_status'] === 'concluido';
+          $concluido = ($tc['ct_status'] === 'concluido' || $tc['status_rede'] === 'concluido');
         ?>
         <div class="next">
           <span class="o" style="<?= $ehHoje ? 'background:var(--ok-bg);color:var(--ok)' : ($concluido ? 'background:#e0e0e0;color:#aaa' : '') ?>">
@@ -184,8 +275,9 @@ $pct       = (int)round($stepAtual / 21 * 100);
           </span>
           <?php if ($ehHoje): ?>
           <b style="margin-left:auto;color:var(--ok);font-size:11px">hoje</b>
-          <?php elseif ($concluido): ?>
-          <span style="margin-left:auto;font-size:10px;color:var(--muted)">✅</span>
+          <?php else: ?>
+          <?php [$fcls, $ftxt] = estadoRede($tc); ?>
+          <span class="badge <?= $fcls ?>" style="margin-left:auto"><?= htmlspecialchars($ftxt) ?></span>
           <?php endif; ?>
         </div>
         <?php endforeach; ?>
@@ -211,18 +303,32 @@ $pct       = (int)round($stepAtual / 21 * 100);
       ✏️ Continuar diário — <?= $pct ?>% preenchido
     </a>
     <?php else: ?>
-    <div class="info" style="border-color:var(--ok);margin-bottom:14px">
+    <?php $redeOk = ($trechoAtual['status_rede'] === 'concluido'); ?>
+    <div class="info" style="border-color:<?= $redeOk ? 'var(--ok)' : 'var(--aviso)' ?>;margin-bottom:14px">
       <div class="info-h">
-        <span style="font-size:20px">✅</span>
+        <span style="font-size:20px"><?= $redeOk ? '✅' : '🔧' ?></span>
         <div>
-          <b>Diário de hoje enviado</b>
-          <span>Aguardando aprovação do Planejador.</span>
+          <b>Diário enviado<?= $diarioHoje['data'] ? ' — ' . date('d/m/Y', strtotime($diarioHoje['data'])) : '' ?></b>
+          <span>
+            <?php if ($redeOk): ?>
+              Rede deste trecho CONCLUÍDA — ramais e pavimento liberados.
+            <?php else: ?>
+              O trecho continua: a rede ainda NÃO foi marcada como concluída.
+            <?php endif; ?>
+          </span>
         </div>
       </div>
+      <?php if (!$redeOk): ?>
+      <a href="<?= EXECUTOR_BASE ?>/diario/<?= (int)$diarioHoje['id'] ?>" class="btn-step-ok"
+         style="display:block;text-align:center;text-decoration:none;box-sizing:border-box">
+        ✅ Terminei o trecho — concluir a rede
+      </a>
+      <?php endif; ?>
     </div>
     <?php endif; ?>
 
     <?php endif; // fim $trechoAtual ?>
+    <?php endif; // fim $precisaEscolherEquipe ?>
 
     <!-- Fila offline -->
     <div id="offline-sec" class="sec-tit" style="display:none">⏳ Aguardando conexão</div>

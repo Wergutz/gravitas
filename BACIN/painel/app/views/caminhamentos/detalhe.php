@@ -97,6 +97,12 @@ ob_start();
         </span>
     </div>
 
+    <div class="alerta a-info" style="margin-bottom:12px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div>Quem conclui o trecho é a equipe de campo, pelo app do executor.
+            <small>Se a etapa precisar ser refeita, devolva pela ficha do trecho.</small></div>
+    </div>
+
     <?php if (empty($trechos_cam)): ?>
         <p style="color:var(--muted);font-size:13px;">Nenhum trecho neste caminhamento.</p>
     <?php else: ?>
@@ -130,17 +136,8 @@ ob_start();
                         <?php endif; ?>
                         <span class="chip <?= $tcStatus[1] ?>"><?= $tcStatus[0] ?></span>
 
-                        <?php if ($tc['ct_status'] !== 'concluido' && in_array($caminhamento['status'], ['publicado', 'execucao'])): ?>
-                            <form method="post" action="<?= APP_BASE ?>/caminhamentos/concluir-trecho"
-                                  style="display:inline;"
-                                  data-confirmar="Marcar trecho como concluído? O trecho entrará na fila de repavimentação."
-                                  data-cor="#1A6B3C">
-                                <?= csrf_input() ?>
-                                <input type="hidden" name="caminhamento_id" value="<?= (int)$caminhamento['id'] ?>">
-                                <input type="hidden" name="trecho_id" value="<?= (int)$tc['trecho_id'] ?>">
-                                <button type="submit" class="btn btn-pri btn-sm">Concluir trecho</button>
-                            </form>
-                        <?php endif; ?>
+                        <?php /* A conclusão do trecho é do CAMPO (app do executor). No Painel só existe a devolução, na ficha do trecho. */ ?>
+                        <a href="<?= APP_BASE ?>/trechos?sel=<?= (int)$tc['trecho_id'] ?>#devolucao" class="btn btn-sec btn-sm">Devolver etapa</a>
                     </div>
                 </div>
 

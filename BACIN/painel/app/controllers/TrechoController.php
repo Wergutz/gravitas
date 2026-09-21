@@ -6,6 +6,41 @@ require_once dirname(__DIR__) . '/helpers/csrf.php';
 
 class TrechoController
 {
+    /** Etapas que o Planejador pode devolver para o campo */
+    private const ETAPAS_DEVOLUCAO = [
+        'rede'          => 'Rede (escavação/assentamento)',
+        'repav_rede'    => 'Repavimentação da vala da rede',
+        'repav_ramais'  => 'Repavimentação das valas dos ramais',
+    ];
+
+    /**
+     * Valida um número decimal opcional vindo do formulário.
+     * Devolve [valor|null, erro|null]. Vazio => null sem erro.
+     */
+    private function numeroOpcional(string $bruto, string $rotulo, bool $permiteZero = true): array
+    {
+        if ($bruto === '') return [null, null];
+        if (!is_numeric($bruto)) {
+            return [null, $rotulo . ' deve ser um número (use vírgula ou ponto decimal).'];
+        }
+        $v = (float)$bruto;
+        if ($v < 0) {
+            return [null, $rotulo . ' não pode ser negativa.'];
+        }
+        if (!$permiteZero && $v == 0.0) {
+            return [null, $rotulo . ' deve ser maior que zero.'];
+        }
+        return [$bruto, null];
+    }
+
+    /** Guarda o que o usuário digitou para repopular o formulário após erro */
+    private function guardarDigitado(): void
+    {
+        $dados = $_POST;
+        unset($dados['_csrf']);
+        $_SESSION['old_trecho'] = $dados;
+    }
+
     /* =====================================================
        LISTAR
     ===================================================== */
@@ -46,8 +81,9 @@ class TrechoController
                       ->fetchAll(PDO::FETCH_COLUMN);
 
         // Trecho selecionado para painel lateral
-        $trecho_sel = null;
+        $trecho_sel   = null;
         $os_historico = [];
+        $devolucoes   = [];
         if ($sel_id > 0) {
             $stmt2 = $pdo->prepare("SELECT * FROM trechos WHERE id = ?");
             $stmt2->execute([$sel_id]);
@@ -63,8 +99,20 @@ class TrechoController
                 ");
                 $stmt3->execute([$sel_id]);
                 $os_historico = $stmt3->fetchAll(PDO::FETCH_ASSOC);
+
+                $stmt4 = $pdo->prepare("
+                    SELECT td.etapa, td.motivo, td.created_at, u.nome AS usuario_nome
+                    FROM trecho_devolucoes td
+                    LEFT JOIN usuarios u ON u.id = td.usuario_id
+                    WHERE td.trecho_id = ?
+                    ORDER BY td.created_at DESC, td.id DESC
+                ");
+                $stmt4->execute([$sel_id]);
+                $devolucoes = $stmt4->fetchAll(PDO::FETCH_ASSOC);
             }
         }
+
+        $etapas_devolucao = self::ETAPAS_DEVOLUCAO;
 
         require __DIR__ . '/../views/trechos/listar.php';
     }
@@ -75,6 +123,10 @@ class TrechoController
     public function create()
     {
         auth_required([4]);
+
+        $old = $_SESSION['old_trecho'] ?? [];
+        unset($_SESSION['old_trecho']);
+
         require __DIR__ . '/../views/trechos/cadastrar.php';
     }
 
@@ -97,10 +149,31 @@ class TrechoController
         $rua              = trim($_POST['rua'] ?? '');
         $cidade           = trim($_POST['cidade'] ?? '');
         $contrato         = trim($_POST['contrato'] ?? '');
-        $ramais           = (int)($_POST['ramais'] ?? 0);
+
+        $erros = [];
 
         if ($pv_montante === '') {
-            $_SESSION['flash_erro'] = 'PV Montante é obrigatório.';
+            $erros[] = 'PV Montante é obrigatório.';
+        }
+
+        [$extensao, $e1]     = $this->numeroOpcional($extensao, 'Extensão (m)');
+        if ($e1) $erros[] = $e1;
+        [$profundidade, $e2] = $this->numeroOpcional($profundidade, 'Profundidade média (m)');
+        if ($e2) $erros[] = $e2;
+
+        $ramais_bruto = trim($_POST['ramais'] ?? '');
+        if ($ramais_bruto === '') {
+            $ramais = 0;
+        } elseif (!preg_match('/^\\d+$/', $ramais_bruto)) {
+            $erros[] = 'Nº de ramais deve ser um número inteiro maior ou igual a zero.';
+            $ramais = 0;
+        } else {
+            $ramais = (int)$ramais_bruto;
+        }
+
+        if ($erros) {
+            $this->guardarDigitado();
+            $_SESSION['flash_erro'] = implode(' ', $erros);
             header('Location: ' . APP_BASE . '/trechos/cadastrar');
             exit;
         }
@@ -115,8 +188,8 @@ class TrechoController
             $pv_montante,
             $pv_jusante ?: null,
             $tipo_pi_montante ?: null,
-            is_numeric($extensao) ? $extensao : null,
-            is_numeric($profundidade) ? $profundidade : null,
+            $extensao,
+            $profundidade,
             $dn ?: null,
             $rua ?: null,
             $cidade ?: null,
@@ -125,6 +198,7 @@ class TrechoController
             $_SESSION['usuario_id'] ?? null,
         ]);
 
+        unset($_SESSION['old_trecho']);
         $_SESSION['flash_ok'] = 'Trecho cadastrado com sucesso.';
         header('Location: ' . APP_BASE . '/trechos');
         exit;
@@ -151,6 +225,16 @@ class TrechoController
         if (!$trecho) {
             header('Location: ' . APP_BASE . '/trechos');
             exit;
+        }
+
+        // Preserva o que o usuário digitou quando a validação recusou o envio
+        $old = $_SESSION['old_trecho'] ?? [];
+        unset($_SESSION['old_trecho']);
+        if ($old && (int)($old['id'] ?? 0) === $id) {
+            foreach (['bacia','pv_montante','pv_jusante','tipo_pi_montante','extensao',
+                      'profundidade_media','dn','rua','cidade','contrato','ramais'] as $campo) {
+                if (array_key_exists($campo, $old)) $trecho[$campo] = $old[$campo];
+            }
         }
 
         // C1: materiais do trecho e catálogo disponível
@@ -261,11 +345,38 @@ class TrechoController
         $rua              = trim($_POST['rua'] ?? '');
         $cidade           = trim($_POST['cidade'] ?? '');
         $contrato         = trim($_POST['contrato'] ?? '');
-        $ramais           = (int)($_POST['ramais'] ?? 0);
 
-        if ($id <= 0 || $pv_montante === '') {
-            $_SESSION['flash_erro'] = 'Dados inválidos.';
+        if ($id <= 0) {
+            $_SESSION['flash_erro'] = 'Trecho inválido.';
             header('Location: ' . APP_BASE . '/trechos');
+            exit;
+        }
+
+        $erros = [];
+
+        if ($pv_montante === '') {
+            $erros[] = 'PV Montante é obrigatório.';
+        }
+
+        [$extensao, $e1]     = $this->numeroOpcional($extensao, 'Extensão (m)');
+        if ($e1) $erros[] = $e1;
+        [$profundidade, $e2] = $this->numeroOpcional($profundidade, 'Profundidade média (m)');
+        if ($e2) $erros[] = $e2;
+
+        $ramais_bruto = trim($_POST['ramais'] ?? '');
+        if ($ramais_bruto === '') {
+            $ramais = 0;
+        } elseif (!preg_match('/^\\d+$/', $ramais_bruto)) {
+            $erros[] = 'Nº de ramais deve ser um número inteiro maior ou igual a zero.';
+            $ramais = 0;
+        } else {
+            $ramais = (int)$ramais_bruto;
+        }
+
+        if ($erros) {
+            $this->guardarDigitado();
+            $_SESSION['flash_erro'] = implode(' ', $erros);
+            header('Location: ' . APP_BASE . '/trechos/editar?id=' . $id);
             exit;
         }
 
@@ -280,8 +391,8 @@ class TrechoController
             $pv_montante,
             $pv_jusante ?: null,
             $tipo_pi_montante ?: null,
-            is_numeric($extensao) ? $extensao : null,
-            is_numeric($profundidade) ? $profundidade : null,
+            $extensao,
+            $profundidade,
             $dn ?: null,
             $rua ?: null,
             $cidade ?: null,
@@ -290,8 +401,172 @@ class TrechoController
             $id,
         ]);
 
+        unset($_SESSION['old_trecho']);
         $_SESSION['flash_ok'] = 'Trecho atualizado com sucesso.';
         header('Location: ' . APP_BASE . '/trechos?sel=' . $id);
+        exit;
+    }
+
+    /**
+     * Reabre o último diário de REDE enviado do trecho (enviado -> rascunho),
+     * para a equipe poder lançar o serviço refeito. Sem diário, segue sem erro.
+     */
+    private function reabrirDiarioRede(PDO $pdo, int $trecho_id): void
+    {
+        $st = $pdo->prepare("
+            SELECT id FROM diarios_execucao
+             WHERE trecho_id = ? AND status = 'enviado'
+             ORDER BY data DESC, versao DESC, id DESC
+             LIMIT 1
+        ");
+        $st->execute([$trecho_id]);
+        if ($diario_id = (int)$st->fetchColumn()) {
+            $pdo->prepare("UPDATE diarios_execucao SET status = 'rascunho' WHERE id = ?")
+                ->execute([$diario_id]);
+        }
+    }
+
+    /**
+     * Reabre o último diário de REPAVIMENTAÇÃO enviado do trecho no escopo
+     * informado ('rede' ou 'ramais'). Sem diário, segue sem erro.
+     */
+    private function reabrirDiarioRepav(PDO $pdo, int $trecho_id, string $escopo): void
+    {
+        $st = $pdo->prepare("
+            SELECT id FROM diarios_repav
+             WHERE trecho_id = ? AND escopo = ? AND status = 'enviado'
+             ORDER BY data DESC, versao DESC, id DESC
+             LIMIT 1
+        ");
+        $st->execute([$trecho_id, $escopo]);
+        if ($diario_id = (int)$st->fetchColumn()) {
+            $pdo->prepare("UPDATE diarios_repav SET status = 'rascunho' WHERE id = ?")
+                ->execute([$diario_id]);
+        }
+    }
+
+    /* =====================================================
+       DEVOLVER ETAPA PARA O CAMPO — único lugar do Painel
+       (quem CONCLUI a etapa é o executor; o Planejador só devolve)
+    ===================================================== */
+    public function devolver()
+    {
+        auth_required([4]);
+        global $pdo;
+        csrf_verify();
+
+        $trecho_id = (int)($_POST['trecho_id'] ?? 0);
+        $etapa     = trim($_POST['etapa'] ?? '');
+        $motivo    = trim(preg_replace('/\\s+/u', ' ', (string)($_POST['motivo'] ?? '')));
+
+        $voltar = APP_BASE . '/trechos' . ($trecho_id > 0 ? '?sel=' . $trecho_id . '#devolucao' : '');
+
+        if ($trecho_id <= 0 || !array_key_exists($etapa, self::ETAPAS_DEVOLUCAO)) {
+            $_SESSION['flash_erro'] = 'Selecione a etapa a devolver (rede, repavimentação da rede ou dos ramais).';
+            header('Location: ' . $voltar);
+            exit;
+        }
+
+        if (mb_strlen($motivo) < 5) {
+            $_SESSION['flash_erro'] = 'Informe o motivo da devolução (mínimo de 5 caracteres).';
+            header('Location: ' . $voltar);
+            exit;
+        }
+        if (mb_strlen($motivo) > 255) {
+            $motivo = mb_substr($motivo, 0, 255);
+        }
+
+        $stmt = $pdo->prepare("SELECT id, pv_montante FROM trechos WHERE id = ?");
+        $stmt->execute([$trecho_id]);
+        $trecho = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$trecho) {
+            $_SESSION['flash_erro'] = 'Trecho não encontrado.';
+            header('Location: ' . APP_BASE . '/trechos');
+            exit;
+        }
+
+        $pdo->beginTransaction();
+        try {
+            if ($etapa === 'rede') {
+                // A rede volta para execução E a jusante é zerada: enquanto a vala
+                // puder ser reaberta, ninguém asfalta nem mede ramal por cima dela.
+                // A repavimentação só é liberada de novo quando a rede for concluída.
+                $pdo->prepare("
+                    UPDATE trechos
+                       SET status_rede          = 'execucao',
+                           rede_concluida_em    = NULL,
+                           status_repav         = NULL,
+                           status_repav_ramais  = NULL,
+                           ramais_concluidos_em = NULL
+                     WHERE id = ?
+                ")->execute([$trecho_id]);
+
+                // caminhamento de rede mais recente do trecho volta para execução
+                $stmt = $pdo->prepare("
+                    SELECT ct.id AS ct_id, c.id AS cam_id, c.status AS cam_status
+                    FROM caminhamento_trechos ct
+                    JOIN caminhamentos c ON c.id = ct.caminhamento_id
+                    WHERE ct.trecho_id = ?
+                    ORDER BY c.data_execucao DESC, c.id DESC
+                    LIMIT 1
+                ");
+                $stmt->execute([$trecho_id]);
+                if ($cam = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    $pdo->prepare("UPDATE caminhamento_trechos SET status = 'execucao' WHERE id = ?")
+                        ->execute([$cam['ct_id']]);
+                    if ($cam['cam_status'] === 'concluido') {
+                        $pdo->prepare("UPDATE caminhamentos SET status = 'execucao' WHERE id = ?")
+                            ->execute([$cam['cam_id']]);
+                    }
+                }
+
+                // O campo precisa poder lançar o serviço refeito: o último diário
+                // de rede enviado volta a rascunho (sem ele, o app responde
+                // "Diário bloqueado" e a equipe fica sem onde escrever).
+                $this->reabrirDiarioRede($pdo, $trecho_id);
+
+            } elseif ($etapa === 'repav_rede') {
+                $pdo->prepare("UPDATE trechos SET status_repav = 'aguardando' WHERE id = ?")
+                    ->execute([$trecho_id]);
+
+                $stmt = $pdo->prepare("
+                    SELECT crt.id
+                    FROM caminhamentos_repav_trechos crt
+                    JOIN caminhamentos_repav cr ON cr.id = crt.caminhamento_id
+                    WHERE crt.trecho_id = ?
+                    ORDER BY cr.data_execucao DESC, cr.id DESC
+                    LIMIT 1
+                ");
+                $stmt->execute([$trecho_id]);
+                if ($crt_id = $stmt->fetchColumn()) {
+                    $pdo->prepare("UPDATE caminhamentos_repav_trechos SET status = 'pendente' WHERE id = ?")
+                        ->execute([$crt_id]);
+                }
+
+                $this->reabrirDiarioRepav($pdo, $trecho_id, 'rede');
+
+            } else { // repav_ramais
+                $pdo->prepare("UPDATE trechos SET status_repav_ramais = 'aguardando' WHERE id = ?")
+                    ->execute([$trecho_id]);
+
+                $this->reabrirDiarioRepav($pdo, $trecho_id, 'ramais');
+            }
+
+            $pdo->prepare("
+                INSERT INTO trecho_devolucoes (trecho_id, etapa, motivo, usuario_id)
+                VALUES (?, ?, ?, ?)
+            ")->execute([$trecho_id, $etapa, $motivo, (int)($_SESSION['usuario_id'] ?? 0)]);
+
+            $pdo->commit();
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            $_SESSION['flash_erro'] = 'Erro ao devolver a etapa: ' . $e->getMessage();
+            header('Location: ' . $voltar);
+            exit;
+        }
+
+        $_SESSION['flash_ok'] = 'Etapa devolvida para a equipe: ' . self::ETAPAS_DEVOLUCAO[$etapa] . '.';
+        header('Location: ' . $voltar);
         exit;
     }
 

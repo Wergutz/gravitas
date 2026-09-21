@@ -218,21 +218,49 @@ ob_start();
         </div>
         <?php endif; ?>
 
-        <!-- Repavimentação pendente -->
-        <?php if ($repav_pendentes > 0): ?>
+        <!-- Fila de repavimentação (rede e ramais) -->
+        <?php if ($repav_pendentes > 0 || $repav_diarios_hoje > 0): ?>
         <div class="card">
-            <div class="label">Repavimentação</div>
-            <div class="alerta a-info">
+            <div class="label">
+                Repavimentação
+                <a href="<?= APP_BASE ?>/repavimentacao" class="ver">Abrir tela</a>
+            </div>
+
+            <?php if ($repav_rede_aguardando > 0): ?>
+            <div class="alerta a-aviso">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                 <div>
-                    <b><?= $repav_pendentes ?></b> trecho<?= $repav_pendentes != 1 ? 's' : '' ?> aguardando repavimentação
+                    <b><?= $repav_rede_aguardando ?></b> trecho<?= $repav_rede_aguardando != 1 ? 's' : '' ?> aguardando repavimentação da <b>rede</b>
+                    <small>Vala da rede pronta para a equipe de pavimentação.</small>
                 </div>
                 <a href="<?= APP_BASE ?>/repavimentacao" class="go">Ver fila</a>
             </div>
+            <?php endif; ?>
+
+            <?php if ($repav_ramais_aguardando > 0): ?>
+            <div class="alerta a-aviso">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v12a3 3 0 0 0 3 3h12"/><line x1="8" y1="18" x2="8" y2="22"/><line x1="14" y1="18" x2="14" y2="22"/></svg>
+                <div>
+                    <b><?= $repav_ramais_aguardando ?></b> trecho<?= $repav_ramais_aguardando != 1 ? 's' : '' ?> aguardando repavimentação dos <b>ramais</b>
+                    <small>Valas dos ramais prontas para a equipe de pavimentação.</small>
+                </div>
+                <a href="<?= APP_BASE ?>/repavimentacao" class="go">Ver fila</a>
+            </div>
+            <?php endif; ?>
+
+            <?php if ($repav_diarios_hoje > 0): ?>
+            <div class="alerta a-info">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <div>
+                    <b><?= $repav_diarios_hoje ?></b> diário<?= $repav_diarios_hoje != 1 ? 's' : '' ?> de repavimentação recebido<?= $repav_diarios_hoje != 1 ? 's' : '' ?> hoje
+                </div>
+                <a href="<?= APP_BASE ?>/repavimentacao" class="go">Conferir</a>
+            </div>
+            <?php endif; ?>
         </div>
         <?php endif; ?>
 
-        <?php if (empty($pendencias_sem_os) && empty($pendencias_docs) && $repav_pendentes == 0): ?>
+        <?php if (empty($pendencias_sem_os) && empty($pendencias_docs) && $repav_pendentes == 0 && $repav_diarios_hoje == 0): ?>
         <div class="card">
             <div class="alerta a-ok">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>

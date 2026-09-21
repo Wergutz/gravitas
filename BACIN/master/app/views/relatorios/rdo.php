@@ -77,7 +77,7 @@ tfoot td.n{text-align:right}
 <div class="kpis">
   <div class="kp"><b><?= number_format($metrosDia, 1, ',', '.') ?> m</b><span>Rede executada</span></div>
   <div class="kp"><b><?= $presentes ?> / <?= $totalPres ?></b><span>Presentes</span></div>
-  <div class="kp"><b><?= (int)($ramais['qtd'] ?? 0) ?></b><span>Ramais</span></div>
+  <div class="kp"><b><?= (int)$pontoes ?></b><span>Pontões de espera (rede)</span></div>
   <div class="kp"><b><?= count($interfs) > 0 ? array_sum(array_column($interfs,'qtd')) : 0 ?></b><span>Interferências</span></div>
 </div>
 
@@ -94,7 +94,7 @@ tfoot td.n{text-align:right}
       <td><?= htmlspecialchars($r['bacia'] ?: '—') ?></td>
       <td><?= htmlspecialchars($r['pv_montante'] ?: '—') ?></td>
       <td><?= htmlspecialchars($r['pv_jusante'] ?: '—') ?></td>
-      <td class="n"><?= number_format($r['extensao_gps_m'], 1, ',', '.') ?></td>
+      <td class="n"><?= number_format((float)($r['extensao_gps_m'] ?? 0), 1, ',', '.') ?></td>
     </tr>
   <?php endforeach; ?>
   </tbody>
@@ -111,10 +111,12 @@ tfoot td.n{text-align:right}
   </div>
   <div class="info-bloco">
     <h3>Serviços complementares</h3>
-    <div class="info-row"><span>Ramais domiciliares</span><b><?= (int)($ramais['qtd'] ?? 0) ?></b></div>
-    <div class="info-row"><span>Ext. pista (m)</span><b><?= number_format($ramais['m_pista'] ?? 0, 1, ',', '.') ?></b></div>
-    <div class="info-row"><span>Ext. calçada (m)</span><b><?= number_format($ramais['m_calcada'] ?? 0, 1, ',', '.') ?></b></div>
-    <div class="info-row"><span>Pontões</span><b><?= $pontoes ?></b></div>
+    <div class="info-row"><span>Pontões de espera (rede)</span><b><?= (int)$pontoes ?></b></div>
+    <?php $ramaisHist = (int)($ramais['qtd'] ?? 0); if ($ramaisHist > 0): ?>
+    <div class="info-row"><span>Ramais no diário de rede — histórico</span><b><?= $ramaisHist ?></b></div>
+    <div class="info-row"><span>Ext. pista (m) — histórico</span><b><?= number_format((float)($ramais['m_pista'] ?? 0), 1, ',', '.') ?></b></div>
+    <div class="info-row"><span>Ext. calçada (m) — histórico</span><b><?= number_format((float)($ramais['m_calcada'] ?? 0), 1, ',', '.') ?></b></div>
+    <?php endif; ?>
   </div>
 </div>
 

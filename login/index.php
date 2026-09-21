@@ -103,12 +103,14 @@ $sistemas = [
             6 => '/BACIN/master/',
             7 => '/BACIN/executor-repav/',
             8 => '/BACIN/topografo/',
+            9 => '/BACIN/executor-ramais/',
         ],
         'apps'        => [
             ['dest' => '/BACIN/painel/',        'label' => 'Planejador',              'sub' => 'Gestão, relatórios e diários'],
             ['dest' => '/BACIN/master/',         'label' => 'Visão Executiva',         'sub' => 'Dashboard do cliente master'],
             ['dest' => '/BACIN/executor/',       'label' => 'App do Executor',         'sub' => 'Frente de serviço em campo'],
             ['dest' => '/BACIN/executor-repav/', 'label' => 'Executor Repavimentação', 'sub' => 'Medição e controle de pavimento'],
+            ['dest' => '/BACIN/executor-ramais/','label' => 'Executor de Ramais',      'sub' => 'Ramais domiciliares por imóvel'],
             ['dest' => '/BACIN/topografo/',      'label' => 'Topógrafo',               'sub' => 'Importação e OS de topografia'],
         ],
     ],
@@ -206,6 +208,7 @@ if (!empty($_SESSION['sa_ok'])) {
         'Visão Executiva'         => '<line x1="5" y1="20" x2="5" y2="12"/><line x1="12" y1="20" x2="12" y2="5"/><line x1="19" y1="20" x2="19" y2="9"/>',
         'App do Executor'         => '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
         'Executor Repavimentação' => '<rect x="2" y="14" width="20" height="6" rx="2"/><path d="M6 14v-4a6 6 0 0 1 12 0v4"/>',
+        'Executor de Ramais'      => '<path d="M3 12h6"/><path d="M15 12h6"/><circle cx="12" cy="12" r="3"/><path d="M12 3v6"/><path d="M12 15v6"/>',
         'Topógrafo'               => '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/><line x1="12" y1="3" x2="12" y2="8"/>',
     ];
     ?><!DOCTYPE html>

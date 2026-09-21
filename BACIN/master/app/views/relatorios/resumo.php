@@ -4,6 +4,21 @@ $periodoFmt = date('d/m/Y', strtotime($inicio)) . ' a ' . date('d/m/Y', strtotim
 $r = 44; $cx = 50; $cy = 50; $circ = 2 * M_PI * $r;
 $dashExec = $pctAvanco / 100 * $circ;
 $dashResto = $circ - $dashExec;
+// Producao da equipe de ramais (app Executor de Ramais). Fonte propria,
+// independente dos pontoes de espera lancados pela equipe de rede.
+$ramaisEqp = $ramaisEqp ?? ['frentes'=>0,'qtd'=>0,'via_m'=>0.0,'calcada_m'=>0.0,'porPavimento'=>[]];
+// Pontao de espera (rede) = lancamento da equipe de rede ate a cota do ramal (diario_pontoes).
+$pontoesTotal = (int)($pontoesTotal ?? 0);
+$ramaisHist   = (int)($ramaisTotal['qtd'] ?? 0); // historico: diario_ramais ate 18/09/2026
+$pavViaNomes = [
+    'asfalto'                  => 'Asfalto',
+    'asfalto_paralelepipedo'   => 'Asfalto sobre paralelepípedo',
+    'paralelepipedo_regular'   => 'Paralelepípedo regular',
+    'paralelepipedo_irregular' => 'Paralelepípedo irregular',
+    'bloco_concreto'           => 'Bloco de concreto',
+    'chao_batido'              => 'Chão batido',
+    'nao_informado'            => 'Não informado',
+];
 ?><!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -103,11 +118,42 @@ td.n{text-align:right;font-weight:700}
   <div class="bloco">
     <h3>Indicadores do período</h3>
     <div class="info-row"><span>Dias com produção</span><b><?= $diasTrabalhados ?></b></div>
-    <div class="info-row"><span>Ramais domiciliares</span><b><?= (int)($ramaisTotal['qtd'] ?? 0) ?></b></div>
+    <div class="info-row"><span>Pontões de espera (rede)</span><b><?= $pontoesTotal ?></b></div>
+    <?php if ($ramaisHist > 0): ?>
+    <div class="info-row"><span>Ramais no diário de rede — histórico (até 18/09/2026)</span><b><?= $ramaisHist ?></b></div>
+    <?php endif; ?>
     <div class="info-row"><span>Interferências</span><b><?= $totalInterfs ?></b></div>
     <div class="info-row"><span>Total previsto (obra)</span><b><?= number_format($previsto,1,',','.') ?> m</b></div>
     <div class="info-row"><span>Executado total (obra)</span><b><?= number_format($executadoTotal,1,',','.') ?> m</b></div>
   </div>
+</div>
+
+<div class="bloco" style="margin-bottom:14px">
+  <h3>Ramais — equipe de ramais (produção própria)</h3>
+  <div class="info-row"><span>Ramais enviados no período</span><b><?= (int)$ramaisEqp['qtd'] ?></b></div>
+  <div class="info-row"><span>Comprimento em via</span><b><?= number_format((float)$ramaisEqp['via_m'], 1, ',', '.') ?> m</b></div>
+  <div class="info-row"><span>Comprimento em calçada</span><b><?= number_format((float)$ramaisEqp['calcada_m'], 1, ',', '.') ?> m</b></div>
+  <div class="info-row"><span>Frentes de rua enviadas</span><b><?= (int)$ramaisEqp['frentes'] ?></b></div>
+  <?php if (!empty($ramaisEqp['porPavimento'])): ?>
+  <table>
+    <thead><tr><th>Pavimento da via</th><th style="text-align:right">Ramais</th><th style="text-align:right">Via (m)</th></tr></thead>
+    <tbody>
+    <?php foreach ($ramaisEqp['porPavimento'] as $pv):
+        $pk = (string)($pv['pavimento'] ?? 'nao_informado');
+        $pl = $pavViaNomes[$pk] ?? ucfirst(str_replace('_', ' ', $pk));
+    ?>
+      <tr>
+        <td><?= htmlspecialchars($pl) ?></td>
+        <td class="n"><?= (int)$pv['qtd'] ?></td>
+        <td class="n"><?= number_format((float)$pv['via_m'], 1, ',', '.') ?></td>
+      </tr>
+    <?php endforeach; ?>
+    </tbody>
+  </table>
+  <?php else: ?>
+  <p style="font-size:10.5px;color:#6B7686;margin-top:6px">Nenhuma frente de ramais enviada no período.</p>
+  <?php endif; ?>
+  <p style="font-size:9.5px;color:#6B7686;margin-top:6px">Lançamento da equipe de ramais (app próprio). Grandeza distinta do pontão de espera lançado pela equipe de rede — os dois números não se somam.</p>
 </div>
 
 <?php if (!empty($produtividade)): ?>

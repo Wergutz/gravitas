@@ -28,6 +28,11 @@ window.addEventListener('offline', atualizarConexao);
 atualizarConexao();
 
 // ── Toast ─────────────────────────────────────────────────────
+function csrfToken() {
+  return document.querySelector('meta[name=csrf]')?.content
+      || (typeof CSRF_TOKEN !== 'undefined' ? CSRF_TOKEN : '');
+}
+
 function toast(msg, erro) {
   let el = document.getElementById('_toast');
   if (!el) {
@@ -42,6 +47,46 @@ function toast(msg, erro) {
   setTimeout(() => el.classList.remove('show'), 2800);
 }
 
+// ── Encerrar: liberar o botão assim que o passo mínimo for atingido ──
+function stepMinimoEncerrar() {
+  return (typeof STEP_ENCERRAR !== 'undefined') ? STEP_ENCERRAR : 17;
+}
+
+window.liberarEncerrar = function(stepAtual) {
+  if (!(Number(stepAtual) >= stepMinimoEncerrar())) return;
+  const form = document.getElementById('form-encerrar');
+  const hint = document.getElementById('hint-encerrar');
+  if (form && form.style.display === 'none') {
+    form.style.display = '';
+    toast('Serviço pronto para encerrar ✓');
+  }
+  if (hint) hint.style.display = 'none';
+};
+
+// Copia a observação final do passo 19 para o formulário de encerrar (N2)
+window.confirmarEncerrar = function() {
+  const campo = document.querySelector('textarea[name="obs_final"]');
+  const alvo  = document.getElementById('enc-obs-final');
+  if (campo && alvo) alvo.value = campo.value;
+  const escopo = (typeof ESCOPO !== 'undefined' && ESCOPO === 'ramais') ? 'ramais' : 'rede';
+  return confirm('Encerrar e enviar? O trecho será fechado na repavimentação de ' + escopo + '.');
+};
+
+// ── N5: espessura só aparece quando o pavimento é asfalto ────
+function ehAsfaltoTxt(t) {
+  const v = String(t || '').toLowerCase();
+  return v.includes('asfalto') || v.includes('cbuq');
+}
+
+window.ajustarEspessura = function(sel) {
+  const box = document.getElementById('box-esp-' + sel.dataset.area);
+  if (!box) return;
+  const asf = ehAsfaltoTxt(sel.value);
+  box.style.display = asf ? '' : 'none';
+  const inp = box.querySelector('input[name="area_esp[]"]');
+  if (inp && !asf) inp.value = '';
+};
+
 // ── Toggle step ───────────────────────────────────────────────
 window.toggleStep = function(num) {
   const el = document.getElementById('step-' + num);
@@ -53,6 +98,7 @@ window.salvarPasso = async function(evt, diarioId, step) {
   evt.preventDefault();
   const form = evt.target;
   const btn  = form.querySelector('.btn-salvar');
+  const rot  = btn ? btn.textContent : '';
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando…'; }
 
   const fd = new FormData(form);
@@ -62,25 +108,29 @@ window.salvarPasso = async function(evt, diarioId, step) {
   try {
     const res  = await fetch(REPAV_BASE + '/diario/salvar', { method: 'POST', body: fd });
     const data = await res.json();
-    if (data.ok) {
+    if (data.ok && !data.msg) {
       toast('Passo ' + step + ' salvo ✓');
       const stepEl = document.getElementById('step-' + step);
       if (stepEl) { stepEl.classList.add('feito'); stepEl.classList.remove('aberto'); }
+      liberarEncerrar(data.step_atual);
       atualizarProgresso();
+    } else if (data.ok) {
+      // gravou o que dava, mas há campos recusados — o passo NÃO é dado como feito
+      toast(data.msg, true);
     } else {
       toast(data.msg || 'Erro ao salvar', true);
     }
   } catch (e) {
     toast('Erro de rede — tente novamente', true);
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
+    if (btn) { btn.disabled = false; btn.textContent = rot || 'Salvar'; }
   }
 };
 
 // ── Marcar step (foto confirmada) ─────────────────────────────
 window.marcarStep = async function(diarioId, step) {
   const fd = new FormData();
-  fd.set('csrf_token', document.querySelector('meta[name=csrf]')?.content || '');
+  fd.set('csrf_token', csrfToken());
   fd.set('diario_id', diarioId);
   fd.set('step', step);
   try {
@@ -90,6 +140,7 @@ window.marcarStep = async function(diarioId, step) {
       const stepEl = document.getElementById('step-' + step);
       if (stepEl) { stepEl.classList.add('feito'); stepEl.classList.remove('aberto'); }
       toast('Passo ' + step + ' marcado ✓');
+      liberarEncerrar(data.step_atual);
       atualizarProgresso();
     }
   } catch(e) {}
@@ -106,7 +157,7 @@ document.getElementById('file-foto')?.addEventListener('change', async function(
   const cont = _fotoTarget;
 
   const fd = new FormData();
-  fd.set('csrf_token', document.querySelector('meta[name=csrf]')?.content || '');
+  fd.set('csrf_token', csrfToken());
   fd.set('diario_id', DIARIO_ID);
   fd.set('step', step);
   fd.set('lat', _gpsCoords ? _gpsCoords.lat : '');
@@ -132,7 +183,11 @@ document.getElementById('file-foto')?.addEventListener('change', async function(
         cont.insertBefore(div, cont.querySelector('.cam'));
       }
       const stepEl = document.getElementById('step-' + step);
-      if (stepEl) stepEl.classList.add('feito');
+      if (stepEl) {
+        stepEl.classList.add('feito');
+        garantirBotaoMarcar(stepEl, step);
+      }
+      liberarEncerrar(data.step_atual);
       atualizarProgresso();
     } else {
       toast(data.msg || 'Erro ao enviar foto', true);
@@ -142,6 +197,21 @@ document.getElementById('file-foto')?.addEventListener('change', async function(
   }
   this.value = '';
 });
+
+/** O passo de foto ganha o botão "✓ Marcar como feito" assim que a 1ª foto sobe. */
+function garantirBotaoMarcar(stepEl, step) {
+  const body = stepEl.querySelector('.step-body');
+  if (!body || body.querySelector('.btn-marcar')) return;
+  if (!body.querySelector('.fotos')) return;               // passo sem galeria de fotos
+  if (body.querySelector('form')) return;                  // passo com formulário próprio
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'btn-salvar btn-marcar';
+  b.style.marginTop = '8px';
+  b.textContent = '✓ Marcar como feito';
+  b.onclick = () => marcarStep(DIARIO_ID, step);
+  body.appendChild(b);
+}
 
 window.tirarFoto = function(diarioId, step, camEl) {
   _fotoStep   = step;
@@ -216,7 +286,7 @@ window.setEquipStatus = function(btn, val) {
 // ── Adicionar carga (AJAX) ────────────────────────────────────
 window.adicionarCarga = async function(diarioId) {
   const fd = new FormData();
-  fd.set('csrf_token', document.querySelector('meta[name=csrf]')?.content || '');
+  fd.set('csrf_token', csrfToken());
   fd.set('diario_id', diarioId);
   try {
     const res  = await fetch(REPAV_BASE + '/diario/carga', { method: 'POST', body: fd });
@@ -231,7 +301,7 @@ window.adicionarCarga = async function(diarioId) {
         <input type="hidden" name="carga_id[]" value="${data.id}">
         <div class="row2">
           <input type="text" name="carga_nf[]" placeholder="Nº NF">
-          <input type="number" name="carga_mass[]" step="0.01" placeholder="Massa (t)">
+          <input type="text" inputmode="decimal" name="carga_mass[]" placeholder="Massa (t)">
         </div>
         <div class="lbl">Foto da carga + foto da NF</div>
         <div class="fotos" id="fotos-carga-${data.id}">
@@ -245,7 +315,7 @@ window.adicionarCarga = async function(diarioId) {
 // ── Adicionar área asfalto ────────────────────────────────────
 window.adicionarAreaAsf = async function(diarioId) {
   const fd = new FormData();
-  fd.set('csrf_token', document.querySelector('meta[name=csrf]')?.content || '');
+  fd.set('csrf_token', csrfToken());
   fd.set('diario_id', diarioId);
   fd.set('tipo', 'Asfalto (CBUQ)');
   try {
@@ -254,15 +324,15 @@ window.adicionarAreaAsf = async function(diarioId) {
     if (data.ok) {
       const lista = document.getElementById('areas-asfalto');
       if (!lista) return;
-      const espAsf = document.getElementById('esp-asf')?.value || '0.05';
+      const espAsf = document.getElementById('esp-asf')?.value || '0,05';
       const div = document.createElement('div');
       div.className = 'dim-row';
       div.id = 'area-row-' + data.id;
       div.innerHTML = `
         <input type="hidden" name="area_id[]" value="${data.id}">
         <div class="row3">
-          <div><span class="hint" style="margin:0">Base (m)</span><input type="number" name="area_base[]" step="0.01" value="0" oninput="atualizarCalc()"></div>
-          <div><span class="hint" style="margin:0">Largura (m)</span><input type="number" name="area_larg[]" step="0.01" value="0" oninput="atualizarCalc()"></div>
+          <div><span class="hint" style="margin:0">Base (m)</span><input type="text" inputmode="decimal" name="area_base[]" value="0,00" oninput="atualizarCalc()"></div>
+          <div><span class="hint" style="margin:0">Largura (m)</span><input type="text" inputmode="decimal" name="area_larg[]" value="0,00" oninput="atualizarCalc()"></div>
           <button type="button" class="x" onclick="this.closest('.dim-row').remove();atualizarCalc()">✕</button>
         </div>
         <input type="hidden" name="area_esp[]" value="${espAsf}">`;
@@ -276,7 +346,7 @@ window.adicionarAreaOutro = async function(diarioId) {
   const sel  = document.getElementById('sel-tipo-pav');
   const tipo = sel?.value || 'Calçada';
   const fd = new FormData();
-  fd.set('csrf_token', document.querySelector('meta[name=csrf]')?.content || '');
+  fd.set('csrf_token', csrfToken());
   fd.set('diario_id', diarioId);
   fd.set('tipo', tipo);
   try {
@@ -292,8 +362,8 @@ window.adicionarAreaOutro = async function(diarioId) {
         <input type="hidden" name="area_id[]" value="${data.id}">
         <input type="hidden" name="area_esp[]" value="">
         <div class="row2">
-          <div><span class="hint" style="margin:0">Base (m)</span><input type="number" name="area_base[]" step="0.01" value="0"></div>
-          <div><span class="hint" style="margin:0">Largura (m)</span><input type="number" name="area_larg[]" step="0.01" value="0"></div>
+          <div><span class="hint" style="margin:0">Base (m)</span><input type="text" inputmode="decimal" name="area_base[]" value="0,00"></div>
+          <div><span class="hint" style="margin:0">Largura (m)</span><input type="text" inputmode="decimal" name="area_larg[]" value="0,00"></div>
         </div>`;
       lista.appendChild(div);
     }
@@ -307,14 +377,14 @@ window.atualizarCalc = function() {
   const calcVol = document.getElementById('calc-vol');
   if (!espEl || !calcAsf) return;
 
-  const esp   = parseFloat(espEl.value) || 0;
+  const esp   = numBR(espEl.value);
   const lista = document.getElementById('areas-asfalto');
   if (!lista) return;
 
   let areaTotal = 0;
   lista.querySelectorAll('.dim-row').forEach(row => {
-    const base = parseFloat(row.querySelector('input[name="area_base[]"]')?.value) || 0;
-    const larg = parseFloat(row.querySelector('input[name="area_larg[]"]')?.value) || 0;
+    const base = numBR(row.querySelector('input[name="area_base[]"]')?.value);
+    const larg = numBR(row.querySelector('input[name="area_larg[]"]')?.value);
     areaTotal += base * larg;
     // Atualizar campo de espessura oculto
     const espHidden = row.querySelector('input[name="area_esp[]"]');
@@ -330,6 +400,46 @@ window.atualizarCalc = function() {
   if (footEl) footEl.textContent = `${fmtN(areaTotal)} m² · ${fmtN(vol)} m³`;
 };
 
+// ── Número com vírgula decimal ───────────────────────────────
+function numBR(v) {
+  if (v === null || v === undefined) return 0;
+  let t = String(v).trim().replace(/\s/g, '');
+  if (t === '') return 0;
+  if (t.includes(',')) t = t.replace(/\./g, '');
+  t = t.replace(',', '.');
+  const n = parseFloat(t);
+  return isFinite(n) && n >= 0 ? n : 0;
+}
+window.numBR = numBR;
+
+// ── Medição de ramais: área por linha + totais ───────────────
+window.calcMedRamal = function(areaId) {
+  const row = document.getElementById('area-row-' + areaId);
+  if (row) {
+    const base = numBR(row.querySelector('input[name="area_base[]"]')?.value);
+    const larg = numBR(row.querySelector('input[name="area_larg[]"]')?.value);
+    const out  = document.getElementById('med-area-' + areaId);
+    if (out) out.textContent = fmtN(base * larg) + ' m²';
+  }
+  totalMedRamais();
+};
+
+function totalMedRamais() {
+  const box = document.getElementById('calc-ramais');
+  if (!box) return;
+  let total = 0, via = 0, calc = 0;
+  document.querySelectorAll('.med-row').forEach(r => {
+    const base = numBR(r.querySelector('input[name="area_base[]"]')?.value);
+    const larg = numBR(r.querySelector('input[name="area_larg[]"]')?.value);
+    const a = base * larg;
+    total += a;
+    if (r.querySelector('.tagloc.calc')) calc += a; else via += a;
+  });
+  box.innerHTML = `área total: <b>${fmtN(total)} m²</b> · via ${fmtN(via)} m² · calçada ${fmtN(calc)} m²`;
+  const footEl = document.getElementById('foot-resumo');
+  if (footEl) footEl.textContent = `${fmtN(total)} m²`;
+}
+
 function fmtN(n) {
   return (n || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -343,7 +453,15 @@ document.addEventListener('DOMContentLoaded', () => {
       .forEach(i => i.addEventListener('input', atualizarCalc));
     atualizarCalc();
   }
+  if (document.getElementById('calc-ramais')) {
+    document.querySelectorAll('.med-row').forEach(r => {
+      const id = (r.id || '').replace('area-row-', '');
+      if (id) calcMedRamal(id);
+    });
+  }
   atualizarProgresso();
+
+  document.querySelectorAll('select[name="area_tipo[]"][data-area]').forEach(ajustarEspessura);
 
   // Checkboxes de mini-flag com toggle visual
   document.querySelectorAll('.mini-flag').forEach(label => {

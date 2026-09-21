@@ -11,6 +11,7 @@ funcionalidades, com caminhos, sessão, banco e marca próprios.
 | Visão Executiva   | `/BACIN/master/`           | 6               |
 | App do Executor   | `/BACIN/executor/`         | 5               |
 | Executor Repav.   | `/BACIN/executor-repav/`   | 7               |
+| Executor de Ramais| `/BACIN/executor-ramais/`  | 9               |
 | Topógrafo         | `/BACIN/topografo/`        | 8               |
 
 ## Isolamento
@@ -29,7 +30,7 @@ Configurado em `*/app/config/app.php`, `*/app/config/database.php`, nos `.htacce
 2. Rodar `database/estrutura_completa.sql` — cria as 61 tabelas com índices,
    AUTO_INCREMENT e chaves estrangeiras, em uma execução só.
 3. Rodar `painel/database/migrations/BC_usuarios_iniciais.sql` para criar os usuários
-   iniciais. Senha temporária: **`Bacin@2026`** — todos entram com
+   iniciais. A senha temporária está no cabeçalho do próprio arquivo `.sql` — todos entram com
    `force_password_change = 1` e trocam a senha no primeiro acesso.
 4. O deploy (`.github/workflows/deploy.yml`) já copia `principal/BACIN` para
    `$BASE/BACIN` e cria as pastas de upload.

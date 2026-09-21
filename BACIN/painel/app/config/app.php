@@ -4,5 +4,6 @@ define('APP_BASE',      '/BACIN/painel');   // caminho sem barra final
 define('EXECUTOR_BASE', '/BACIN/executor'); // app do executor
 define('MASTER_BASE',   '/BACIN/master');   // painel do cliente master
 define('REPAV_BASE',    '/BACIN/executor-repav'); // app executor de repavimentação
+define('RAMAIS_BASE',   '/BACIN/executor-ramais'); // app executor de ramais
 define('APP_NAME',      'Painel de Controle');
 define('APP_CLIENT',    'BACIN TERRAPLANAGEM');

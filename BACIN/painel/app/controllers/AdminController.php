@@ -12,6 +12,8 @@ class AdminController
         5 => 'Executor de Rede',
         6 => 'Cliente Master',
         7 => 'Executor de Repavimentação',
+        8 => 'Topógrafo',
+        9 => 'Executor de Ramais',
     ];
 
     /* -------------------------------------------------------

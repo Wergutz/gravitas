@@ -146,6 +146,17 @@ function navAtivoExato(string $route, string $exact): string {
                 Diários
             </a>
 
+            <a href="<?= APP_BASE ?>/ramais" class="<?= navAtivo($currentRoute, '/ramais') ?>">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3v12a3 3 0 0 0 3 3h12"/>
+                    <line x1="8" y1="18" x2="8" y2="22"/>
+                    <line x1="14" y1="18" x2="14" y2="22"/>
+                    <line x1="20" y1="15" x2="20" y2="21"/>
+                    <circle cx="20" cy="18" r="0.01"/>
+                </svg>
+                Ramais
+            </a>
+
             <a href="<?= APP_BASE ?>/repavimentacao" class="<?= navAtivo($currentRoute, '/repavimentacao') ?>">
                 <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>

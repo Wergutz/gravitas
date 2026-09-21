@@ -1,0 +1,15 @@
+# Esta instância é copiada para fora de principal/ pelo deploy, então a regra
+# do .htaccess da raiz não a alcança. Bloqueia aqui os arquivos que existem só
+# para versionamento e manutenção: scripts de banco (.sql, que expõem o esquema
+# e hashes de senha) e documentação interna (.md, com senhas temporárias).
+Options -Indexes
+
+<FilesMatch "\.(sql|md)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

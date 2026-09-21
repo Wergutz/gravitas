@@ -294,99 +294,12 @@ class CaminhamentoController
     }
 
     /* =====================================================
-       CONCLUIR TRECHO — Regra 20 (auto-repav)
+       CONCLUSÃO DE TRECHO — REMOVIDA DO PAINEL (PA26)
+       Quem conclui a etapa é o CAMPO: o executor de rede conclui a rede e
+       o executor de pavimento conclui a repavimentação. No Painel existe
+       apenas a devolução da etapa (POST /trechos/devolver, na ficha do trecho).
     ===================================================== */
-    public function concluirTrecho()
-    {
-        auth_required([4]);
-        global $pdo;
-        csrf_verify();
 
-        $caminhamento_id = (int)($_POST['caminhamento_id'] ?? 0);
-        $trecho_id       = (int)($_POST['trecho_id'] ?? 0);
-
-        if ($caminhamento_id <= 0 || $trecho_id <= 0) {
-            $_SESSION['flash_erro'] = 'Dados inválidos.';
-            header('Location: ' . APP_BASE . '/caminhamentos');
-            exit;
-        }
-
-        // Verificar que o trecho pertence ao caminhamento
-        $stmt = $pdo->prepare("
-            SELECT ct.id, ct.status, c.status AS cam_status
-            FROM caminhamento_trechos ct
-            JOIN caminhamentos c ON c.id = ct.caminhamento_id
-            WHERE ct.caminhamento_id = ? AND ct.trecho_id = ?
-        ");
-        $stmt->execute([$caminhamento_id, $trecho_id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$row) {
-            $_SESSION['flash_erro'] = 'Trecho não pertence a este caminhamento.';
-            header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $caminhamento_id);
-            exit;
-        }
-
-        if ($row['ct_status'] === 'concluido') {
-            $_SESSION['flash_erro'] = 'Este trecho já foi concluído.';
-            header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $caminhamento_id);
-            exit;
-        }
-
-        if (!in_array($row['cam_status'], ['publicado', 'execucao'])) {
-            $_SESSION['flash_erro'] = 'O caminhamento precisa estar publicado para concluir trechos.';
-            header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $caminhamento_id);
-            exit;
-        }
-
-        $pdo->beginTransaction();
-        try {
-            // 1. Marcar trecho no caminhamento como concluído
-            $pdo->prepare("
-                UPDATE caminhamento_trechos SET status = 'concluido'
-                WHERE caminhamento_id = ? AND trecho_id = ?
-            ")->execute([$caminhamento_id, $trecho_id]);
-
-            // 2. Mover caminhamento para execucao se ainda estava publicado
-            if ($row['cam_status'] === 'publicado') {
-                $pdo->prepare("UPDATE caminhamentos SET status = 'execucao' WHERE id = ?")
-                    ->execute([$caminhamento_id]);
-            }
-
-            // 3. Regra 20: marcar trecho como concluído + entrada automática na fila de repav
-            $pdo->prepare("
-                UPDATE trechos
-                SET status_rede = 'concluido', status_repav = 'aguardando'
-                WHERE id = ?
-            ")->execute([$trecho_id]);
-
-            // 4. Se todos os trechos do caminhamento estão concluídos → fechar caminhamento
-            $stmt = $pdo->prepare("
-                SELECT COUNT(*) FROM caminhamento_trechos
-                WHERE caminhamento_id = ? AND status != 'concluido'
-            ");
-            $stmt->execute([$caminhamento_id]);
-            if ((int)$stmt->fetchColumn() === 0) {
-                $pdo->prepare("UPDATE caminhamentos SET status = 'concluido' WHERE id = ?")
-                    ->execute([$caminhamento_id]);
-            }
-
-            $pdo->commit();
-        } catch (Exception $e) {
-            $pdo->rollBack();
-            $_SESSION['flash_erro'] = 'Erro ao concluir trecho: ' . $e->getMessage();
-            header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $caminhamento_id);
-            exit;
-        }
-
-        $_SESSION['flash_ok'] = 'Trecho concluído e adicionado à fila de repavimentação.';
-        header('Location: ' . APP_BASE . '/caminhamentos/detalhe?id=' . $caminhamento_id);
-        exit;
-    }
-
-    /* =====================================================
-       EXCLUIR — só rascunho ou publicado (sem diários)
-    ===================================================== */
     public function excluir()
     {
         auth_required([4]);
@@ -417,11 +330,28 @@ class CaminhamentoController
             $stmtT->execute([$id]);
             $trechoIds = $stmtT->fetchAll(PDO::FETCH_COLUMN);
 
+            $liberados = 0;
             if (!empty($trechoIds)) {
-                // Voltar trechos para livre
+                // Só libera o trecho que NÃO está em outro caminhamento publicado
+                // ou em execução — senão o Painel liberava trecho alheio e
+                // permitia programar o mesmo trecho duas vezes.
                 $in = implode(',', array_fill(0, count($trechoIds), '?'));
-                $pdo->prepare("UPDATE trechos SET status_rede = 'livre' WHERE id IN ($in) AND status_rede = 'programado'")
-                    ->execute($trechoIds);
+                $stmtLib = $pdo->prepare("
+                    UPDATE trechos t
+                       SET t.status_rede = 'livre'
+                     WHERE t.id IN ($in)
+                       AND t.status_rede = 'programado'
+                       AND NOT EXISTS (
+                             SELECT 1
+                               FROM caminhamento_trechos ct2
+                               JOIN caminhamentos c2 ON c2.id = ct2.caminhamento_id
+                              WHERE ct2.trecho_id = t.id
+                                AND ct2.caminhamento_id <> ?
+                                AND c2.status IN ('publicado', 'execucao')
+                       )
+                ");
+                $stmtLib->execute(array_merge($trechoIds, [$id]));
+                $liberados = $stmtLib->rowCount();
             }
 
             $pdo->prepare("DELETE FROM caminhamento_trechos WHERE caminhamento_id = ?")->execute([$id]);
@@ -435,7 +365,9 @@ class CaminhamentoController
             exit;
         }
 
-        $_SESSION['flash_ok'] = 'Caminhamento excluído. Trechos liberados.';
+        $presos = count($trechoIds) - $liberados;
+        $_SESSION['flash_ok'] = 'Caminhamento excluído. ' . $liberados . ' trecho(s) liberado(s).'
+            . ($presos > 0 ? ' ' . $presos . ' trecho(s) mantido(s) programado(s) por estarem em outro caminhamento publicado ou em execução.' : '');
         header('Location: ' . APP_BASE . '/caminhamentos');
         exit;
     }
