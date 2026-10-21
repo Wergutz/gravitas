@@ -1,0 +1,14 @@
+# Esta pasta guarda a configuração do banco e o código de apoio. Nada aqui
+# pode ser aberto pelo navegador: o site responde sempre pelo index.html e
+# pelos arquivos de /api. Sem este bloqueio, config/db.php seria entregue
+# pelo Apache se o PHP um dia parasse de interpretar .php — e a senha do
+# banco iria junto.
+Options -Indexes
+
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+</IfModule>
