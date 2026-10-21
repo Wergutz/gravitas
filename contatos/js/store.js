@@ -1,6 +1,10 @@
 /* Camada de dados. Duas implementações com a mesma interface:
-   - SupabaseStore: banco compartilhado em tempo real (produção)
-   - DemoStore: dados locais no navegador, para ver o sistema antes do Supabase existir
+   - MysqlStore: o banco do site, atrás da API em PHP (uso normal)
+   - DemoStore:  dados locais no navegador, para mostrar o sistema sem tocar em dado real
+
+   A versão anterior falava direto com o Supabase. Trocada a pedido: nada
+   de serviço externo guardando ou validando dado nosso. O app.js não
+   soube da diferença, porque a interface é a mesma.
 */
 (function () {
   "use strict";
@@ -14,99 +18,6 @@
 
   function uid() {
     return (crypto.randomUUID ? crypto.randomUUID() : "id-" + Date.now() + "-" + Math.random().toString(16).slice(2));
-  }
-
-  /* ---------------------------------------------------------------- */
-  class SupabaseStore {
-    constructor(url, key) {
-      this.mode = "supabase";
-      this.sb = window.supabase.createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true } });
-      this._changeCbs = [];
-      this._presenceCh = null;
-    }
-    async getSession() {
-      const { data } = await this.sb.auth.getSession();
-      return data.session ? data.session.user : null;
-    }
-    onAuth(cb) { this.sb.auth.onAuthStateChange((ev, session) => cb(session ? session.user : null, ev)); }
-    async signIn(email, senha) {
-      const { error } = await this.sb.auth.signInWithPassword({ email, password: senha });
-      if (error) throw new Error(this._msg(error));
-    }
-    async signOut() { await this.sb.auth.signOut(); }
-    async resetPassword(email) {
-      const { error } = await this.sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
-      if (error) throw new Error(this._msg(error));
-    }
-    async updatePassword(senha) {
-      // troca a senha e apaga a marca de "senha provisória" (usada no primeiro acesso)
-      const { error } = await this.sb.auth.updateUser({ password: senha, data: { senha_provisoria: false } });
-      if (error) throw new Error(this._msg(error));
-    }
-    async senhaProvisoria() {
-      const { data } = await this.sb.auth.getUser();
-      return !!(data && data.user && data.user.user_metadata && data.user.user_metadata.senha_provisoria);
-    }
-    _msg(error) {
-      const m = (error && error.message) || "";
-      if (/invalid login/i.test(m)) return "E-mail ou senha incorretos.";
-      if (/email not confirmed/i.test(m)) return "E-mail ainda não confirmado.";
-      if (/rate limit/i.test(m)) return "Muitas tentativas. Aguarde um minuto.";
-      return m || "Erro ao falar com o servidor.";
-    }
-    async ensureProfile(user) {
-      let { data } = await this.sb.from("usuarios").select("*").eq("id", user.id).maybeSingle();
-      if (!data) {
-        const nome = (user.user_metadata && user.user_metadata.nome) || (user.email || "").split("@")[0];
-        const ins = await this.sb.from("usuarios").insert({ id: user.id, nome: nome.charAt(0).toUpperCase() + nome.slice(1) }).select().single();
-        if (ins.error) throw new Error(ins.error.message);
-        data = ins.data;
-      }
-      return data;
-    }
-    async loadAll() {
-      const q = (t, order) => this.sb.from(t).select("*").order(order.col, { ascending: order.asc !== false }).limit(5000);
-      const [u, c, p, i, a] = await Promise.all([
-        q("usuarios", { col: "nome" }), q("cidades", { col: "ordem" }), q("pessoas", { col: "ordem" }),
-        q("interacoes", { col: "data", asc: false }), q("agendas", { col: "inicio" }),
-      ]);
-      for (const r of [u, c, p, i, a]) if (r.error) throw new Error(r.error.message);
-      return { usuarios: u.data, cidades: c.data, pessoas: p.data, interacoes: i.data, agendas: a.data };
-    }
-    async _one(promise) { const { data, error } = await promise; if (error) throw new Error(error.message); return data; }
-    updateMe(id, patch)      { return this._one(this.sb.from("usuarios").update(patch).eq("id", id).select().single()); }
-    addCidade(obj)           { return this._one(this.sb.from("cidades").insert(obj).select().single()); }
-    updateCidade(id, patch)  { return this._one(this.sb.from("cidades").update(patch).eq("id", id).select().single()); }
-    addPessoa(obj)           { return this._one(this.sb.from("pessoas").insert(obj).select().single()); }
-    updatePessoa(id, patch)  { return this._one(this.sb.from("pessoas").update(patch).eq("id", id).select().single()); }
-    addInteracao(obj)        { return this._one(this.sb.from("interacoes").insert(obj).select().single()); }
-    deleteInteracao(id)      { return this._one(this.sb.from("interacoes").delete().eq("id", id)); }
-    addAgenda(obj)           { return this._one(this.sb.from("agendas").insert(obj).select().single()); }
-    updateAgenda(id, patch)  { return this._one(this.sb.from("agendas").update(patch).eq("id", id).select().single()); }
-    deleteAgenda(id)         { return this._one(this.sb.from("agendas").delete().eq("id", id)); }
-    onChange(cb) {
-      this._changeCbs.push(cb);
-      if (this._changeCh) return;
-      this._changeCh = this.sb.channel("mudancas")
-        .on("postgres_changes", { event: "*", schema: "public" }, (payload) => {
-          const ev = { table: payload.table, type: payload.eventType, row: payload.new, old: payload.old };
-          this._changeCbs.forEach((f) => f(ev));
-        })
-        .subscribe();
-    }
-    presence(me, cb) {
-      if (this._presenceCh) this.sb.removeChannel(this._presenceCh);
-      const ch = this.sb.channel("online", { config: { presence: { key: me.id } } });
-      ch.on("presence", { event: "sync" }, () => {
-        const state = ch.presenceState();
-        const list = Object.keys(state).map((k) => state[k][0]).filter(Boolean);
-        cb(list);
-      });
-      ch.subscribe(async (status) => {
-        if (status === "SUBSCRIBED") await ch.track({ id: me.id, nome: me.nome, cor: me.cor, desde: Date.now() });
-      });
-      this._presenceCh = ch;
-    }
   }
 
   /* ---------------------------------------------------------------- */
@@ -170,10 +81,159 @@
     presence(me, cb) { setTimeout(() => cb([{ id: me.id, nome: me.nome, cor: me.cor }]), 0); }
   }
 
+  /* ---------------------------------------------------------------- */
+  /* Banco próprio do site: MySQL atrás de /api, em PHP.
+     Mesma interface das outras duas, então o app.js não muda.
+
+     Duas coisas que o Supabase dava de graça e aqui são construídas:
+
+     - TEMPO REAL. Lá o banco empurrava cada mudança. Aqui o navegador
+       pergunta de 15 em 15 segundos por uma impressão digital barata
+       (contagem + data da última alteração). Só quando ela muda é que
+       recarrega os dados e compara com o que tinha, emitindo os mesmos
+       eventos {table, type, row, old} que o app.js já sabe aplicar.
+
+     - QUEM ESTÁ ONLINE. Lá era presença do próprio servidor. Aqui cada
+       um bate ponto na mesma volta do relógio, e online é quem bateu
+       nos últimos 90 segundos. */
+  const CT_INTERVALO = 15000;
+
+  class MysqlStore {
+    constructor() {
+      this.mode = "mysql";
+      this._changeCbs = [];
+      this._user = null;
+      this._versao = null;
+      this._snap = null;
+      this._relogio = null;
+    }
+
+    async _api(acao, corpo) {
+      let r;
+      try {
+        r = await fetch("api/index.php?a=" + encodeURIComponent(acao), {
+          method: corpo === undefined ? "GET" : "POST",
+          headers: corpo === undefined ? {} : { "Content-Type": "application/json" },
+          body: corpo === undefined ? undefined : JSON.stringify(corpo),
+          credentials: "same-origin",
+        });
+      } catch (e) {
+        throw new Error("Sem conexão com o servidor.");
+      }
+      let j = null;
+      try { j = await r.json(); } catch (e) { /* resposta sem JSON */ }
+      if (!r.ok) {
+        if (r.status === 401 && this._user) { this._user = null; if (this._authCb) this._authCb(null); }
+        throw new Error((j && j.mensagem) || "Erro ao falar com o servidor.");
+      }
+      return j || {};
+    }
+
+    async getSession() {
+      const { usuario } = await this._api("sessao");
+      this._user = usuario || null;
+      return this._user;
+    }
+    onAuth(cb) { this._authCb = cb; }
+    async signIn(email, senha) {
+      const { usuario } = await this._api("entrar", { email, senha });
+      this._user = usuario;
+      if (this._authCb) this._authCb(usuario);
+    }
+    async signOut() {
+      await this._api("sair", {});
+      this._user = null;
+      if (this._relogio) { clearInterval(this._relogio); this._relogio = null; }
+      if (this._authCb) this._authCb(null);
+    }
+    async resetPassword() {
+      // Não há envio de e-mail no site; quem repõe senha é o administrador.
+      throw new Error("Para repor a senha, peça ao administrador do sistema.");
+    }
+    async updatePassword(senha) {
+      const { usuario } = await this._api("senha", { senha });
+      this._user = usuario;
+    }
+    async senhaProvisoria() {
+      const u = this._user || (await this.getSession());
+      return !!(u && u.trocar_senha);
+    }
+    async ensureProfile(user) {
+      // O perfil nasce junto com a conta, no banco. Nada a criar aqui.
+      return user;
+    }
+
+    async loadAll() {
+      const d = await this._api("tudo");
+      this._snap = JSON.parse(JSON.stringify(d));
+      return d;
+    }
+
+    updateMe(id, patch)     { return this._api("perfil", patch).then((r) => r.usuario); }
+    addCidade(obj)          { return this._api("cidade.criar", obj).then((r) => r.linha); }
+    updateCidade(id, patch) { return this._api("cidade.editar", { ...patch, id }).then((r) => r.linha); }
+    addPessoa(obj)          { return this._api("pessoa.criar", obj).then((r) => r.linha); }
+    updatePessoa(id, patch) { return this._api("pessoa.editar", { ...patch, id }).then((r) => r.linha); }
+    addInteracao(obj)       { return this._api("interacao.criar", obj).then((r) => r.linha); }
+    deleteInteracao(id)     { return this._api("interacao.apagar", { id }); }
+    addAgenda(obj)          { return this._api("agenda.criar", obj).then((r) => r.linha); }
+    updateAgenda(id, patch) { return this._api("agenda.editar", { ...patch, id }).then((r) => r.linha); }
+    deleteAgenda(id)        { return this._api("agenda.apagar", { id }); }
+
+    onChange(cb) { this._changeCbs.push(cb); this._ligarRelogio(); }
+
+    presence(me, cb) { this._presCb = cb; this._ligarRelogio(); }
+
+    _ligarRelogio() {
+      if (this._relogio) return;
+      const volta = () => this._volta().catch(() => { /* rede caiu; tenta de novo no próximo */ });
+      this._relogio = setInterval(volta, CT_INTERVALO);
+      volta();
+    }
+
+    async _volta() {
+      if (!this._user) return;
+      if (this._presCb) {
+        const { online } = await this._api("presenca", {});
+        this._presCb(online || []);
+      }
+      if (!this._changeCbs.length) return;
+      const { versao } = await this._api("versao");
+      if (versao === this._versao) return;      // nada mudou: não baixa nada
+      const primeira = this._versao === null;
+      this._versao = versao;
+      if (primeira) return;                     // a 1ª volta só registra onde estamos
+      const novo = await this._api("tudo");
+      this._comparar(novo);
+      this._snap = JSON.parse(JSON.stringify(novo));
+    }
+
+    /* Compara o que chegou com o que havia e emite os mesmos eventos que
+       o Supabase emitia, para o app.js aplicar sem saber a diferença. */
+    _comparar(novo) {
+      if (!this._snap) { this._snap = JSON.parse(JSON.stringify(novo)); return; }
+      for (const tabela of ["usuarios", "cidades", "pessoas", "interacoes", "agendas"]) {
+        const antes = new Map((this._snap[tabela] || []).map((r) => [r.id, r]));
+        const agora = new Map((novo[tabela] || []).map((r) => [r.id, r]));
+        for (const [id, linha] of agora) {
+          const velha = antes.get(id);
+          if (!velha) this._emitir({ table: tabela, type: "INSERT", row: linha });
+          else if (JSON.stringify(velha) !== JSON.stringify(linha)) this._emitir({ table: tabela, type: "UPDATE", row: linha });
+        }
+        for (const [id] of antes) {
+          if (!agora.has(id)) this._emitir({ table: tabela, type: "DELETE", row: null, old: { id } });
+        }
+      }
+    }
+    _emitir(ev) { this._changeCbs.forEach((f) => f(ev)); }
+  }
+
   window.createStore = function () {
     const cfg = window.CONTATOS_CONFIG || {};
-    if (cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY && window.supabase) return new SupabaseStore(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
-    return new DemoStore();
+    // O banco do site é o caminho normal. O modo demonstração só entra
+    // quando se pede, para mostrar o sistema sem tocar em dado real.
+    if (cfg.MODO === "demo") return new DemoStore();
+    return new MysqlStore();
   };
   window.DEMO_USERS = DEMO_USERS;
 })();

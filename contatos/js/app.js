@@ -90,14 +90,14 @@
     const on = (r) => (route === r ? "on" : "");
     const outros = S.online.filter((o) => o.id !== S.me.id);
     return `
-    ${S.store.mode === "demo" ? `<div class="demo-banner"><b>Modo demonstração.</b> Os dados ficam só neste navegador e não são compartilhados. Para o uso real, configure o Supabase em <code>js/config.js</code>.</div>` : ""}
+    ${S.store.mode === "demo" ? `<div class="demo-banner"><b>Modo demonstração.</b> Os dados ficam só neste navegador e não são compartilhados. Para o uso real, apague o <code>MODO</code> em <code>js/config.js</code>.</div>` : ""}
     <header class="topbar"><div class="topbar-in">
       <a class="brand" href="#/"><span class="brand-mark">G</span><span><div class="brand-name">GRAVITAS</div><div class="brand-sub">Contatos com Prefeituras</div></span></a>
       <nav class="nav"><a href="#/" class="${on("home")}">Cidades</a><a href="#/agenda" class="${on("agenda")}">Agenda</a><a href="#/atividade" class="${on("atividade")}">Atividade</a></nav>
       <div class="top-right">
         <div class="online" title="${esc(outros.map((o) => o.nome).join(", ") || "Só você online")}">${outros.slice(0, 5).map((o) => av(o, "sm")).join("")}<span class="online-label">${S.online.length <= 1 ? "só você online" : outros.length === 1 ? `${esc(outros[0].nome)} online` : `${S.online.length} online`}</span></div>
         <button class="me-btn" data-action="menu">${av(S.me)}<span class="small">${esc(S.me.nome)}</span></button>
-        ${S.menu ? `<div class="menu"><div class="menu-head"><b>${esc(S.me.nome)}</b><div class="small muted">${esc(S.me.email || "")}</div></div><button data-action="perfil">Trocar meu nome</button>${S.store.mode === "supabase" ? `<button data-action="senha">Trocar minha senha</button>` : ""}<button data-action="sair">Sair</button></div>` : ""}
+        ${S.menu ? `<div class="menu"><div class="menu-head"><b>${esc(S.me.nome)}</b><div class="small muted">${esc(S.me.email || "")}</div></div><button data-action="perfil">Trocar meu nome</button>${S.store.mode !== "demo" ? `<button data-action="senha">Trocar minha senha</button>` : ""}<button data-action="sair">Sair</button></div>` : ""}
       </div>
     </div></header>`;
   }
