@@ -50,6 +50,13 @@ jobs:
             cp -rT $BASE/principal/marco_urbano2 $BASE/marco_urbano2
             mkdir -p $BASE/login
             cp -rT $BASE/principal/login $BASE/login
+            # O contatos e espelhado, nao sobreposto: o cp -rT sozinho nunca
+            # apaga, entao arquivo removido do repositorio continuava no ar
+            # (aconteceu com as sondas de diagnostico). A pasta nao guarda
+            # nada gerado em producao -- nem upload, nem cache --, so o que
+            # vem do git, entao apagar e recriar e seguro e mantem a copia
+            # identica ao repositorio.
+            rm -rf $BASE/contatos
             mkdir -p $BASE/contatos
             cp -rT $BASE/principal/contatos $BASE/contatos
             # cp -rT sobrescreve mas não apaga: arquivo removido do
