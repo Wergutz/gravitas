@@ -1,0 +1,16 @@
+# Esta pasta é publicada em dois lugares: /principal/contatos/, coberto
+# pelo .htaccess da raiz do repositório, e /contatos/, que o deploy copia
+# para FORA de principal/ e onde aquela regra não alcança. Sem este
+# arquivo, o LEIA-ME.md e os scripts de banco ficam baixáveis no segundo
+# endereço — foi o que aconteceu com /BACIN/LEIA-ME.md antes.
+Options -Indexes
+
+<FilesMatch "\.(sql|md)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
