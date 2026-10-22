@@ -48,9 +48,24 @@ function ct_pdo(): PDO
         // Mesmo fuso do resto do site, para as datas baterem com as do painel.
         $pdo->exec("SET time_zone = '-03:00'");
     } catch (PDOException $e) {
-        // A mensagem do driver traz host, usuário e às vezes a senha: fica no log.
+        // A mensagem do driver traz host e usuário: fica no log, não na tela.
         error_log('[contatos] falha de conexão: ' . $e->getMessage());
-        ct_falha(503, 'banco_indisponivel', 'Não foi possível falar com o banco.');
+
+        /* O código do MySQL, sozinho, não entrega nada e evita a adivinhação
+           de "não foi possível falar com o banco", que não diz o que corrigir.
+           Nem todo servidor deixa o log acessível a quem está instalando. */
+        $motivo = [
+            1045 => 'usuário ou senha recusados — confira os dois no hPanel e '
+                  . 'veja se o usuário está associado a este banco',
+            1044 => 'o usuário existe, mas não tem permissão neste banco — '
+                  . 'associe os dois no hPanel',
+            1049 => 'não existe banco com esse nome',
+            2002 => 'o servidor de banco não respondeu neste endereço',
+            2005 => 'host do banco desconhecido',
+        ][(int) $e->getCode()] ?? null;
+
+        ct_falha(503, 'banco_indisponivel', 'Não foi possível falar com o banco'
+            . ($motivo !== null ? ': ' . $motivo . '.' : ' (código ' . $e->getCode() . ').'));
     }
 
     return $pdo;
