@@ -21,12 +21,17 @@ function ct_pdo(): PDO
         return $pdo;
     }
 
-    $cfg = require __DIR__ . '/config/db.php';
+    /* O db.php não está no repositório, de propósito: senha em Git fica no
+       histórico para sempre. Ele é criado uma vez no servidor, a partir do
+       db.exemplo.php ao lado, e sobrevive às publicações — o deploy usa
+       `git reset --hard`, que não apaga arquivo fora do repositório. */
+    $arquivo = __DIR__ . '/config/db.php';
+    $cfg = is_file($arquivo) ? require $arquivo : [];
 
-    if (($cfg['nome'] ?? '') === '' || ($cfg['user'] ?? '') === '') {
+    if (!is_array($cfg) || ($cfg['nome'] ?? '') === '' || ($cfg['user'] ?? '') === '') {
         ct_falha(503, 'banco_nao_configurado',
-            'O banco do site ainda não foi configurado. Falta criar o arquivo '
-            . 'contatos-db.php um nível acima de public_html, no servidor.');
+            'O banco do site ainda não foi configurado. No servidor, copie '
+            . 'contatos/app/config/db.exemplo.php para db.php e preencha.');
     }
 
     try {

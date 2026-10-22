@@ -1,1 +1,5 @@
 .claude/worktrees/
+
+# Configuração do banco do site: fica só no servidor, nunca no repositório.
+# O modelo versionado é contatos/app/config/db.exemplo.php.
+contatos/app/config/db.php

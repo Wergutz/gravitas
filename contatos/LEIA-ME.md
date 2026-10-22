@@ -16,7 +16,7 @@ contatos/
   js/config.js      só escolhe entre os dois modos
   api/index.php     a API; é o único ponto que fala com o banco
   app/bd.php        conexão e sessão
-  app/config/db.php >>> dados do banco (preencher no servidor)
+  app/config/db.exemplo.php  modelo; copiar para db.php no servidor
   sql/              os scripts de criação, na ordem de execução
   fotos/            retratos usados nas fichas
 ```
@@ -28,12 +28,17 @@ MySQL. É por isso que as permissões vivem em `api/index.php`, e não no banco.
 
 1. Criar um banco MySQL no hPanel (é o banco do site, separado do banco das
    obras).
-2. Preencher `app/config/db.php` com nome, usuário e senha.
+2. No servidor, copiar `app/config/db.exemplo.php` para `app/config/db.php`
+   e preencher. Esse arquivo **não** está no repositório — senha em Git fica
+   no histórico para sempre. Ele é criado uma vez e sobrevive às publicações:
+   o deploy usa `git reset --hard`, que não apaga arquivo fora do repositório,
+   e a cópia para `/contatos/` o leva junto.
 3. No phpMyAdmin, rodar na ordem:
    `sql/01-schema.sql` → `sql/02-usuarios.sql` → `sql/03-seed.sql`.
 
 Enquanto o passo 2 não for feito, a tela de entrada aparece normalmente e
-avisa, ao tentar entrar, que o banco ainda não foi configurado.
+avisa, ao tentar entrar, o que falta — e a mensagem muda conforme o passo:
+falta o db.php, ou falta rodar os scripts.
 
 ## Permissões
 
