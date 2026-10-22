@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `contatos_pessoas` (
   `orgao`          varchar(190)     NULL,
   `cargo`          varchar(190)     NULL,
   `nome`           varchar(190) NOT NULL,
-  `partido`        varchar(80)      NULL,
+  `partido`        varchar(255)      NULL,
   `telefone`       varchar(190)     NULL,
   `whatsapp`       varchar(190)     NULL,
   `email`          varchar(190)     NULL,
