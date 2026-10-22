@@ -341,5 +341,15 @@ try {
     }
 } catch (PDOException $e) {
     error_log('[contatos] ' . $acao . ': ' . $e->getMessage());
+
+    // 42S02 = tabela não existe. É exatamente o estado entre configurar o
+    // banco e rodar os scripts; sem esta distinção a tela diria apenas
+    // "o banco recusou a operação", que não indica o que fazer.
+    if ($e->getCode() === '42S02') {
+        ct_falha(503, 'tabelas_ausentes',
+            'O banco respondeu, mas as tabelas ainda não existem. '
+            . 'Rode os scripts de contatos/sql/ no phpMyAdmin, na ordem.');
+    }
+
     ct_falha(500, 'erro_banco', 'O banco recusou a operação.');
 }
