@@ -25,7 +25,8 @@ function ct_pdo(): PDO
 
     if (($cfg['nome'] ?? '') === '' || ($cfg['user'] ?? '') === '') {
         ct_falha(503, 'banco_nao_configurado',
-            'O banco do site ainda não foi configurado. Preencha contatos/app/config/db.php.');
+            'O banco do site ainda não foi configurado. Falta criar o arquivo '
+            . 'contatos-db.php um nível acima de public_html, no servidor.');
     }
 
     try {
