@@ -4,7 +4,7 @@
   const $ = (s, el = document) => el.querySelector(s);
   const brl = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const CHAVE = 'trama_carrinho_v1';
+  const CHAVE = 'gwshop_carrinho_v1';
 
   /* ---------- Desenho das camisetas (SVG) ---------- */
   function luminancia(hex) {
@@ -229,7 +229,7 @@
       return `• ${i.qtd}x ${p.nome} — ${cor.nome} / ${i.tamanho} — ${brl(p.preco * i.qtd)}`;
     });
     const msg = [
-      '*Novo pedido — Trama Camisetas*', '',
+      '*Novo pedido — GW Shop*', '',
       ...linhas, '',
       `Subtotal: ${brl(subtotal)}`,
       `Frete: ${frete === 0 ? 'Grátis' : brl(frete)}`,

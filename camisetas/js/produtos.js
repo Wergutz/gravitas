@@ -40,7 +40,7 @@ const PRODUTOS = [
     id: 'oversized-verde', nome: 'Oversized Musgo', categoria: 'Oversized', preco: 119.9, destaque: 5,
     descricao: 'Modelagem ampla, ombro caído e malha 200 g/m² mais encorpada.',
     cores: [{ nome: 'Musgo', hex: '#5d6b45' }, { nome: 'Preto', hex: '#1d1d1f' }, { nome: 'Off-white', hex: '#f2ede3' }],
-    estampa: { tipo: 'peito', texto: 'TRAMA', cor: '#f2ede3', corClara: '#1d1d1f' },
+    estampa: { tipo: 'peito', texto: 'GW SHOP', cor: '#f2ede3', corClara: '#1d1d1f' },
   },
   {
     id: 'montanha', nome: 'Serra Acima', categoria: 'Estampadas', preco: 89.9, precoAntigo: 99.9, destaque: 6,
