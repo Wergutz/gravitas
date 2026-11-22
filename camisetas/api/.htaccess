@@ -1,0 +1,4 @@
+# Arquivos internos da API não podem ser abertos pelo navegador
+<FilesMatch "^(_lib|config)\.php$">
+  Require all denied
+</FilesMatch>

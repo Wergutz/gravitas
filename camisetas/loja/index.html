@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GW Shop Camisetas</title>
+  <link rel="canonical" href="https://gwshop.com.br/">
+  <meta property="og:title" content="GW Shop — Camisetas">
+  <meta property="og:description" content="Camisetas 100% algodão com estampas autorais.">
+  <meta property="og:url" content="https://gwshop.com.br/">
+  <meta name="description" content="Camisetas 100% algodão com estampas autorais. Frete grátis acima de R$ 199.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=Archivo+Black&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/loja.css">
+</head>
+<body>
+  <div class="faixa">Frete grátis acima de R$ 199 · 3x sem juros · Troca fácil em 30 dias</div>
+
+  <header class="topo">
+    <div class="container topo__linha">
+      <a href="#" class="marca">GW<span>shop</span></a>
+      <nav class="menu" aria-label="Principal">
+        <a href="#catalogo">Loja</a>
+        <a href="#sobre">Sobre</a>
+        <a href="#contato">Contato</a>
+      </nav>
+      <button class="btn-carrinho" id="abrirCarrinho" aria-label="Abrir carrinho">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 7h12l-1 13H7L6 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+        <span class="contador" id="contador">0</span>
+      </button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero__grid">
+      <div>
+        <p class="sobretitulo">Coleção Verão 2026</p>
+        <h1>Algodão bom.<br>Estampa que fala.</h1>
+        <p class="hero__texto">Camisetas 100% algodão penteado, fio 30.1, estampadas em pequenas tiragens. Feitas para durar mais que a tendência.</p>
+        <a href="#catalogo" class="btn btn--primario">Ver coleção</a>
+      </div>
+      <div class="hero__arte" id="heroArte" aria-hidden="true"></div>
+    </div>
+  </section>
+
+  <main id="catalogo" class="container catalogo">
+    <div class="catalogo__cabecalho">
+      <h2>Loja</h2>
+      <div class="controles">
+        <div class="filtros" id="filtros" role="tablist"></div>
+        <select id="ordenar" aria-label="Ordenar">
+          <option value="destaque">Destaques</option>
+          <option value="menor">Menor preço</option>
+          <option value="maior">Maior preço</option>
+          <option value="nome">Nome A–Z</option>
+        </select>
+      </div>
+    </div>
+    <div class="grade" id="grade"></div>
+  </main>
+
+  <section id="sobre" class="sobre">
+    <div class="container sobre__grid">
+      <div class="beneficio"><strong>100% algodão</strong><span>Fio 30.1 penteado, 160 g/m²</span></div>
+      <div class="beneficio"><strong>Envio em 48h</strong><span>Para todo o Brasil</span></div>
+      <div class="beneficio"><strong>Troca grátis</strong><span>Até 30 dias após o recebimento</span></div>
+      <div class="beneficio"><strong>Pix com 5% off</strong><span>Ou 3x sem juros no cartão</span></div>
+    </div>
+  </section>
+
+  <footer id="contato" class="rodape">
+    <div class="container rodape__grid">
+      <div>
+        <a href="#" class="marca">GW<span>shop</span></a>
+        <p>Camisetas com estampas autorais.</p>
+      </div>
+      <div>
+        <strong>Atendimento</strong>
+        <p>Seg a sex, 9h às 18h<br>contato@gwshop.com.br</p>
+      </div>
+      <div>
+        <strong>Tabela de medidas</strong>
+        <p>P 50×70 · M 53×72 · G 56×74<br>GG 59×76 · XG 62×78 (cm)</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal do produto -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal__fundo" data-fechar></div>
+    <div class="modal__caixa" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+      <button class="fechar" data-fechar aria-label="Fechar">×</button>
+      <div class="modal__grid">
+        <div class="modal__imagem" id="modalImagem"></div>
+        <div class="modal__info">
+          <p class="sobretitulo" id="modalCategoria"></p>
+          <h3 id="modalTitulo"></h3>
+          <p class="preco" id="modalPreco"></p>
+          <p id="modalDescricao" class="modal__descricao"></p>
+          <p class="rotulo">Cor: <span id="modalCorNome"></span></p>
+          <div class="cores" id="modalCores"></div>
+          <p class="rotulo">Tamanho</p>
+          <div class="tamanhos" id="modalTamanhos"></div>
+          <div class="qtd-linha">
+            <div class="qtd">
+              <button type="button" id="qtdMenos" aria-label="Diminuir">−</button>
+              <span id="qtdValor">1</span>
+              <button type="button" id="qtdMais" aria-label="Aumentar">+</button>
+            </div>
+            <button class="btn btn--primario btn--bloco" id="adicionar">Adicionar ao carrinho</button>
+          </div>
+          <p class="aviso" id="avisoTamanho" hidden>Escolha um tamanho.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carrinho -->
+  <aside class="carrinho" id="carrinho" aria-hidden="true">
+    <div class="carrinho__fundo" data-fechar-carrinho></div>
+    <div class="carrinho__painel">
+      <div class="carrinho__topo">
+        <h3>Seu carrinho</h3>
+        <button class="fechar" data-fechar-carrinho aria-label="Fechar">×</button>
+      </div>
+      <div class="frete-barra" id="freteBarra"></div>
+      <ul class="itens" id="itens"></ul>
+      <div class="carrinho__rodape" id="carrinhoRodape">
+        <div class="linha"><span>Subtotal</span><span id="subtotal">R$ 0,00</span></div>
+        <div class="linha"><span>Frete</span><span id="frete">—</span></div>
+        <div class="linha linha--total"><span>Total</span><span id="total">R$ 0,00</span></div>
+        <p class="pix" id="pix"></p>
+        <button class="btn btn--primario btn--bloco" id="irCheckout">Finalizar compra</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Checkout -->
+  <div class="modal" id="checkout" hidden>
+    <div class="modal__fundo" data-fechar-checkout></div>
+    <div class="modal__caixa modal__caixa--estreita" role="dialog" aria-modal="true" aria-labelledby="checkoutTitulo">
+      <button class="fechar" data-fechar-checkout aria-label="Fechar">×</button>
+      <h3 id="checkoutTitulo">Finalizar pedido</h3>
+      <form id="formCheckout" class="form">
+        <label>Nome completo<input name="nome" required autocomplete="name"></label>
+        <label>WhatsApp<input name="telefone" required inputmode="tel" autocomplete="tel" placeholder="(00) 00000-0000"></label>
+        <div class="form__duas">
+          <label>CEP<input name="cep" required inputmode="numeric" maxlength="9" placeholder="00000-000"></label>
+          <label>Número<input name="numero" required></label>
+        </div>
+        <label>Endereço<input name="endereco" required autocomplete="street-address"></label>
+        <div class="form__duas">
+          <label>Cidade<input name="cidade" required></label>
+          <label>UF<input name="uf" required maxlength="2"></label>
+        </div>
+        <fieldset class="pagamento">
+          <legend>Pagamento</legend>
+          <label class="opcao"><input type="radio" name="pagamento" value="Pix" checked> Pix (5% off)</label>
+          <label class="opcao"><input type="radio" name="pagamento" value="Cartão (até 3x)"> Cartão até 3x</label>
+        </fieldset>
+        <div class="linha linha--total"><span>Total</span><span id="checkoutTotal"></span></div>
+        <button class="btn btn--primario btn--bloco" type="submit">Enviar pedido pelo WhatsApp</button>
+        <p class="nota">Você será direcionado ao WhatsApp com o resumo do pedido para confirmar o pagamento.</p>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/produtos.js"></script>
+  <script src="js/loja.js"></script>
+</body>
+</html>

@@ -1,37 +1,55 @@
-# GW Shop — loja virtual de camisetas
+# GW Shop — orçamento de camisetas personalizadas
 
-Domínio: **https://gwshop.com.br**
+Domínio: **https://gwshop.com.br** · Site independente (PHP 8, sem banco de dados).
 
-Site estático (HTML + CSS + JS puro), **independente do restante do Gravitas**.
-Não precisa de PHP nem de banco de dados: funciona em qualquer hospedagem.
+## O que tem
 
-## Publicar no novo domínio
+| Endereço | O quê |
+|---|---|
+| `/` | Orçamentador: o cliente escolhe modelo e cor, envia a arte da frente e/ou do verso, posiciona e redimensiona sobre a camiseta, informa as quantidades por tamanho e vê o preço na hora. Ao enviar, o site gera a imagem frente e verso, salva tudo no servidor e abre o WhatsApp com o código do orçamento. |
+| `/admin` | Painel: lista os orçamentos, mostra a imagem, os dados do cliente e o cálculo, permite baixar as artes originais, mudar o status e responder pelo WhatsApp. |
+| `/loja` | Loja de camisetas prontas (guardada para depois, não está linkada). |
 
-1. Domínio `gwshop.com.br` já registrado no Registro.br. Contrate a hospedagem
-   (qualquer plano simples serve) e, no Registro.br, aponte os **servidores DNS**
-   do domínio para os que a hospedagem informar. A propagação leva de minutos a algumas horas.
-2. Envie **o conteúdo** desta pasta (`index.html`, `css/`, `js/`, `img/`) para a raiz
-   pública do domínio (normalmente `public_html/` ou `www/`).
-3. Ative o SSL (HTTPS) no painel da hospedagem.
+## Publicar
 
-## Antes de publicar
+1. No cPanel da hospedagem, adicione o domínio `gwshop.com.br` (Domínios / Domínios adicionais).
+   Anote a pasta criada para ele (ex.: `public_html/gwshop.com.br`).
+2. No Registro.br, aponte os servidores DNS do domínio para os da hospedagem.
+3. Envie **o conteúdo** desta pasta para a pasta do domínio — inclusive os arquivos ocultos
+   `.htaccess` e `.user.ini` (no Gerenciador de Arquivos, ative "mostrar arquivos ocultos").
+4. Ative o SSL gratuito (AutoSSL / Let's Encrypt) para o domínio.
+5. **Logo em seguida**, acesse `https://gwshop.com.br/admin` e crie a senha do painel
+   (o primeiro acesso define a senha).
+6. A pasta `dados/` precisa permitir escrita pelo PHP (permissão 755 normalmente basta).
 
-Edite `js/produtos.js`:
+## Configurar preços — `api/config.php`
 
-- `CONFIG.whatsapp` → número da loja com DDI + DDD, só dígitos (ex.: `5547999998888`).
-- `CONFIG.freteGratisAcima`, `CONFIG.freteFixo`, `CONFIG.descontoPix`.
-- `PRODUTOS` → nomes, preços, cores e descrições.
-  - Sem `imagem`, a camiseta é desenhada automaticamente na cor escolhida.
-  - Para usar foto real: coloque o arquivo em `img/` e adicione `imagem: 'img/arquivo.jpg'` ao produto.
+- `loja.whatsapp` → número da loja com DDI + DDD, só dígitos (ex.: `5547999998888`). **Obrigatório.**
+- `loja.email` → se preenchido, recebe um aviso a cada orçamento.
+- `modelos` → preço da camiseta lisa de cada modelo.
+- `cores` → cores disponíveis (nome e código hex).
+- `tamanhos` → acréscimo por tamanho (ex.: GG +R$ 4).
+- `area` → área máxima de impressão por lado, em cm (padrão 30 × 40).
+- `estampa` → faixas de preço por lado. Vale a **menor faixa em que a arte cabe**, em pé ou deitada.
+- `descontos` → % de desconto pela quantidade total de peças.
 
-Em `index.html`, confira o e-mail de contato (`contato@gwshop.com.br`, que precisa ser
-criado na hospedagem) e a tabela de medidas.
+O preço é recalculado no servidor a cada envio, então ninguém consegue alterar o valor pelo navegador.
 
-## Como funciona o pedido
+### Fórmula
 
-O carrinho fica salvo no navegador do cliente. No checkout o CEP é preenchido
-automaticamente (ViaCEP) e o pedido é enviado para o WhatsApp da loja, com itens,
-total, forma de pagamento e endereço. A cobrança (Pix/cartão) é combinada por lá.
+```
+preço por peça = camiseta + estampa frente + estampa verso + adicional do tamanho
+total          = soma de todas as peças − desconto por quantidade
+```
 
-Próximo passo possível: integrar pagamento online (Mercado Pago, PagSeguro ou Stripe),
-o que exige um pequeno back-end.
+## Onde ficam os orçamentos
+
+`dados/orcamentos/<CÓDIGO>/` contém `orcamento.json`, as artes originais (`arte-frente.*`,
+`arte-verso.*`) e `mockup.png`. A pasta `dados/` é bloqueada para acesso direto: os arquivos
+só são abertos pelo painel com login. Inclua essa pasta no backup da hospedagem.
+
+## Detalhes técnicos
+
+- Artes aceitas: PNG, JPG, WEBP, SVG — até 20 MB (o `api/.user.ini` aumenta o limite de upload do PHP).
+- O site avisa o cliente quando a resolução da arte fica abaixo de 150 DPI no tamanho escolhido.
+- Campo isca contra robôs no formulário; tipo real dos arquivos conferido no servidor.
